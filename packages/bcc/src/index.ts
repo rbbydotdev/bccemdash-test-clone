@@ -40,6 +40,7 @@ export type BccOptions = Record<string, unknown>;
  * exported from src/admin/index.tsx.
  */
 const ADMIN_PAGES = [
+	{ path: "/settings", label: "Site Content", icon: "gear", group: "Bat City" },
 	{ path: "/enquiries", label: "Enquiries", icon: "chat-circle-text", group: "Bat City" },
 ];
 

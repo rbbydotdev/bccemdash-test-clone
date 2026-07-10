@@ -24,4 +24,23 @@ Candidates known from the prior emdashtv conversion (apply only if hit here):
 
 ## Applied patches
 
-_None yet._
+The vendored `vendor/emdash` was seeded from the vetted copy used in the prior emdash conversion, so
+it already carries two source patches (marked with `HANNIES PATCH` comments in the vendored files). We
+rely on both; keep them across any future `git subtree pull`.
+
+- **0001 — stale revision keys from deleted fields.** After a field is removed from a collection,
+  entries with older draft/live revisions became uneditable/unpublishable. The fix filters
+  revision-derived keys against the collection's *current* fields.
+  Files: `vendor/emdash/packages/core/src/emdash-runtime.ts` (`hydrateDraftData`),
+  `vendor/emdash/packages/core/src/database/repositories/content.ts` (`syncDataColumns`).
+
+- **0002 — plugin admin pages `group?`.** Adds an optional `group` to `PluginAdminPage` so grouped
+  pages render as their own top-level sidebar section. **The BCC plugin depends on this**: its admin
+  pages declare `group: "Bat City"` (`packages/bcc/src/index.ts`), which lifts "Site Content" and
+  "Enquiries" into a top-level "Bat City" section instead of the bottom "Plugins" area.
+  Files: `vendor/emdash/packages/core/src/plugins/types.ts`,
+  `vendor/emdash/packages/core/src/astro/integration/runtime.ts`,
+  `vendor/emdash/packages/admin/src/components/Sidebar.tsx`.
+
+No BCC-specific vendored patches have been needed so far — the plugin, seed, and host app cover
+everything. Add new entries here (and export `patches/NNNN-*.patch`) if that changes.

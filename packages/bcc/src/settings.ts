@@ -6,8 +6,8 @@
  * over BCC_DEFAULTS, so components always render correct copy even before any
  * edit or migration. Edited through the plugin's admin/settings route.
  *
- * Copy defaults come from the design brief
- * (../bcc-wp/src/themes/bat-city-council/DESIGN.md) and the prod content dump.
+ * Copy defaults come from the original design brief captured in
+ * research/design-system.md and research/content-inventory.md.
  * CLIENT RULE: no em dashes anywhere in user-facing copy.
  *
  * Images are emdash media ids (resolved to URLs at render time).

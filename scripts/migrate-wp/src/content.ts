@@ -1,23 +1,26 @@
 /**
- * Curated Bat City Council content, extracted from the latest prod DB dump
- * (../bcc-wp/backups/prod-20260710-183605Z-b39a09e.sql.gz) — see
- * research/content-inventory.md. Statuses, order, amounts, and Zeffy links are
- * preserved faithfully. Media originals live in ../bcc-wp/app/wp-content/uploads.
+ * Curated Bat City Council content, captured in research/content-inventory.md.
+ * Statuses, order, amounts, and Zeffy links are preserved faithfully. Media
+ * originals are vendored in-repo at scripts/migrate-wp/media/.
  *
  * CLIENT RULE: no em dashes in user-facing copy.
  */
 
 export const DEVOTE_URL = "https://www.zeffy.com/en-US/ticketing/bat-city-council";
 
-/** Logical name -> { source path (relative to bcc-wp uploads), alt }. */
+/**
+ * Logical name -> { in-repo media filename, alt }.
+ * Source originals are vendored into `scripts/migrate-wp/media/` so this
+ * migration is self-contained (no path escaping to a sibling project).
+ */
 export const MEDIA: Record<string, { file: string; alt: string }> = {
-	hero: { file: "2026/04/hero-bridge.jpg", alt: "Congress Avenue Bridge at dusk" },
-	story: { file: "2026/04/story-austin.jpg", alt: "Austin skyline as bats take flight" },
-	founder: { file: "2026/04/founder-teresa.jpg", alt: "Teresa Nichta, Founder of Bat City Council" },
-	"exp-bridge": { file: "2026/04/exp-bridge.jpg", alt: "Bats emerging from the Congress Avenue Bridge" },
-	"exp-refuge": { file: "2026/04/exp-refuge-a.png", alt: "Austin Bat Refuge" },
-	"exp-beyond": { file: "2026/04/exp-beyond-a.jpg", alt: "Bat roosts beyond Austin" },
-	"exp-year-round": { file: "2026/04/exp-year-round.jpg", alt: "Year-round bat activities in Austin" },
+	hero: { file: "hero-bridge.jpg", alt: "Congress Avenue Bridge at dusk" },
+	story: { file: "story-austin.jpg", alt: "Austin skyline as bats take flight" },
+	founder: { file: "founder-teresa.jpg", alt: "Teresa Nichta, Founder of Bat City Council" },
+	"exp-bridge": { file: "exp-bridge.jpg", alt: "Bats emerging from the Congress Avenue Bridge" },
+	"exp-refuge": { file: "exp-refuge-a.png", alt: "Austin Bat Refuge" },
+	"exp-beyond": { file: "exp-beyond-a.jpg", alt: "Bat roosts beyond Austin" },
+	"exp-year-round": { file: "exp-year-round.jpg", alt: "Year-round bat activities in Austin" },
 };
 
 export interface Entry {

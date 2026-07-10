@@ -1,10 +1,10 @@
 /**
  * WordPress -> emdash content migration (repeatable).
  *
- * Sources curated content (src/content.ts, extracted from the prod dump) and
- * media originals (../bcc-wp/app/wp-content/uploads), and pushes them into the
- * running emdash dev server via REST. Idempotent: media skip-if-filename,
- * content skip-if-slug. Run with the dev server up:
+ * Sources curated content (src/content.ts) and in-repo media originals
+ * (scripts/migrate-wp/media/), and pushes them into the running emdash dev
+ * server via REST. Fully self-contained (no external paths). Idempotent: media
+ * skip-if-filename, content skip-if-slug. Run with the dev server up:
  *
  *   cd apps/site && corepack pnpm dev            # in one shell
  *   cd scripts/migrate-wp && corepack pnpm migrate
@@ -34,9 +34,9 @@ import {
 	type Entry,
 } from "./content.ts";
 
-const UPLOADS_ROOT = resolve(
-	process.env.WP_UPLOADS ?? "../../../bcc-wp/app/wp-content/uploads",
-);
+// In-repo media (scripts/migrate-wp/media). This project is fully isolated:
+// no runtime paths ever escape the repo.
+const MEDIA_ROOT = resolve(import.meta.dirname, "../media");
 
 function mimeFor(file: string): string {
 	if (file.endsWith(".png")) return "image/png";
@@ -50,7 +50,7 @@ async function migrateMedia(): Promise<Map<string, string>> {
 	const existing = new Map((await listAllMedia()).map((m) => [m.filename, m.id]));
 	const map = new Map<string, string>();
 	for (const [name, spec] of Object.entries(MEDIA)) {
-		const path = resolve(UPLOADS_ROOT, spec.file);
+		const path = resolve(MEDIA_ROOT, spec.file);
 		const filename = basename(spec.file);
 		const existingId = existing.get(filename);
 		if (existingId) {

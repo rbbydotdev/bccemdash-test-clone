@@ -3,17 +3,16 @@
  * Site header (scaffold stub — full sticky/transparent + mobile overlay lands
  * in Phase 4). Fixed, transparent over the hero, amber "Devote Now" CTA.
  */
-import { getSiteSettings } from "emdash";
+import { getBccSettings } from "@bcc/plugin/server";
 
 interface Props {
 	transparent?: boolean;
 }
 const { transparent = false } = Astro.props;
 
-const settings = await getSiteSettings().catch(() => null);
-const devoteUrl =
-	(settings as Record<string, unknown> | null)?.bcc_devote_url?.toString() ??
-	"https://www.zeffy.com/en-US/ticketing/bat-city-council";
+const settings = await getBccSettings();
+const devoteUrl = settings.integrations.devoteUrl;
+const ctaLabel = settings.header.ctaLabel;
 
 const links = [
 	{ label: "Story", href: "/#story" },
@@ -50,7 +49,7 @@ const links = [
 				href={devoteUrl}
 				class="rounded-sm bg-amber px-6 py-3 font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:bg-amber-light"
 			>
-				Devote Now
+				{ctaLabel}
 			</a>
 		</nav>
 	</div>

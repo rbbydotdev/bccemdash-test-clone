@@ -1,0 +1,9 @@
+{
+	"name": "@bcc/migrate-wp",
+	"private": true,
+	"type": "module",
+	"description": "Migrates curated Bat City Council WordPress content + media into the emdash dev site over REST. Standalone — no install step.",
+	"scripts": {
+		"migrate": "node --experimental-strip-types --no-warnings src/migrate.ts"
+	}
+}

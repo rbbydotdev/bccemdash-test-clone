@@ -5,10 +5,11 @@
  * rate limit → honeypot → optional Turnstile → validate → insert → best-effort
  * notify. Returns `{ id }`.
  */
-import { getSiteSettings, type RouteContext } from "emdash";
+import type { RouteContext } from "emdash";
 
 import { createEnquiry, toEnquiryDTO } from "../db/repos/enquiries.repo.js";
 import { sendEnquiryNotification, type EmailCapableCtx } from "../services/emails.js";
+import { getBccSettings } from "../settings.js";
 import {
 	asRecord,
 	enforceRateLimit,
@@ -39,14 +40,6 @@ async function verifyTurnstile(token: string | undefined, secret: string | undef
 	}
 }
 
-async function readSettings(): Promise<Record<string, unknown>> {
-	try {
-		return ((await getSiteSettings()) as Record<string, unknown>) ?? {};
-	} catch {
-		return {};
-	}
-}
-
 export async function publicEnquiryHandler(ctx: RouteContext): Promise<unknown> {
 	requireMethod(ctx, "POST");
 	requireCsrfHeader(ctx);
@@ -59,10 +52,10 @@ export async function publicEnquiryHandler(ctx: RouteContext): Promise<unknown> 
 	const trap = readString(body, "website");
 	if (trap) return { id: "ok" };
 
-	const settings = await readSettings();
+	const settings = await getBccSettings();
+	// The Turnstile SECRET is an env var (never in the public settings bag).
 	const turnstileSecret =
-		(settings.bcc_turnstile_secret as string | undefined) ||
-		(typeof process !== "undefined" ? process.env?.TURNSTILE_SECRET_KEY : undefined);
+		typeof process !== "undefined" ? process.env?.TURNSTILE_SECRET_KEY : undefined;
 	const token = readString(body, "turnstileToken");
 	const ip = ctx.requestMeta?.ip ?? null;
 	if (!(await verifyTurnstile(token, turnstileSecret, ip))) {
@@ -86,7 +79,7 @@ export async function publicEnquiryHandler(ctx: RouteContext): Promise<unknown> 
 		userAgent: ctx.request.headers.get("user-agent"),
 	});
 
-	const notifyTo = (settings.bcc_notification_email as string | undefined) ?? null;
+	const notifyTo = settings.integrations.notificationEmail || null;
 	await sendEnquiryNotification(ctx as unknown as EmailCapableCtx, toEnquiryDTO(enquiry), notifyTo);
 
 	return { id: enquiry.id };

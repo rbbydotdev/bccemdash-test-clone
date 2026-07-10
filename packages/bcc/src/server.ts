@@ -8,6 +8,16 @@
 import { createEnquiry, toEnquiryDTO, type EnquiryDTO } from "./db/repos/enquiries.repo.js";
 import { getBccDb } from "./routes/helpers.js";
 
+// Re-export settings helpers so the host Astro app reads/writes the
+// client-editable "Site Content" bag in-process (server-side only).
+export {
+	getBccSettings,
+	setBccSettings,
+	BCC_DEFAULTS,
+	DEFAULT_DEVOTE_URL,
+	type BccSettings,
+} from "./settings.js";
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export type SubmitEnquiryResult = { ok: true; id: string; enquiry: EnquiryDTO } | { ok: false; message: string };

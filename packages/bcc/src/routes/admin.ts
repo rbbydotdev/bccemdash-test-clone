@@ -19,6 +19,7 @@ import {
 	type EnquiryStatus,
 } from "../db/repos/enquiries.repo.js";
 import { fail } from "../errors.js";
+import { getBccSettings, setBccSettings, type BccSettings } from "../settings.js";
 import { asRecord, getBccDb, queryParams, readString, requireMethod } from "./helpers.js";
 
 export async function adminEnquiriesHandler(ctx: RouteContext): Promise<unknown> {
@@ -67,6 +68,19 @@ export async function adminStatsHandler(ctx: RouteContext): Promise<unknown> {
 		recentEnquiries(db, 5),
 	]);
 	return { byStatus, recent };
+}
+
+/**
+ * GET/POST admin/settings — the client-editable "Site Content" bag.
+ * GET returns the merged settings; POST deep-merges a partial update.
+ */
+export async function adminSettingsHandler(ctx: RouteContext): Promise<unknown> {
+	const method = requireMethod(ctx, "GET", "POST");
+	if (method === "GET") {
+		return getBccSettings();
+	}
+	const patch = asRecord(ctx.input) as Partial<BccSettings>;
+	return setBccSettings(patch);
 }
 
 /**

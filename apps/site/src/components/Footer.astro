@@ -2,13 +2,11 @@
 /**
  * Site footer (scaffold stub — full photo-caption footer lands in Phase 4).
  */
-import { getSiteSettings } from "emdash";
+import { getBccSettings } from "@bcc/plugin/server";
 
-const settings = (await getSiteSettings().catch(() => null)) as Record<string, unknown> | null;
-const copyright =
-	settings?.bcc_footer_copyright?.toString() ??
-	"© 2026 Bat City Council. Austin, Texas. 501c3 nonprofit, EIN 42-2391354";
-const tagline = settings?.bcc_footer_tagline?.toString() ?? "Culture · Commerce · Conservation";
+const settings = await getBccSettings();
+const copyright = settings.footer.copyright;
+const tagline = settings.footer.tagline;
 ---
 
 <footer id="contact" class="border-t border-white/5 bg-deep py-[var(--spacing-section-md)]">

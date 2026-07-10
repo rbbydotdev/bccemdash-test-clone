@@ -25,6 +25,7 @@ import {
 	adminEnquiriesHandler,
 	adminEnquiryItemHandler,
 	adminGeocodeHandler,
+	adminSettingsHandler,
 	adminStatsHandler,
 } from "./routes/admin.js";
 import { wrap } from "./routes/helpers.js";
@@ -104,6 +105,7 @@ export function createPlugin(_options: BccOptions = {}) {
 			"admin/enquiries": { handler: wrap(adminEnquiriesHandler) },
 			"admin/enquiries/item": { handler: wrap(adminEnquiryItemHandler) },
 			"admin/stats": { handler: wrap(adminStatsHandler) },
+			"admin/settings": { handler: wrap(adminSettingsHandler) },
 			"admin/geocode": { handler: wrap(adminGeocodeHandler) },
 		},
 	});

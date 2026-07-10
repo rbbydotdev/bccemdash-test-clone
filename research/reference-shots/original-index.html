@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bat City Council — Guardians of Austin's Night Sky</title>
+    <meta name="description" content="Bat City Council connects commerce and conservation in Austin, Texas — home of the world's largest urban bat colony. Culture, Commerce & Conservation — After Dark.">
+    <meta name="keywords" content="Austin bats, Congress Avenue Bridge bats, bat tourism Austin, Austin bat experience, Bat City Council">
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'night': '#0A0E1A',
+                        'deep': '#111833',
+                        'amber': { DEFAULT: '#D4A03C', dark: '#B8882A', light: '#E8C060', glow: '#F0D890' },
+                        'moon': '#C8D0E0',
+                        'silver': '#8892A8',
+                    },
+                    fontFamily: {
+                        'display': ['"Cormorant Garamond"', 'serif'],
+                        'body': ['"EB Garamond"', 'serif'],
+                        'accent': ['"Josefin Sans"', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           BASE & CUSTOM PROPERTIES
+           ========================================= */
+        :root {
+            --night: #0A0E1A;
+            --deep: #111833;
+            --amber: #D4A03C;
+            --amber-light: #E8C060;
+            --moon: #C8D0E0;
+            --silver: #8892A8;
+        }
+
+        ::selection {
+            background: rgba(212, 160, 60, 0.35);
+            color: #C8D0E0;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--night); }
+        ::-webkit-scrollbar-thumb { background: var(--amber); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--amber-light); }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           PRELOADER
+           ========================================= */
+        #preloader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--night);
+            display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 24px;
+            transition: opacity 1s ease, visibility 1s ease;
+        }
+        #preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .preload-bat {
+            width: 50px; height: 50px; opacity: 0.7;
+            animation: preload-float 2s ease-in-out infinite;
+        }
+        @keyframes preload-float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+            50% { transform: translateY(-8px) scale(1.05); opacity: 1; }
+        }
+
+        /* =========================================
+           SCROLL REVEAL SYSTEM
+           ========================================= */
+        .reveal {
+            opacity: 0; transform: translateY(50px);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.revealed { opacity: 1; transform: translateY(0); }
+
+        .reveal-left {
+            opacity: 0; transform: translateX(-60px);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-left.revealed { opacity: 1; transform: translateX(0); }
+
+        .reveal-right {
+            opacity: 0; transform: translateX(60px);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-right.revealed { opacity: 1; transform: translateX(0); }
+
+        .reveal-scale {
+            opacity: 0; transform: scale(0.88);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-scale.revealed { opacity: 1; transform: scale(1); }
+
+        .d1 { transition-delay: 0.1s !important; }
+        .d2 { transition-delay: 0.2s !important; }
+        .d3 { transition-delay: 0.3s !important; }
+        .d4 { transition-delay: 0.4s !important; }
+        .d5 { transition-delay: 0.5s !important; }
+        .d6 { transition-delay: 0.6s !important; }
+        .d7 { transition-delay: 0.7s !important; }
+        .d8 { transition-delay: 0.8s !important; }
+
+        /* =========================================
+           HERO
+           ========================================= */
+        .hero-bg {
+            position: absolute; inset: 0;
+            background: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+            will-change: transform;
+            transform: scale(1.1);
+        }
+        .hero-gradient {
+            position: absolute; inset: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(10,14,26,0.3) 0%,
+                rgba(10,14,26,0.5) 30%,
+                rgba(10,14,26,0.75) 60%,
+                rgba(10,14,26,0.95) 85%,
+                rgba(10,14,26,1) 100%
+            );
+        }
+        #starfield {
+            position: absolute; inset: 0; z-index: 1; pointer-events: none;
+        }
+
+        .scroll-indicator {
+            animation: scroll-float 2.5s ease-in-out infinite;
+        }
+        @keyframes scroll-float {
+            0%, 100% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(14px); opacity: 1; }
+        }
+
+        /* =========================================
+           BUTTONS
+           ========================================= */
+        .btn-amber {
+            position: relative; overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-amber::before {
+            content: ''; position: absolute; inset: -3px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, var(--amber), var(--amber-light), var(--amber));
+            z-index: -1; opacity: 0;
+            transition: opacity 0.4s ease;
+            filter: blur(16px);
+        }
+        .btn-amber:hover::before { opacity: 0.5; }
+        .btn-amber:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(212,160,60,0.25);
+        }
+
+        .btn-outline {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-outline:hover {
+            background: rgba(212,160,60,0.1);
+            border-color: var(--amber);
+            color: var(--amber);
+            transform: translateY(-3px);
+        }
+
+        /* =========================================
+           NAVIGATION
+           ========================================= */
+        #navbar {
+            transition: background 0.5s ease, backdrop-filter 0.5s ease, box-shadow 0.5s ease;
+        }
+        #navbar.scrolled {
+            background: rgba(10,14,26,0.92) !important;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 2px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Mobile menu */
+        #mobile-overlay {
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #mobile-overlay.open { opacity: 1; visibility: visible; }
+
+        .mobile-link {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        #mobile-overlay.open .mobile-link {
+            opacity: 1; transform: translateY(0);
+        }
+        #mobile-overlay.open .mobile-link:nth-child(1) { transition-delay: 0.1s; }
+        #mobile-overlay.open .mobile-link:nth-child(2) { transition-delay: 0.15s; }
+        #mobile-overlay.open .mobile-link:nth-child(3) { transition-delay: 0.2s; }
+        #mobile-overlay.open .mobile-link:nth-child(4) { transition-delay: 0.25s; }
+        #mobile-overlay.open .mobile-link:nth-child(5) { transition-delay: 0.3s; }
+        #mobile-overlay.open .mobile-link:nth-child(6) { transition-delay: 0.35s; }
+
+        /* Hamburger */
+        .hamburger span {
+            display: block; width: 24px; height: 1.5px;
+            background: var(--moon);
+            transition: all 0.4s ease;
+        }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        /* =========================================
+           TIER CARDS
+           ========================================= */
+        .tier-card {
+            border: 1px solid rgba(212,160,60,0.12);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; overflow: hidden;
+        }
+        .tier-card::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--tier-accent, var(--amber)), transparent);
+            opacity: 0; transition: opacity 0.5s ease;
+        }
+        .tier-card:hover {
+            border-color: rgba(212,160,60,0.35);
+            box-shadow: 0 0 50px rgba(212,160,60,0.06), 0 25px 70px rgba(0,0,0,0.35);
+            transform: translateY(-10px);
+        }
+        .tier-card:hover::after { opacity: 1; }
+
+        .tier-card .perks-list {
+            max-height: 0; overflow: hidden; opacity: 0;
+            transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease, margin 0.5s ease;
+        }
+        .tier-card .perks-list.open {
+            max-height: 300px; opacity: 1; margin-top: 16px;
+        }
+
+        .perks-toggle {
+            transition: color 0.3s ease;
+        }
+        .perks-toggle:hover {
+            color: var(--amber-light);
+        }
+        .perks-toggle .toggle-icon {
+            display: inline-block;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .perks-toggle.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        /* =========================================
+           EXPERIENCE CARDS
+           ========================================= */
+        .exp-card {
+            position: relative; overflow: hidden; border-radius: 16px;
+            cursor: pointer;
+        }
+        .exp-card .exp-img {
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .exp-card:hover .exp-img {
+            transform: scale(1.1);
+        }
+        .exp-card .exp-gradient {
+            background: linear-gradient(to top, rgba(10,14,26,0.95) 0%, rgba(10,14,26,0.3) 50%, transparent 100%);
+            transition: background 0.6s ease;
+        }
+        .exp-card:hover .exp-gradient {
+            background: linear-gradient(to top, rgba(10,14,26,0.98) 0%, rgba(10,14,26,0.75) 60%, rgba(10,14,26,0.3) 100%);
+        }
+        .exp-card .exp-desc {
+            opacity: 0; transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .exp-card:hover .exp-desc {
+            opacity: 1; transform: translateY(0);
+        }
+
+        /* =========================================
+           CYCLE DIAGRAM
+           ========================================= */
+        .cycle-connector {
+            position: relative;
+        }
+        .cycle-connector::after {
+            content: '→'; font-size: 28px; color: var(--amber);
+            animation: arrow-pulse 2s ease-in-out infinite;
+        }
+        @keyframes arrow-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* =========================================
+           TRUST BAR
+           ========================================= */
+        .trust-track {
+            animation: trust-scroll 25s linear infinite;
+        }
+        .trust-track:hover { animation-play-state: paused; }
+        @keyframes trust-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* =========================================
+           GRADIENT TEXT
+           ========================================= */
+        .text-gradient-amber {
+            background: linear-gradient(135deg, #D4A03C, #E8C060, #D4A03C);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* =========================================
+           SECTION DIVIDER
+           ========================================= */
+        .divider-amber {
+            width: 60px; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--amber), transparent);
+        }
+
+        /* =========================================
+           NOISE TEXTURE
+           ========================================= */
+        .noise-overlay::before {
+            content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* =========================================
+           STAT COUNTERS
+           ========================================= */
+        .stat-value {
+            text-shadow: 0 0 60px rgba(212,160,60,0.2);
+        }
+
+        /* =========================================
+           FOUNDER SECTION IMAGE
+           ========================================= */
+        .founder-img-wrapper {
+            position: relative;
+        }
+        .founder-img-wrapper::before {
+            content: ''; position: absolute; inset: -4px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, var(--amber), transparent, var(--amber));
+            opacity: 0.3;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body class="bg-night text-moon font-body antialiased">
+
+    <!-- ===================== PRELOADER ===================== -->
+    <div id="preloader">
+        <svg class="preload-bat" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 30 C45 15, 20 5, 2 20 C15 18, 25 22, 35 28 C38 20, 44 16, 50 14 C56 16, 62 20, 65 28 C75 22, 85 18, 98 20 C80 5, 55 15, 50 30Z" fill="#D4A03C" opacity="0.8"/>
+            <circle cx="44" cy="24" r="2" fill="#0A0E1A"/>
+            <circle cx="56" cy="24" r="2" fill="#0A0E1A"/>
+        </svg>
+        <span class="font-accent text-xs tracking-[0.35em] uppercase text-silver">Bat City Council</span>
+    </div>
+
+    <!-- ===================== NAVIGATION ===================== -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-transparent">
+        <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+            <!-- Logo -->
+            <a href="#hero" class="flex items-center gap-3 group">
+                <svg class="w-8 h-8 text-amber transition-transform duration-300 group-hover:scale-110" viewBox="0 0 100 60" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 30 C45 15, 20 5, 2 20 C15 18, 25 22, 35 28 C38 20, 44 16, 50 14 C56 16, 62 20, 65 28 C75 22, 85 18, 98 20 C80 5, 55 15, 50 30Z"/>
+                </svg>
+                <span class="font-accent text-sm tracking-[0.25em] uppercase text-moon font-light hidden sm:block">Bat City Council</span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <div class="hidden lg:flex items-center gap-10">
+                <a href="#story" class="font-accent text-xs tracking-[0.2em] uppercase text-silver hover:text-amber transition-colors duration-300">Mission</a>
+                <a href="#devotions" class="font-accent text-xs tracking-[0.2em] uppercase text-silver hover:text-amber transition-colors duration-300">Devotions</a>
+                <a href="#experiences" class="font-accent text-xs tracking-[0.2em] uppercase text-silver hover:text-amber transition-colors duration-300">Experiences</a>
+                <a href="#founder" class="font-accent text-xs tracking-[0.2em] uppercase text-silver hover:text-amber transition-colors duration-300">Founder</a>
+                <a href="#footer" class="font-accent text-xs tracking-[0.2em] uppercase text-silver hover:text-amber transition-colors duration-300">Contact</a>
+                <a href="#devotions" class="btn-amber font-accent text-xs tracking-[0.2em] uppercase bg-amber text-night px-6 py-3 rounded-sm font-semibold">Devote Now</a>
+            </div>
+
+            <!-- Mobile Hamburger -->
+            <button id="hamburger-btn" class="hamburger lg:hidden flex flex-col gap-[6px] p-2 relative z-[60]" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 z-[55] bg-night/98 flex flex-col items-center justify-center gap-8">
+        <a href="#story" class="mobile-link font-display text-3xl text-moon hover:text-amber transition-colors">Mission</a>
+        <a href="#devotions" class="mobile-link font-display text-3xl text-moon hover:text-amber transition-colors">Devotions</a>
+        <a href="#experiences" class="mobile-link font-display text-3xl text-moon hover:text-amber transition-colors">Experiences</a>
+        <a href="#founder" class="mobile-link font-display text-3xl text-moon hover:text-amber transition-colors">Founder</a>
+        <a href="#footer" class="mobile-link font-display text-3xl text-moon hover:text-amber transition-colors">Contact</a>
+        <a href="#devotions" class="mobile-link btn-amber font-accent text-sm tracking-[0.2em] uppercase bg-amber text-night px-8 py-4 rounded-sm font-semibold mt-4">Devote Now</a>
+    </div>
+
+    <!-- ===================== HERO ===================== -->
+    <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div class="hero-bg" id="hero-bg"></div>
+        <div class="hero-gradient"></div>
+        <canvas id="starfield"></canvas>
+
+        <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+            <div class="reveal d1">
+                <span class="font-accent text-xs sm:text-sm tracking-[0.5em] uppercase text-amber block mb-6">Est. 2026 &middot; Austin, Texas</span>
+            </div>
+            <h1 class="reveal d2 font-display text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-light text-moon leading-[0.95] mb-6">
+                Bat City<br><span class="text-gradient-amber">Council</span>
+            </h1>
+            <p class="reveal d3 font-display text-xl sm:text-2xl lg:text-3xl italic text-moon/80 mb-8 font-light">
+                Guardians of Austin's Night Sky
+            </p>
+            <div class="reveal d4 divider-amber mx-auto mb-8"></div>
+            <p class="reveal d5 font-body text-base sm:text-lg text-silver max-w-xl mx-auto mb-12 leading-relaxed">
+                Every dusk, 1.5 million bats take flight from the heart of Austin. They are the soul of Bat City. And they need your devotion.
+            </p>
+            <div class="reveal d6 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                <a href="#devotions" class="btn-amber font-accent text-xs sm:text-sm tracking-[0.25em] uppercase bg-amber text-night px-8 sm:px-10 py-4 rounded-sm font-semibold">
+                    Make a Devotion
+                </a>
+                <a href="#story" class="btn-outline font-accent text-xs sm:text-sm tracking-[0.25em] uppercase border border-moon/30 text-moon/80 px-8 sm:px-10 py-4 rounded-sm">
+                    Explore the Mission
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 scroll-indicator">
+            <svg width="24" height="36" viewBox="0 0 24 36" fill="none" class="text-silver/50">
+                <rect x="1" y="1" width="22" height="34" rx="11" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="12" cy="10" r="2.5" fill="currentColor">
+                    <animate attributeName="cy" values="10;22;10" dur="2.5s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="1;0.3;1" dur="2.5s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </div>
+    </section>
+
+    <!-- ===================== THE STORY ===================== -->
+    <section id="story" class="relative py-28 sm:py-36 lg:py-44 noise-overlay">
+        <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+            <!-- Section label -->
+            <div class="reveal mb-20 text-center">
+                <span class="font-accent text-xs tracking-[0.4em] uppercase text-amber">The Story</span>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                <!-- Text -->
+                <div>
+                    <h2 class="reveal font-display text-4xl sm:text-5xl lg:text-6xl font-light text-moon leading-tight mb-8">
+                        Austin Is Bat City.<br><span class="italic text-amber">This Is Why.</span>
+                    </h2>
+                    <div class="reveal d2 space-y-6 text-silver text-lg leading-relaxed">
+                        <p>
+                            Beneath the Congress Avenue Bridge lives the largest urban bat colony on Earth — 1.5 million Brazilian free-tailed bats. Every evening from April through September, they erupt into the Austin sky in a spectacle that draws over 140,000 visitors each year just for the bats alone.
+                        </p>
+                        <p>
+                            But Austin welcomes 60 million tourists annually. Most have never witnessed the flight. Bat City Council exists to change that — and to ensure the colony thrives for generations.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="reveal-right d2">
+                    <div class="relative rounded-2xl overflow-hidden aspect-[4/5]">
+                        <img src="https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?auto=format&fit=crop&w=800&q=80"
+                             alt="Dramatic dusk sky over Austin"
+                             class="w-full h-full object-cover"
+                             loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-night/60 via-transparent to-night/20"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 mt-24">
+                <div class="reveal d1 text-center">
+                    <div class="stat-value font-display text-5xl sm:text-6xl lg:text-7xl font-light text-amber mb-2" data-target="1.5" data-suffix="M" data-decimals="1">0</div>
+                    <div class="divider-amber mx-auto mb-4"></div>
+                    <p class="font-accent text-xs tracking-[0.3em] uppercase text-silver">Bats in the Colony</p>
+                </div>
+                <div class="reveal d3 text-center">
+                    <div class="stat-value font-display text-5xl sm:text-6xl lg:text-7xl font-light text-amber mb-2" data-target="140" data-suffix="K+" data-decimals="0">0</div>
+                    <div class="divider-amber mx-auto mb-4"></div>
+                    <p class="font-accent text-xs tracking-[0.3em] uppercase text-silver">Annual Bat Tourists</p>
+                </div>
+                <div class="reveal d5 text-center">
+                    <div class="stat-value font-display text-5xl sm:text-6xl lg:text-7xl font-light text-amber mb-2" data-target="60" data-suffix="M" data-decimals="0">0</div>
+                    <div class="divider-amber mx-auto mb-4"></div>
+                    <p class="font-accent text-xs tracking-[0.3em] uppercase text-silver">Austin Visitors We Can Reach</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== THE MISSION ===================== -->
+    <section id="mission" class="relative py-28 sm:py-36 lg:py-44 bg-deep noise-overlay">
+        <div class="max-w-5xl mx-auto px-6 lg:px-10 relative z-10 text-center">
+            <div class="reveal mb-6">
+                <span class="font-accent text-xs tracking-[0.4em] uppercase text-amber">The Mission</span>
+            </div>
+            <h2 class="reveal d1 font-display text-4xl sm:text-5xl lg:text-6xl font-light text-moon leading-tight mb-8">
+                Connecting Commerce &<br><span class="italic text-gradient-amber">Conservation</span> in Bat City
+            </h2>
+            <p class="reveal d2 text-silver text-lg leading-relaxed max-w-3xl mx-auto mb-20">
+                Bat City Council is the bridge between Austin's thriving economy and the living ecosystem that makes this city legendary. Through business partnerships, individual devotions, and unforgettable bat experiences, we fund conservation directly — protecting the bats that protect Austin's identity.
+            </p>
+
+            <!-- Cycle Diagram -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4 items-start max-w-4xl mx-auto mb-16">
+                <!-- Commerce -->
+                <div class="reveal d1">
+                    <div class="cycle-node bg-night/60 border border-amber/20 rounded-2xl p-8 backdrop-blur-sm">
+                        <div class="w-16 h-16 mx-auto mb-5 rounded-full border border-amber/40 flex items-center justify-center">
+                            <svg class="w-7 h-7 text-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-accent text-sm tracking-[0.25em] uppercase text-amber mb-3 font-semibold">Commerce</h3>
+                        <p class="text-silver text-base leading-relaxed">Businesses and individuals make devotions to the colony's future</p>
+                    </div>
+                    <div class="hidden md:flex justify-center mt-5 text-amber text-2xl animate-pulse">↓</div>
+                    <div class="flex md:hidden justify-center mt-5 text-amber text-2xl animate-pulse">↓</div>
+                </div>
+
+                <!-- Conservation -->
+                <div class="reveal d3">
+                    <div class="cycle-node bg-night/60 border border-amber/20 rounded-2xl p-8 backdrop-blur-sm">
+                        <div class="w-16 h-16 mx-auto mb-5 rounded-full border border-amber/40 flex items-center justify-center">
+                            <svg class="w-7 h-7 text-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-accent text-sm tracking-[0.25em] uppercase text-amber mb-3 font-semibold">Conservation</h3>
+                        <p class="text-silver text-base leading-relaxed">Funds support Austin Bat Refuge, radar research, education & local bat care</p>
+                    </div>
+                    <div class="hidden md:flex justify-center mt-5 text-amber text-2xl animate-pulse">↓</div>
+                    <div class="flex md:hidden justify-center mt-5 text-amber text-2xl animate-pulse">↓</div>
+                </div>
+
+                <!-- Culture -->
+                <div class="reveal d5">
+                    <div class="cycle-node bg-night/60 border border-amber/20 rounded-2xl p-8 backdrop-blur-sm">
+                        <div class="w-16 h-16 mx-auto mb-5 rounded-full border border-amber/40 flex items-center justify-center">
+                            <svg class="w-7 h-7 text-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-accent text-sm tracking-[0.25em] uppercase text-amber mb-3 font-semibold">Culture</h3>
+                        <p class="text-silver text-base leading-relaxed">Enhanced bat tourism strengthens Austin's identity and economy</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="reveal d6 text-silver/70 text-base italic max-w-2xl mx-auto">
+                The cycle repeats. Conservation fuels commerce. Commerce funds conservation.
+            </p>
+
+            <div class="reveal d7 mt-12 p-6 bg-night/40 rounded-xl border border-amber/10 max-w-xl mx-auto">
+                <p class="font-accent text-xs tracking-[0.3em] uppercase text-amber mb-2">Key Recipient</p>
+                <p class="text-moon text-lg font-display">Austin Bat Refuge</p>
+                <p class="text-silver text-sm mt-1">Radar data collection &middot; Educational outreach &middot; Local bat care</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== DEVOTIONS ===================== -->
+    <section id="devotions" class="relative py-28 sm:py-36 lg:py-44 noise-overlay">
+        <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+            <div class="text-center mb-20">
+                <div class="reveal">
+                    <span class="font-accent text-xs tracking-[0.4em] uppercase text-amber">Devotions</span>
+                </div>
+                <h2 class="reveal d1 font-display text-4xl sm:text-5xl lg:text-6xl font-light text-moon mt-6 mb-6">
+                    Devote to the <span class="italic text-gradient-amber">Night</span>
+                </h2>
+                <p class="reveal d2 text-silver text-lg max-w-2xl mx-auto">
+                    Your devotion sustains Austin's night guardians. Choose your place in the colony.
+                </p>
+            </div>
+
+            <!-- Individual Tiers -->
+            <div class="reveal mb-12">
+                <h3 class="font-accent text-xs tracking-[0.35em] uppercase text-silver text-center mb-10">Individual Devotions</h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
+                <!-- Bat Ally -->
+                <div class="reveal d1 tier-card rounded-2xl p-7 bg-deep/50 backdrop-blur-sm" style="--tier-accent: #8892A8">
+                    <div class="font-accent text-[10px] tracking-[0.35em] uppercase text-silver border border-silver/30 rounded-full px-3 py-1 inline-block mb-5">Bat Ally</div>
+                    <div class="font-display text-4xl text-moon mb-1">$250</div>
+                    <div class="font-accent text-xs tracking-wider uppercase text-silver/60 mb-6">Per Year</div>
+                    <div class="divider-amber mb-4"></div>
+                    <p class="text-silver text-sm leading-relaxed">Digital badge, directory listing, annual impact report, social recognition.</p>
+                    <button class="perks-toggle font-accent text-[11px] tracking-[0.15em] uppercase text-amber mt-4 flex items-center gap-2 cursor-pointer" aria-expanded="false">
+                        <span class="toggle-label">Show More</span>
+                        <span class="toggle-icon text-xs">&#9660;</span>
+                    </button>
+                    <div class="perks-list">
+                        <ul class="text-silver/70 text-sm space-y-2">
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Digital Bat Ally badge</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Bat City Council directory listing</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Annual impact report</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Social media recognition</li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn-amber block text-center font-accent text-xs tracking-[0.2em] uppercase bg-amber text-night py-3 rounded-sm font-semibold mt-6">Devote Now</a>
+                </div>
+
+                <!-- Bat Steward -->
+                <div class="reveal d2 tier-card rounded-2xl p-7 bg-deep/50 backdrop-blur-sm" style="--tier-accent: #D4A03C">
+                    <div class="font-accent text-[10px] tracking-[0.35em] uppercase text-amber border border-amber/30 rounded-full px-3 py-1 inline-block mb-5">Bat Steward</div>
+                    <div class="font-display text-4xl text-moon mb-1">$1,000</div>
+                    <div class="font-accent text-xs tracking-wider uppercase text-silver/60 mb-6">Per Year</div>
+                    <div class="divider-amber mb-4"></div>
+                    <p class="text-silver text-sm leading-relaxed">Everything in Ally, plus exclusive decal, featured listing & seasonal events.</p>
+                    <button class="perks-toggle font-accent text-[11px] tracking-[0.15em] uppercase text-amber mt-4 flex items-center gap-2 cursor-pointer" aria-expanded="false">
+                        <span class="toggle-label">Show More</span>
+                        <span class="toggle-icon text-xs">&#9660;</span>
+                    </button>
+                    <div class="perks-list">
+                        <ul class="text-silver/70 text-sm space-y-2">
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> All Bat Ally perks</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Exclusive Steward decal</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Featured directory listing</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Invitation to seasonal bat events</li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn-amber block text-center font-accent text-xs tracking-[0.2em] uppercase bg-amber text-night py-3 rounded-sm font-semibold mt-6">Devote Now</a>
+                </div>
+
+                <!-- Bat Guardian -->
+                <div class="reveal d3 tier-card rounded-2xl p-7 bg-deep/50 backdrop-blur-sm" style="--tier-accent: #E8C060">
+                    <div class="font-accent text-[10px] tracking-[0.35em] uppercase text-amber-light border border-amber-light/30 rounded-full px-3 py-1 inline-block mb-5">Bat Guardian</div>
+                    <div class="font-display text-4xl text-moon mb-1">$5,000</div>
+                    <div class="font-accent text-xs tracking-wider uppercase text-silver/60 mb-6">Per Year</div>
+                    <div class="divider-amber mb-4"></div>
+                    <p class="text-silver text-sm leading-relaxed">Everything in Steward, plus Guardian plaque, private bat experience & gala access.</p>
+                    <button class="perks-toggle font-accent text-[11px] tracking-[0.15em] uppercase text-amber mt-4 flex items-center gap-2 cursor-pointer" aria-expanded="false">
+                        <span class="toggle-label">Show More</span>
+                        <span class="toggle-icon text-xs">&#9660;</span>
+                    </button>
+                    <div class="perks-list">
+                        <ul class="text-silver/70 text-sm space-y-2">
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> All Bat Steward perks</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Guardian plaque</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Private bat experience at Austin Bat Refuge</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Gala invitations &amp; conservation trip access</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Personal briefing from the founder</li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn-amber block text-center font-accent text-xs tracking-[0.2em] uppercase bg-amber text-night py-3 rounded-sm font-semibold mt-6">Devote Now</a>
+                </div>
+
+                <!-- Night Council -->
+                <div class="reveal d4 tier-card rounded-2xl p-7 bg-deep/50 backdrop-blur-sm border-amber/25" style="--tier-accent: #F0D890">
+                    <div class="font-accent text-[10px] tracking-[0.35em] uppercase text-amber-glow border border-amber-glow/40 rounded-full px-3 py-1 inline-block mb-5">Night Council</div>
+                    <div class="font-display text-4xl text-moon mb-1">$25,000<span class="text-2xl text-silver">+</span></div>
+                    <div class="font-accent text-xs tracking-wider uppercase text-silver/60 mb-6">Per Year</div>
+                    <div class="divider-amber mb-4"></div>
+                    <p class="text-silver text-sm leading-relaxed">The inner circle. Legacy recognition, private expeditions, category exclusivity.</p>
+                    <button class="perks-toggle font-accent text-[11px] tracking-[0.15em] uppercase text-amber mt-4 flex items-center gap-2 cursor-pointer" aria-expanded="false">
+                        <span class="toggle-label">Show More</span>
+                        <span class="toggle-icon text-xs">&#9660;</span>
+                    </button>
+                    <div class="perks-list">
+                        <ul class="text-silver/70 text-sm space-y-2">
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> All Bat Guardian perks</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Founding legacy recognition</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Private expeditions with Teresa Nichta</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Category exclusivity</li>
+                            <li class="flex items-start gap-2"><span class="text-amber mt-1">&#9670;</span> Co-branded press &amp; naming opportunities</li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn-amber block text-center font-accent text-xs tracking-[0.2em] uppercase bg-amber text-night py-3 rounded-sm font-semibold mt-6">Devote Now</a>
+                </div>
+            </div>
+
+            <!-- Business Tiers -->
+            <div class="reveal mb-12">
+                <h3 class="font-accent text-xs tracking-[0.35em] uppercase text-silver text-center mb-10">Business Devotions</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-5xl mx-auto">
+                <!-- Business Ally -->
+                <div class="reveal d1 tier-card rounded-2xl p-7 bg-deep/50 backdrop-blur-sm" style="--tier-accent: #8892A8">
+                    <div class="flex items-center gap-2 mb-5">
+                        <div class="font-accent text-[10px] tracking-[0.35em] uppercase text-silver border border-silver/30 rounded-full px-3 py-1">Business Ally</div>
+                        <span class="font-accent text-[9px] tracking-wider uppercase bg-amber/10 text-amber px-2 py-0.5 rounded">Partner</span>
+                    </div>
+                    <div class="font-display text-4xl text-moon mb-1">$2,500</div>
+                    <div class="font-accent text-xs tracking-wider uppercase text-silver/60 mb-6">Per Year</div>
+                    <div class="divider-amber mb-4"></div>
+                    <p class="text-silver text-sm leading-relaxed mb-4">Bat City Certified seal (digital + storefront), directory listing, social media recognition, annual impact report.</p>
+                    <a href="#" class="btn-amber block text-center font-accent text-xs tracking-[0.2em] uppercase bg-amber text-night py-3 rounded-sm font-semibold mt-auto">Devote Now</a>
+                </div>
+
+                <!-- Business Steward -->
+                <div class="reveal d2 tier-card rounded-2xl p-7 bg-deep/50 backdrop-blur-sm" style="--tier-accent: #D4A03C">
+                    <div class="flex items-center gap-2 mb-5">
+                        <div class="font-accent text-[10px] tracking-[0.35em] uppercase text-amber border border-amber/30 rounded-full px-3 py-1">Business Steward</div>
+                        <span class="font-accent text-[9px] tracking-wider uppercase bg-amber/10 text-amber px-2 py-0.5 rounded">Partner</span>
+                    </div>
+                    <div class="font-display text-4xl text-moon mb-1">$10,000</div>
+                    <div class="font-accent text-xs tracking-wider uppercase text-silver/60 mb-6">Per Year</div>
+                    <div class="divider-amber mb-4"></div>
+                    <p class="text-silver text-sm leading-relaxed mb-4">Everything in Ally, plus featured placement, co-branded PR, premium decal & plaque, inclusion in Bat-Friendly Austin tourism offerings.</p>
+                    <a href="#" class="btn-amber block text-center font-accent text-xs tracking-[0.2em] uppercase bg-amber text-night py-3 rounded-sm font-semibold mt-auto">Devote Now</a>
+                </div>
+
+                <!-- Anchor Partner -->
+                <div class="reveal d3 tier-card rounded-2xl p-7 bg-deep/50 backdrop-blur-sm border-amber/25" style="--tier-accent: #E8C060">
+                    <div class="flex items-center gap-2 mb-5">
+                        <div class="font-accent text-[10px] tracking-[0.35em] uppercase text-amber-light border border-amber-light/30 rounded-full px-3 py-1">Anchor Partner</div>
+                        <span class="font-accent text-[9px] tracking-wider uppercase bg-amber/20 text-amber-light px-2 py-0.5 rounded font-semibold">Flagship</span>
+                    </div>
+                    <div class="font-display text-3xl text-moon mb-1">$25K–$50K</div>
+                    <div class="font-accent text-xs tracking-wider uppercase text-silver/60 mb-6">Per Year</div>
+                    <div class="divider-amber mb-4"></div>
+                    <p class="text-silver text-sm leading-relaxed mb-4">Everything in Steward, plus press partnership, logo on major campaigns, VIP bat experience & category exclusivity.</p>
+                    <a href="#" class="btn-amber block text-center font-accent text-xs tracking-[0.2em] uppercase bg-amber text-night py-3 rounded-sm font-semibold mt-auto">Devote Now</a>
+                </div>
+            </div>
+
+            <p class="reveal text-center text-silver italic text-lg font-display">
+                Every devotion, at every level, keeps Austin's night guardians in flight.
+            </p>
+        </div>
+    </section>
+
+    <!-- ===================== EXPERIENCES ===================== -->
+    <section id="experiences" class="relative py-28 sm:py-36 lg:py-44 bg-deep noise-overlay">
+        <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+            <div class="text-center mb-20">
+                <div class="reveal">
+                    <span class="font-accent text-xs tracking-[0.4em] uppercase text-amber">Experiences</span>
+                </div>
+                <h2 class="reveal d1 font-display text-4xl sm:text-5xl lg:text-6xl font-light text-moon mt-6 mb-6">
+                    Experience the <span class="italic text-gradient-amber">Night</span>
+                </h2>
+                <p class="reveal d2 text-silver text-lg max-w-2xl mx-auto">
+                    Austin's bats are waiting. The best time to visit is April through September — but we facilitate bat activities year-round.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+                <!-- Card 1: Congress Avenue Bridge -->
+                <div class="reveal d1 exp-card h-[420px] md:h-[480px]">
+                    <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=800&q=80"
+                         alt="City bridge at night"
+                         class="exp-img absolute inset-0 w-full h-full object-cover" loading="lazy">
+                    <div class="exp-gradient absolute inset-0"></div>
+                    <div class="relative z-10 h-full flex flex-col justify-end p-8">
+                        <h3 class="font-display text-2xl sm:text-3xl text-moon mb-3">The Congress Avenue Bridge</h3>
+                        <div class="exp-desc">
+                            <p class="text-silver text-base leading-relaxed">
+                                The iconic experience. Watch 1.5 million Brazilian free-tailed bats erupt from beneath the bridge at dusk. Free and unforgettable. Best viewed from the bridge itself, the trail below, or by kayak on Lady Bird Lake.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Austin Bat Refuge -->
+                <div class="reveal d2 exp-card h-[420px] md:h-[480px]">
+                    <img src="https://images.unsplash.com/photo-1504567961542-e24d9439a724?auto=format&fit=crop&w=800&q=80"
+                         alt="Intimate nature experience"
+                         class="exp-img absolute inset-0 w-full h-full object-cover" loading="lazy">
+                    <div class="exp-gradient absolute inset-0"></div>
+                    <!-- Exclusive badge -->
+                    <div class="absolute top-6 right-6 z-20">
+                        <span class="font-accent text-[10px] tracking-[0.3em] uppercase bg-amber text-night px-4 py-1.5 rounded-sm font-bold">Signature Experience</span>
+                    </div>
+                    <div class="relative z-10 h-full flex flex-col justify-end p-8">
+                        <h3 class="font-display text-2xl sm:text-3xl text-moon mb-3">Austin Bat Refuge — Private Encounter</h3>
+                        <div class="exp-desc">
+                            <p class="text-silver text-base leading-relaxed">
+                                An exclusive, intimate experience. Meet rescued bats face-to-face at Austin Bat Refuge — one of Austin's best-kept secrets. Available exclusively through Bat City Council. This is unlike anything else in the city.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Beyond the Bridge -->
+                <div class="reveal d3 exp-card h-[420px] md:h-[480px]">
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80"
+                         alt="Scenic landscape beyond Austin"
+                         class="exp-img absolute inset-0 w-full h-full object-cover" loading="lazy">
+                    <div class="exp-gradient absolute inset-0"></div>
+                    <div class="relative z-10 h-full flex flex-col justify-end p-8">
+                        <h3 class="font-display text-2xl sm:text-3xl text-moon mb-3">Beyond the Bridge</h3>
+                        <div class="exp-desc">
+                            <p class="text-silver text-base leading-relaxed">
+                                Explore lesser-known bat roosts and bridges just outside Austin. For the curious and the devoted. Guided by Teresa Nichta.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Year-Round -->
+                <div class="reveal d4 exp-card h-[420px] md:h-[480px]">
+                    <img src="https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=800&q=80"
+                         alt="Austin landscape at golden hour"
+                         class="exp-img absolute inset-0 w-full h-full object-cover" loading="lazy">
+                    <div class="exp-gradient absolute inset-0"></div>
+                    <div class="relative z-10 h-full flex flex-col justify-end p-8">
+                        <h3 class="font-display text-2xl sm:text-3xl text-moon mb-3">Year-Round Bat Activities</h3>
+                        <div class="exp-desc">
+                            <p class="text-silver text-base leading-relaxed">
+                                Educational programs, group tours, private events, and conservation experiences — available any time of year. Austin is beautiful year-round. The bats are always here.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal text-center mt-14">
+                <a href="#footer" class="btn-outline font-accent text-xs tracking-[0.2em] uppercase border border-moon/30 text-moon/80 px-10 py-4 rounded-sm inline-block">
+                    Interested in a bat experience? Get in touch.
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== FOUNDER ===================== -->
+    <section id="founder" class="relative py-28 sm:py-36 lg:py-44 noise-overlay">
+        <div class="max-w-6xl mx-auto px-6 lg:px-10 relative z-10">
+            <div class="reveal text-center mb-16">
+                <span class="font-accent text-xs tracking-[0.4em] uppercase text-amber">The Founder</span>
+            </div>
+
+            <div class="grid lg:grid-cols-5 gap-12 lg:gap-20 items-center">
+                <!-- Photo -->
+                <div class="reveal-left lg:col-span-2">
+                    <div class="founder-img-wrapper rounded-2xl overflow-hidden max-w-md mx-auto lg:max-w-none">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80"
+                             alt="Teresa Nichta, Founder of Bat City Council"
+                             class="w-full aspect-[3/4] object-cover" loading="lazy">
+                    </div>
+                </div>
+
+                <!-- Bio -->
+                <div class="reveal-right d2 lg:col-span-3">
+                    <h2 class="font-display text-4xl sm:text-5xl font-light text-moon mb-2">Teresa Nichta</h2>
+                    <p class="font-display text-xl italic text-amber mb-8">Founder, Bat City Council</p>
+                    <div class="divider-amber mb-8"></div>
+
+                    <div class="space-y-6 text-silver text-lg leading-relaxed">
+                        <p>
+                            Teresa Nichta has led conservation expeditions across four continents — from Egypt and Cuba to Zambia and Ecuador. She has scaled organizations from the ground up, grown audiences from 300 to 75,000+, and produced exhibitions for the Onassis Foundation and the Smithsonian.
+                        </p>
+                        <p>
+                            She is a trusted advisor to Austin Bat Refuge and holds the rare combination of scientific field experience, creative media innovation, major donor fundraising, and executive strategy — in one leader.
+                        </p>
+                        <p>
+                            A decade-plus network spanning donors, scientists, artists, cultural institutions, and global conservation partners. Purpose-built for this mission.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== TRUST BAR ===================== -->
+    <section id="trust" class="relative py-20 bg-deep border-y border-white/5 overflow-hidden">
+        <div class="relative z-10">
+            <p class="reveal font-accent text-xs tracking-[0.3em] uppercase text-silver text-center mb-12">
+                Supported by leaders across Austin's business, tourism & conservation communities
+            </p>
+
+            <div class="overflow-hidden">
+                <div class="trust-track flex items-center gap-16 whitespace-nowrap" style="width: max-content;">
+                    <!-- Logos repeat twice for seamless loop -->
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">Visit Austin</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">Austin Bat Refuge</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">SXSW</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">City of Austin</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">Austin Convention Bureau</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">Anchor Partners</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <!-- Duplicate for seamless loop -->
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">Visit Austin</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">Austin Bat Refuge</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">SXSW</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">City of Austin</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">Austin Convention Bureau</span>
+                    <span class="text-silver/10 text-2xl">&bull;</span>
+                    <span class="font-accent text-sm tracking-[0.2em] uppercase text-silver/30 px-4">Anchor Partners</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== CLOSING CTA ===================== -->
+    <section id="closing" class="relative py-36 sm:py-44 lg:py-56 overflow-hidden">
+        <div class="absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1464802686167-b939a6910659?auto=format&fit=crop&w=1920&q=80"
+                 alt="Night sky filled with stars"
+                 class="w-full h-full object-cover" loading="lazy">
+            <div class="absolute inset-0 bg-night/80"></div>
+        </div>
+
+        <div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
+            <p class="reveal font-display text-3xl sm:text-4xl lg:text-5xl font-light text-moon leading-snug mb-4">
+                Every flight begins with <span class="italic text-gradient-amber">devotion.</span>
+            </p>
+            <p class="reveal d1 font-body text-xl text-silver mb-4">
+                Join the Bat City Council.
+            </p>
+            <p class="reveal d2 font-body text-lg text-silver/70 mb-12">
+                Protect what makes Austin legendary.
+            </p>
+            <div class="reveal d3">
+                <a href="#devotions" class="btn-amber font-accent text-sm tracking-[0.3em] uppercase bg-amber text-night px-12 py-5 rounded-sm font-bold inline-block">
+                    Make Your Devotion
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer id="footer" class="relative bg-deep border-t border-white/5 pt-20 pb-10">
+        <div class="max-w-7xl mx-auto px-6 lg:px-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
+                <!-- Wordmark -->
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg class="w-8 h-8 text-amber" viewBox="0 0 100 60" fill="currentColor">
+                            <path d="M50 30 C45 15, 20 5, 2 20 C15 18, 25 22, 35 28 C38 20, 44 16, 50 14 C56 16, 62 20, 65 28 C75 22, 85 18, 98 20 C80 5, 55 15, 50 30Z"/>
+                        </svg>
+                        <span class="font-accent text-sm tracking-[0.25em] uppercase text-moon font-light">Bat City Council</span>
+                    </div>
+                    <p class="font-accent text-xs tracking-[0.3em] uppercase text-amber/70 mb-6">Culture &middot; Commerce &middot; Conservation</p>
+                    <p class="text-silver text-sm leading-relaxed">
+                        Austin is a global example of how to live harmoniously with bats.
+                    </p>
+                </div>
+
+                <!-- Navigation -->
+                <div>
+                    <h4 class="font-accent text-xs tracking-[0.3em] uppercase text-moon mb-6 font-semibold">Navigate</h4>
+                    <nav class="flex flex-col gap-3">
+                        <a href="#story" class="text-silver hover:text-amber transition-colors text-sm">Mission</a>
+                        <a href="#devotions" class="text-silver hover:text-amber transition-colors text-sm">Devotions</a>
+                        <a href="#experiences" class="text-silver hover:text-amber transition-colors text-sm">Experiences</a>
+                        <a href="#founder" class="text-silver hover:text-amber transition-colors text-sm">Founder</a>
+                        <a href="#footer" class="text-silver hover:text-amber transition-colors text-sm">Contact</a>
+                    </nav>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h4 class="font-accent text-xs tracking-[0.3em] uppercase text-moon mb-6 font-semibold">Connect</h4>
+                    <a href="mailto:hello@batcitycouncil.org" class="text-amber hover:text-amber-light transition-colors text-sm block mb-6">hello@batcitycouncil.org</a>
+
+                    <!-- Social -->
+                    <div class="flex items-center gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full border border-silver/20 flex items-center justify-center text-silver hover:text-amber hover:border-amber transition-all" aria-label="Instagram">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-silver/20 flex items-center justify-center text-silver hover:text-amber hover:border-amber transition-all" aria-label="X / Twitter">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-silver/20 flex items-center justify-center text-silver hover:text-amber hover:border-amber transition-all" aria-label="Facebook">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legal -->
+            <div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-silver/50 text-xs text-center sm:text-left">
+                    &copy; 2026 Bat City Council. Austin, Texas.
+                </p>
+                <p class="text-silver/40 text-xs text-center sm:text-right">
+                    Bat City Council is a fiscal project of Austin Bat Refuge.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===================== JAVASCRIPT ===================== -->
+    <script>
+    (function() {
+        'use strict';
+
+        /* ============================
+           PRELOADER
+           ============================ */
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('preloader').classList.add('hidden');
+            }, 800);
+        });
+
+        /* ============================
+           STARFIELD CANVAS
+           ============================ */
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        const STAR_COUNT = 180;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createStars() {
+            stars = [];
+            for (let i = 0; i < STAR_COUNT; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() * 1.8 + 0.2,
+                    baseOpacity: Math.random() * 0.5 + 0.2,
+                    speed: Math.random() * 0.8 + 0.2,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function drawStars(time) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(function(s) {
+                const twinkle = Math.sin(time * 0.001 * s.speed + s.phase) * 0.35 + 0.65;
+                const opacity = s.baseOpacity * twinkle;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(200, 208, 224, ' + opacity + ')';
+                ctx.fill();
+            });
+            requestAnimationFrame(drawStars);
+        }
+
+        resizeCanvas();
+        createStars();
+        requestAnimationFrame(drawStars);
+
+        window.addEventListener('resize', function() {
+            resizeCanvas();
+            createStars();
+        });
+
+        /* ============================
+           PARALLAX HERO
+           ============================ */
+        const heroBg = document.getElementById('hero-bg');
+        let ticking = false;
+
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                requestAnimationFrame(function() {
+                    const scrollY = window.pageYOffset;
+                    if (heroBg && scrollY < window.innerHeight) {
+                        heroBg.style.transform = 'translateY(' + scrollY * 0.35 + 'px) scale(1.1)';
+                    }
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        /* ============================
+           STICKY NAV
+           ============================ */
+        const navbar = document.getElementById('navbar');
+
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 80) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        /* ============================
+           MOBILE MENU
+           ============================ */
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        const mobileLinks = mobileOverlay.querySelectorAll('a');
+
+        hamburgerBtn.addEventListener('click', function() {
+            hamburgerBtn.classList.toggle('active');
+            mobileOverlay.classList.toggle('open');
+            document.body.style.overflow = mobileOverlay.classList.contains('open') ? 'hidden' : '';
+        });
+
+        mobileLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                hamburgerBtn.classList.remove('active');
+                mobileOverlay.classList.remove('open');
+                document.body.style.overflow = '';
+            });
+        });
+
+        /* ============================
+           SCROLL REVEAL
+           ============================ */
+        const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+
+        const revealObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                }
+            });
+        }, {
+            threshold: 0.08,
+            rootMargin: '0px 0px -60px 0px'
+        });
+
+        revealElements.forEach(function(el) {
+            revealObserver.observe(el);
+        });
+
+        /* ============================
+           ANIMATED COUNTERS
+           ============================ */
+        const statElements = document.querySelectorAll('.stat-value[data-target]');
+        let countersStarted = new Set();
+
+        function formatNumber(num, decimals) {
+            if (decimals > 0) {
+                return num.toFixed(decimals);
+            }
+            return Math.round(num).toLocaleString('en-US');
+        }
+
+        function animateCounter(el) {
+            const target = parseFloat(el.dataset.target);
+            const suffix = el.dataset.suffix || '';
+            const decimals = parseInt(el.dataset.decimals) || 0;
+            const duration = 2000;
+            const startTime = performance.now();
+
+            function update(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // Ease out cubic
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = target * eased;
+
+                el.textContent = formatNumber(current, decimals) + suffix;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    el.textContent = formatNumber(target, decimals) + suffix;
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        const counterObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting && !countersStarted.has(entry.target)) {
+                    countersStarted.add(entry.target);
+                    setTimeout(function() {
+                        animateCounter(entry.target);
+                    }, 400);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        statElements.forEach(function(el) {
+            counterObserver.observe(el);
+        });
+
+        /* ============================
+           PERKS TOGGLE (SHOW MORE)
+           ============================ */
+        document.querySelectorAll('.perks-toggle').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var perksList = this.nextElementSibling;
+                var label = this.querySelector('.toggle-label');
+                var isOpen = perksList.classList.contains('open');
+
+                perksList.classList.toggle('open');
+                this.classList.toggle('active');
+                this.setAttribute('aria-expanded', !isOpen);
+                label.textContent = isOpen ? 'Show More' : 'Show Less';
+            });
+        });
+
+        /* ============================
+           SMOOTH SCROLL FOR NAV LINKS
+           ============================ */
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetEl = document.querySelector(targetId);
+                if (targetEl) {
+                    const navHeight = navbar.offsetHeight;
+                    const targetPos = targetEl.getBoundingClientRect().top + window.pageYOffset - navHeight;
+                    window.scrollTo({
+                        top: targetPos,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+    })();
+    </script>
+
+</body>
+</html>

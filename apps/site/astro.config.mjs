@@ -47,6 +47,11 @@ export default defineConfig({
 			// hydrates without the "Outdated Optimize Dep" 504 retry loop.
 			include: ["maplibre-gl"],
 		},
+		// Dev-only: allow access over Tailscale MagicDNS (*.ts.net) when the dev
+		// server is started with --host. Raw Tailscale IPs are allowed already.
+		server: {
+			allowedHosts: [".ts.net"],
+		},
 	},
 	integrations: [
 		react(),

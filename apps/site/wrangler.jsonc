@@ -21,7 +21,8 @@
 	// pin the returned id below before a non-interactive (CI) deploy.
 	"kv_namespaces": [
 		{
-			"binding": "SESSION"
+			"binding": "SESSION",
+			"id": "f757a90c1b144caba4f948f68eb3f628"
 		}
 	],
 	// Cloudflare Images binding for astro:assets transforms in production.

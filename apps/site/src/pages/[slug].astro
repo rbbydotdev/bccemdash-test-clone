@@ -1,0 +1,29 @@
+---
+/**
+ * /[slug] — a standalone `pages` collection entry (About, Privacy, etc.).
+ * Client creates these in the emdash admin; unknown slugs fall through to 404.
+ */
+import { getEmDashEntry } from "emdash";
+import { PortableText } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+
+const { slug } = Astro.params;
+const { entry } = await getEmDashEntry("pages", slug ?? "");
+if (!entry) return Astro.rewrite("/404");
+
+const data = entry.data as Record<string, unknown>;
+const title = typeof data.title === "string" ? data.title : "Page";
+const body = data.body;
+---
+
+<Base title={title} content={{ collection: "pages", id: entry.id, slug: entry.slug }}>
+	<article class="px-[var(--spacing-gutter)] pt-32 pb-[var(--spacing-section-lg)]">
+		<div class="mx-auto max-w-[var(--width-prose)]">
+			<h1 class="font-display text-[clamp(2.25rem,5vw,3.5rem)] leading-tight text-moon">{title}</h1>
+			<hr class="divider-amber !mx-0" />
+			<div class="bcc-prose mt-8 text-moon/80">
+				{body ? <PortableText value={body} /> : null}
+			</div>
+		</div>
+	</article>
+</Base>

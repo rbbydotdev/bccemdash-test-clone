@@ -1,0 +1,45 @@
+---
+/**
+ * /programs/[slug] — a single program.
+ */
+import { getEmDashEntry } from "emdash";
+import { PortableText } from "emdash/ui";
+import Base from "../../layouts/Base.astro";
+import { mediaUrl } from "../../lib/content";
+
+const { slug } = Astro.params;
+const { entry } = await getEmDashEntry("programs", slug ?? "");
+if (!entry) return Astro.rewrite("/404");
+
+const data = entry.data as Record<string, unknown>;
+const title = typeof data.title === "string" ? data.title : "Program";
+const img = await mediaUrl(data.image);
+const body = data.body;
+---
+
+<Base title={title} content={{ collection: "programs", id: entry.id, slug: entry.slug }}>
+	<article class="px-[var(--spacing-gutter)] pt-32 pb-[var(--spacing-section-lg)]">
+		<div class="mx-auto max-w-[var(--width-prose)]">
+			<a href="/programs" class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-amber transition hover:text-amber-light">
+				&larr; Programs
+			</a>
+			<h1 class="mt-6 font-display text-[clamp(2.25rem,5vw,3.5rem)] leading-tight text-moon">{title}</h1>
+			<hr class="divider-amber !mx-0" />
+			{img && (
+				<img src={img} alt={title} class="mt-8 w-full rounded-[var(--radius-card)] object-cover" />
+			)}
+			<div class="bcc-prose mt-8 text-moon/80">
+				{body ? <PortableText value={body} /> : null}
+			</div>
+		</div>
+	</article>
+</Base>
+
+<style is:global>
+	.bcc-prose p { margin-block: 1.25rem; line-height: 1.7; }
+	.bcc-prose a { color: var(--color-amber); text-decoration: underline; }
+	.bcc-prose h2 { font-family: var(--font-display); font-size: 1.75rem; margin-top: 2rem; color: var(--color-moon); }
+	.bcc-prose h3 { font-family: var(--font-display); font-size: 1.35rem; margin-top: 1.5rem; color: var(--color-moon); }
+	.bcc-prose ul { list-style: disc; padding-left: 1.5rem; margin-block: 1rem; }
+	.bcc-prose blockquote { border-left: 2px solid var(--color-amber); padding-left: 1rem; font-style: italic; color: var(--color-moon); }
+</style>

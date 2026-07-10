@@ -1,0 +1,52 @@
+---
+/**
+ * /programs — editorial feed of the `programs` collection (blog-roll style).
+ */
+import Base from "../../layouts/Base.astro";
+import { publishedEntries, mediaUrl, str } from "../../lib/content";
+
+const entries = await publishedEntries("programs");
+const cards = await Promise.all(entries.map(async (e) => ({ e, img: await mediaUrl(e.data.image) })));
+---
+
+<Base title="Programs" description="Bat City Council programs and initiatives.">
+	<section class="px-[var(--spacing-gutter)] pt-32 pb-[var(--spacing-section-lg)]">
+		<div class="mx-auto max-w-[var(--width-shell)]">
+			<p class="text-center font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
+				Programs
+			</p>
+			<h1 class="mt-6 text-center font-display text-[clamp(2.5rem,5vw,4rem)] leading-tight text-moon">
+				What Your Devotion <span class="italic text-gradient-amber">Sustains</span>
+			</h1>
+
+			<div class="mx-auto mt-16 flex max-w-4xl flex-col gap-6">
+				{cards.length === 0 && (
+					<p class="text-center text-silver/70">Programs are coming soon.</p>
+				)}
+				{cards.map(({ e, img }) => (
+					<a
+						href={`/programs/${e.slug}`}
+						data-animate
+						class="group grid gap-6 overflow-hidden rounded-[var(--radius-card)] border border-white/10 bg-deep/50 transition hover:-translate-y-1 hover:border-amber/40 hover:shadow-[var(--shadow-amber-glow)] sm:grid-cols-[minmax(200px,30%)_1fr]"
+					>
+						<div class="aspect-[4/3] overflow-hidden sm:aspect-auto">
+							{img ? (
+								<img src={img} alt={str(e.data, "title")} class="h-full w-full object-cover transition group-hover:scale-105" />
+							) : (
+								<div class="h-full w-full bg-gradient-to-br from-amber/15 to-night"></div>
+							)}
+						</div>
+						<div class="flex flex-col justify-center gap-3 p-6">
+							<h2 class="font-display text-2xl leading-tight text-moon transition-colors group-hover:text-amber">
+								{str(e.data, "title")}
+							</h2>
+							{str(e.data, "excerpt") && (
+								<p class="line-clamp-3 text-sm text-moon/60">{str(e.data, "excerpt")}</p>
+							)}
+						</div>
+					</a>
+				))}
+			</div>
+		</div>
+	</section>
+</Base>

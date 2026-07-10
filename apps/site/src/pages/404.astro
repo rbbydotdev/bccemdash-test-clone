@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Lost in the Night" description="This page could not be found." robots="noindex">
+	<section class="relative flex min-h-[70vh] items-center justify-center overflow-hidden px-[var(--spacing-gutter)] text-center">
+		<div class="relative z-10 mx-auto max-w-xl pt-20">
+			<p class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">Error 404</p>
+			<h1 class="mt-6 font-display text-[clamp(3rem,7vw,6rem)] font-light leading-[0.95] text-moon">
+				Lost in the <span class="text-gradient-amber">Night</span>
+			</h1>
+			<hr class="divider-amber" />
+			<p class="mt-6 text-moon/70">
+				This page has taken flight. Let us guide you back to the colony.
+			</p>
+			<a
+				href="/"
+				class="mt-10 inline-block rounded-sm bg-amber px-10 py-4 font-accent text-sm font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:-translate-y-0.5 hover:bg-amber-light hover:shadow-[var(--shadow-amber-glow-strong)]"
+			>
+				Return Home
+			</a>
+		</div>
+	</section>
+</Base>

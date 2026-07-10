@@ -1,0 +1,37 @@
+{
+	"name": "@bcc/plugin",
+	"version": "0.1.0",
+	"description": "Bat City Council native EmDash plugin: enquiries inbox, contact form, donor map coordinate resolver, site/design settings",
+	"private": true,
+	"type": "module",
+	"main": "src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./admin": "./src/admin/index.tsx",
+		"./server": "./src/server.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@cloudflare/kumo": "catalog:",
+		"@phosphor-icons/react": "catalog:",
+		"kysely": "catalog:",
+		"maplibre-gl": "catalog:",
+		"ulidx": "catalog:"
+	},
+	"peerDependencies": {
+		"emdash": "workspace:*",
+		"react": "catalog:",
+		"@emdash-cms/admin": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/better-sqlite3": "catalog:",
+		"@types/node": "catalog:",
+		"@types/react": "catalog:",
+		"better-sqlite3": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}

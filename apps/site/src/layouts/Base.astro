@@ -1,0 +1,137 @@
+---
+/**
+ * Base layout — the public-site shell.
+ *
+ * Head (SEO via EmDashHead, Astro-managed webfonts), skip link, header +
+ * footer (overridable via named slots), film-grain overlay, and the
+ * [data-animate] scroll-reveal observer (respects prefers-reduced-motion).
+ */
+import { getSiteSettings } from "emdash";
+import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
+import { createPublicPageContext } from "emdash/page";
+import { Font } from "astro:assets";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import "../styles/app.css";
+
+interface Props {
+	title: string;
+	description?: string | null;
+	image?: string | null;
+	canonical?: string | null;
+	robots?: string | null;
+	type?: "website" | "article";
+	/** Content reference for plugin page contributions on content pages. */
+	content?: { collection: string; id: string; slug?: string | null };
+	/** Homepage mode: header floats transparent over the hero. */
+	transparentHeader?: boolean;
+	/** Hide the shared header/footer (e.g. a fully bespoke landing page). */
+	bare?: boolean;
+}
+
+const {
+	title,
+	description,
+	image,
+	canonical,
+	robots,
+	type = "website",
+	content,
+	transparentHeader = false,
+	bare = false,
+} = Astro.props;
+
+const settings = await getSiteSettings().catch(() => null);
+const siteTitle = settings?.title ?? "Bat City Council";
+const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
+
+const pageCtx = createPublicPageContext({
+	Astro,
+	kind: content ? "content" : "custom",
+	pageType: type,
+	title: fullTitle,
+	pageTitle: title,
+	description,
+	canonical,
+	image,
+	content,
+	seo: { ogImage: image, robots },
+	siteName: siteTitle,
+});
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<Font cssVariable="--font-display-webfont" preload />
+		<Font cssVariable="--font-body-webfont" preload />
+		<Font cssVariable="--font-accent-webfont" preload />
+		<title>{fullTitle}</title>
+		<EmDashHead page={pageCtx} />
+	</head>
+	<body class="bcc-grain">
+		<EmDashBodyStart page={pageCtx} />
+
+		<a
+			class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[999] focus:rounded-md focus:bg-amber focus:px-4 focus:py-2 focus:text-night"
+			href="#main"
+		>
+			Skip to content
+		</a>
+
+		{!bare && (
+			<slot name="header">
+				<Header transparent={transparentHeader} />
+			</slot>
+		)}
+
+		<main id="main">
+			<slot />
+		</main>
+
+		{!bare && (
+			<slot name="footer">
+				<Footer />
+			</slot>
+		)}
+
+		<script>
+			// Scroll-reveal: elements carrying [data-animate] start hidden (see
+			// @bcc/theme tokens.css) and get .is-visible once, on entering view.
+			function initScrollReveal() {
+				const elements = document.querySelectorAll<HTMLElement>("[data-animate]");
+				if (elements.length === 0) return;
+
+				const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+				if (reduceMotion || !("IntersectionObserver" in window)) {
+					for (const el of elements) el.classList.add("is-visible");
+					return;
+				}
+
+				const observer = new IntersectionObserver(
+					(entries) => {
+						for (const entry of entries) {
+							if (entry.isIntersecting) {
+								entry.target.classList.add("is-visible");
+								observer.unobserve(entry.target);
+							}
+						}
+					},
+					{ threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
+				);
+				for (const el of elements) observer.observe(el);
+			}
+			initScrollReveal();
+		</script>
+
+		<noscript>
+			<style>
+				[data-animate] { opacity: 1; transform: none; }
+			</style>
+		</noscript>
+
+		<EmDashBodyEnd page={pageCtx} />
+	</body>
+</html>

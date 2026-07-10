@@ -1,0 +1,166 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "Bat City Council",
+		"description": "Content model for the Bat City Council site: tiers, experiences, partners, business donors, programs, posts, pages.",
+		"author": "Bat City Council"
+	},
+	"settings": {
+		"title": "Bat City Council",
+		"tagline": "Connecting culture, commerce and conservation."
+	},
+	"collections": [
+		{
+			"slug": "tiers",
+			"label": "Devotion Tiers",
+			"labelSingular": "Tier",
+			"description": "Devotion tiers (business and individual). Business renders first.",
+			"icon": "medal",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"fields": [
+				{ "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+				{ "slug": "statement", "label": "Statement", "type": "text", "searchable": true },
+				{ "slug": "amount", "label": "Amount", "type": "number", "validation": { "min": 0 } },
+				{ "slug": "amount_label", "label": "Amount Label", "type": "string" },
+				{
+					"slug": "tier_type",
+					"label": "Type",
+					"type": "select",
+					"defaultValue": "individual",
+					"validation": { "options": ["individual", "business"] }
+				},
+				{ "slug": "devote_url", "label": "Devote Link (overrides site default)", "type": "url" },
+				{ "slug": "order", "label": "Order", "type": "integer", "defaultValue": 0 }
+			]
+		},
+		{
+			"slug": "experiences",
+			"label": "Experiences",
+			"labelSingular": "Experience",
+			"description": "Bat experiences shown as hover-reveal cards.",
+			"icon": "eye",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"fields": [
+				{ "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+				{ "slug": "description", "label": "Description", "type": "text", "searchable": true },
+				{ "slug": "image", "label": "Image", "type": "image" },
+				{ "slug": "is_signature", "label": "Signature Experience", "type": "boolean", "defaultValue": false },
+				{ "slug": "cta_text", "label": "CTA Text", "type": "string" },
+				{ "slug": "order", "label": "Order", "type": "integer", "defaultValue": 0 }
+			]
+		},
+		{
+			"slug": "partners",
+			"label": "Partners",
+			"labelSingular": "Partner",
+			"description": "Trust-bar partners. Logo optional (text fallback).",
+			"icon": "handshake",
+			"supports": ["drafts", "revisions"],
+			"fields": [
+				{ "slug": "title", "label": "Name", "type": "string", "required": true, "searchable": true },
+				{ "slug": "logo", "label": "Logo", "type": "image" },
+				{ "slug": "partner_url", "label": "URL", "type": "url" },
+				{ "slug": "order", "label": "Order", "type": "integer", "defaultValue": 0 }
+			]
+		},
+		{
+			"slug": "business_donors",
+			"label": "Business Donors",
+			"labelSingular": "Business Donor",
+			"description": "Devoting businesses plotted on the map.",
+			"icon": "storefront",
+			"supports": ["drafts", "revisions"],
+			"fields": [
+				{ "slug": "title", "label": "Business Name", "type": "string", "required": true, "searchable": true },
+				{ "slug": "logo", "label": "Logo / Photo", "type": "image" },
+				{ "slug": "business_url", "label": "Website / Social URL", "type": "url" },
+				{ "slug": "location", "label": "Location", "type": "json", "widget": "bcc:location" },
+				{ "slug": "order", "label": "Order", "type": "integer", "defaultValue": 0 }
+			]
+		},
+		{
+			"slug": "programs",
+			"label": "Programs",
+			"labelSingular": "Program",
+			"description": "Editorial programs / initiatives (blog-roll style feed).",
+			"icon": "cards-three",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"fields": [
+				{ "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+				{ "slug": "excerpt", "label": "Excerpt", "type": "text", "searchable": true },
+				{ "slug": "body", "label": "Body", "type": "portableText", "searchable": true },
+				{ "slug": "image", "label": "Featured Image", "type": "image" },
+				{ "slug": "order", "label": "Order", "type": "integer", "defaultValue": 0 }
+			]
+		},
+		{
+			"slug": "posts",
+			"label": "Posts",
+			"labelSingular": "Post",
+			"description": "Blog posts.",
+			"icon": "article",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"commentsEnabled": true,
+			"fields": [
+				{ "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+				{ "slug": "excerpt", "label": "Excerpt", "type": "text", "searchable": true },
+				{ "slug": "body", "label": "Body", "type": "portableText", "searchable": true },
+				{ "slug": "image", "label": "Featured Image", "type": "image" }
+			]
+		},
+		{
+			"slug": "pages",
+			"label": "Pages",
+			"labelSingular": "Page",
+			"description": "Standalone pages (About, Privacy).",
+			"icon": "file",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"fields": [
+				{ "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+				{ "slug": "body", "label": "Body", "type": "portableText", "searchable": true }
+			]
+		}
+	],
+	"taxonomies": [
+		{
+			"name": "category",
+			"label": "Categories",
+			"labelSingular": "Category",
+			"hierarchical": true,
+			"collections": ["posts"]
+		},
+		{
+			"name": "tag",
+			"label": "Tags",
+			"labelSingular": "Tag",
+			"hierarchical": false,
+			"collections": ["posts"]
+		}
+	],
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Primary Navigation",
+			"items": [
+				{ "type": "custom", "label": "Story", "url": "/#story" },
+				{ "type": "custom", "label": "Mission", "url": "/#mission" },
+				{ "type": "custom", "label": "Devotions", "url": "/#devotions" },
+				{ "type": "custom", "label": "Experiences", "url": "/#experiences" },
+				{ "type": "custom", "label": "Founder", "url": "/#founder" },
+				{ "type": "custom", "label": "Contact", "url": "/#contact" }
+			]
+		},
+		{
+			"name": "footer",
+			"label": "Footer Navigation",
+			"items": [
+				{ "type": "custom", "label": "Story", "url": "/#story" },
+				{ "type": "custom", "label": "Devotions", "url": "/#devotions" },
+				{ "type": "custom", "label": "Experiences", "url": "/#experiences" },
+				{ "type": "custom", "label": "Programs", "url": "/programs" },
+				{ "type": "custom", "label": "Contact", "url": "/#contact" }
+			]
+		}
+	]
+}

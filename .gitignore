@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.astro/
+.wrangler/
+data/
+uploads/
+.env
+.env.*
+*.log
+.DS_Store
+.emdash/
+*.db
+*.db-shm
+*.db-wal

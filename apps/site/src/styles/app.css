@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@import "@bcc/theme/tokens.css";
+
+/* Bridge the Astro-managed webfonts (astro.config.mjs `fonts`) into the theme's
+   runtime font hooks. The @theme tokens in @bcc/theme resolve --font-display /
+   --font-body / --font-accent from these --bcc-font-* custom properties. */
+:root {
+	--bcc-font-display: var(--font-display-webfont, "Cormorant Garamond"), ui-serif, Georgia, serif;
+	--bcc-font-body: var(--font-body-webfont, "EB Garamond"), ui-serif, Georgia, serif;
+	--bcc-font-accent: var(--font-accent-webfont, "Josefin Sans"), ui-sans-serif, system-ui, sans-serif;
+}

@@ -1,0 +1,40 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "bat-city-council",
+	"main": "./src/worker.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "bat-city-council"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "bat-city-council-media"
+		}
+	],
+	// Astro session storage. KV namespaces have no name-based auto-provisioning:
+	// create one with `wrangler kv namespace create bat-city-council-session` and
+	// pin the returned id below before a non-interactive (CI) deploy.
+	"kv_namespaces": [
+		{
+			"binding": "SESSION"
+		}
+	],
+	// Cloudflare Images binding for astro:assets transforms in production.
+	"images": {
+		"binding": "IMAGES"
+	},
+	// No worker_loaders: the bcc plugin is native (in-process), so no sandboxed
+	// isolates and no paid Workers plan needed.
+	// Drives scheduled publishing + plugin cron (see src/worker.ts).
+	"triggers": {
+		"crons": ["* * * * *"]
+	},
+	"observability": {
+		"enabled": true
+	}
+}

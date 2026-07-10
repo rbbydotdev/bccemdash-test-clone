@@ -1,0 +1,217 @@
+/* ─────────────────────────────────────────────────────────────
+   Bat City Council — "Ritualistic Dusk" design tokens
+   Ported verbatim from the WordPress theme
+   (../bcc-wp/src/themes/bat-city-council/resources/css/app.css) and the
+   original hand-built site (../bcc/index.html).
+
+   Brand tokens carry a runtime hook: --color-amber resolves
+   var(--bcc-amber, <fallback>). The --bcc-* custom properties are settable
+   from CMS design settings so the client can retheme without a rebuild.
+   All Tailwind utilities (bg-night, text-amber, font-display, ease-cinematic,
+   animate-reveal-up …) derive from the @theme tokens below.
+   ───────────────────────────────────────────────────────────── */
+@theme {
+  /* Colors (runtime-hooked) */
+  --color-night: var(--bcc-night, #0a0e1a);
+  --color-deep: var(--bcc-deep, #111833);
+  --color-amber: var(--bcc-amber, #d4a03c);
+  --color-amber-light: var(--bcc-amber-light, #e8c060);
+  --color-amber-dark: var(--bcc-amber-dark, #b8882a);
+  --color-amber-glow: var(--bcc-amber-glow, #f0d890);
+  --color-moon: var(--bcc-moon, #c8d0e0);
+  --color-silver: var(--bcc-silver, #8892a8);
+
+  /* Typography (runtime-hooked; bridged from Astro webfonts in app.css) */
+  --font-display: var(--bcc-font-display, "Cormorant Garamond"), ui-serif, Georgia, serif;
+  --font-body: var(--bcc-font-body, "EB Garamond"), ui-serif, Georgia, serif;
+  --font-accent: var(--bcc-font-accent, "Josefin Sans"), ui-sans-serif, system-ui, sans-serif;
+
+  /* Body-font baseline bumped to 20px (cinematic read). Explicit Tailwind
+     sizes (text-sm, text-4xl, …) still win where used. */
+  --text-base: 1.25rem;
+  --text-base--line-height: 1.55;
+
+  /* Easings */
+  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Named animations (enable animate-reveal-up, animate-trust-scroll, …) */
+  --animate-reveal-up: reveal-up 1s var(--ease-cinematic) forwards;
+  --animate-trust-scroll: trust-scroll 30s linear infinite;
+  --animate-arrow-pulse: arrow-pulse 2s ease-in-out infinite;
+  --animate-preload-float: preload-float 2s ease-in-out infinite;
+  --animate-scroll-float: scroll-float 2.5s ease-in-out infinite;
+  --animate-amber-glow: amber-glow 3s ease-in-out infinite;
+  --animate-ember-flicker: ember-flicker 5.5s ease-in-out infinite;
+  --animate-dusk-drift: dusk-drift 24s ease-in-out infinite;
+
+  /* Spacing: section rhythm (fluid clamp). Use as py-[var(--spacing-section-*)]. */
+  --spacing-section-sm: clamp(3rem, 6vw, 4.5rem);
+  --spacing-section-md: clamp(4.5rem, 8vw, 7rem);
+  --spacing-section-lg: clamp(5.5rem, 10vw, 9rem);
+  --spacing-gutter: clamp(1.5rem, 4vw, 2.5rem);
+  --spacing-stanza: clamp(1.25rem, 2vw, 1.75rem);
+
+  /* Shadows: cinematic, amber-tinted */
+  --shadow-amber-glow: 0 0 50px 0 rgb(from var(--color-amber) r g b / 0.06),
+                       0 25px 70px -10px rgb(0 0 0 / 0.45);
+  --shadow-amber-glow-strong: 0 0 60px 0 rgb(from var(--color-amber) r g b / 0.18),
+                              0 20px 60px -5px rgb(0 0 0 / 0.55);
+  --shadow-card-hover: 0 0 50px 0 rgb(from var(--color-amber) r g b / 0.06),
+                       0 25px 70px -10px rgb(0 0 0 / 0.35);
+  --shadow-hero-overlay: inset 0 -120px 200px -40px rgb(from var(--color-night) r g b / 0.95),
+                         inset 0 80px 140px -60px rgb(from var(--color-night) r g b / 0.6);
+  --shadow-glint: 0 0 24px 0 rgb(from var(--color-amber-light) r g b / 0.35);
+
+  /* Blur: glassy header + deep focus */
+  --blur-glass: 24px;
+  --blur-veil: 8px;
+
+  /* Radius */
+  --radius-card: 1rem;
+  --radius-panel: 1.25rem;
+  --radius-pill: 9999px;
+  --radius-sm: 0.25rem;
+
+  /* Tracking: accent labels are the site's structural voice */
+  --tracking-label: 0.25em;
+  --tracking-eyebrow: 0.4em;
+  --tracking-micro: 0.35em;
+
+  /* Max content widths */
+  --width-prose: 42rem;
+  --width-shell: 80rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Keyframes
+   ───────────────────────────────────────────────────────────── */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes trust-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes arrow-pulse {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}
+@keyframes preload-float {
+  0%, 100% { transform: translateY(0) scale(1);      opacity: 0.5; }
+  50%      { transform: translateY(-8px) scale(1.05); opacity: 1; }
+}
+@keyframes scroll-float {
+  0%, 100% { transform: translateY(0);   opacity: 0.5; }
+  50%      { transform: translateY(14px); opacity: 1; }
+}
+@keyframes amber-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(from var(--color-amber) r g b / 0); }
+  50%      { box-shadow: 0 0 40px 0 rgb(from var(--color-amber) r g b / 0.15); }
+}
+@keyframes ember-flicker {
+  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 6px rgb(from var(--color-amber) r g b / 0.35)); }
+  42%      { opacity: 1;    filter: drop-shadow(0 0 14px rgb(from var(--color-amber-light) r g b / 0.55)); }
+  48%      { opacity: 0.7;  filter: drop-shadow(0 0 4px rgb(from var(--color-amber) r g b / 0.25)); }
+  74%      { opacity: 0.95; filter: drop-shadow(0 0 10px rgb(from var(--color-amber) r g b / 0.4)); }
+}
+@keyframes dusk-drift {
+  0%, 100% { transform: scale(1.08) translateY(0); }
+  50%      { transform: scale(1.08) translateY(-1.5%); }
+}
+@keyframes bcc-spin { to { transform: rotate(360deg); } }
+
+/* ─────────────────────────────────────────────────────────────
+   Base — not wrapped in @layer so our rules win the cascade.
+   ───────────────────────────────────────────────────────────── */
+html {
+  color-scheme: dark;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+body {
+  background-color: var(--color-night);
+  color: var(--color-moon);
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+::selection {
+  background: rgb(from var(--color-amber) r g b / 0.35);
+  color: var(--color-moon);
+}
+a, a:hover, a:focus, a:visited { text-decoration: none; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-night); }
+::-webkit-scrollbar-thumb { background: var(--color-amber); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-amber-light); }
+
+:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 3px;
+}
+
+/* Amber gradient text (italic accent words: "Council", "Night", "devotion.") */
+.text-gradient-amber {
+  background-image: linear-gradient(135deg, var(--color-amber), var(--color-amber-light), var(--color-amber));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Amber divider — the 60x1px gradient line between typographic beats. */
+.divider-amber {
+  width: 60px; height: 1px; border: 0;
+  background: linear-gradient(90deg, transparent, var(--color-amber), transparent);
+  margin: 2rem auto;
+  opacity: 0.9;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Reveal-on-scroll system. IntersectionObserver adds .is-visible.
+   Opt in with data-animate (default fade-up) or the directional classes.
+   Stagger via data-animate-delay. Respects prefers-reduced-motion.
+   ───────────────────────────────────────────────────────────── */
+[data-animate] {
+  opacity: 0;
+  transition: opacity 1s var(--ease-cinematic),
+              transform 1s var(--ease-cinematic),
+              filter 1s var(--ease-cinematic);
+  will-change: opacity, transform;
+}
+[data-animate]                { transform: translateY(40px); }
+[data-animate="left"]         { transform: translateX(-60px); }
+[data-animate="right"]        { transform: translateX(60px); }
+[data-animate="scale"]        { transform: scale(0.9); }
+[data-animate].is-visible     { opacity: 1; transform: none; filter: none; }
+[data-animate-delay="100"].is-visible { transition-delay: 100ms; }
+[data-animate-delay="200"].is-visible { transition-delay: 200ms; }
+[data-animate-delay="300"].is-visible { transition-delay: 300ms; }
+[data-animate-delay="400"].is-visible { transition-delay: 400ms; }
+[data-animate-delay="500"].is-visible { transition-delay: 500ms; }
+[data-animate-delay="600"].is-visible { transition-delay: 600ms; }
+
+/* Global film-grain overlay (2.5% opacity). */
+.bcc-grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  [data-animate] { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+}
+@media (scripting: none) {
+  /* No-JS fallback: never leave reveal content hidden. */
+  [data-animate] { opacity: 1 !important; transform: none !important; }
+}

@@ -1,0 +1,57 @@
+---
+/**
+ * Site header (scaffold stub — full sticky/transparent + mobile overlay lands
+ * in Phase 4). Fixed, transparent over the hero, amber "Devote Now" CTA.
+ */
+import { getSiteSettings } from "emdash";
+
+interface Props {
+	transparent?: boolean;
+}
+const { transparent = false } = Astro.props;
+
+const settings = await getSiteSettings().catch(() => null);
+const devoteUrl =
+	(settings as Record<string, unknown> | null)?.bcc_devote_url?.toString() ??
+	"https://www.zeffy.com/en-US/ticketing/bat-city-council";
+
+const links = [
+	{ label: "Story", href: "/#story" },
+	{ label: "Mission", href: "/#mission" },
+	{ label: "Devotions", href: "/#devotions" },
+	{ label: "Experiences", href: "/#experiences" },
+	{ label: "Founder", href: "/#founder" },
+	{ label: "Contact", href: "/#contact" },
+];
+---
+
+<header
+	class:list={[
+		"fixed inset-x-0 top-0 z-50 transition-colors duration-500",
+		transparent ? "bg-transparent" : "bg-night/92 backdrop-blur-[var(--blur-glass)]",
+	]}
+>
+	<div class="mx-auto flex h-20 max-w-[var(--width-shell)] items-center justify-between px-[var(--spacing-gutter)]">
+		<a href="/" class="font-display text-xl tracking-wide text-moon">Bat City Council</a>
+		<nav class="nav-primary hidden items-center gap-10 lg:flex" aria-label="Primary">
+			<ul class="flex items-center gap-10">
+				{links.map((l) => (
+					<li>
+						<a
+							href={l.href}
+							class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver transition-colors hover:text-amber"
+						>
+							{l.label}
+						</a>
+					</li>
+				))}
+			</ul>
+			<a
+				href={devoteUrl}
+				class="rounded-sm bg-amber px-6 py-3 font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:bg-amber-light"
+			>
+				Devote Now
+			</a>
+		</nav>
+	</div>
+</header>

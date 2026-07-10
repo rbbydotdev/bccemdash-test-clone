@@ -1,0 +1,41 @@
+{
+	"name": "@bcc/site",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"emdash": {
+		"seed": "seed/seed.json"
+	},
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"preview:cf": "DEPLOY_TARGET=cloudflare astro build && wrangler dev",
+		"start": "node ./dist/server/entry.mjs",
+		"deploy": "DEPLOY_TARGET=cloudflare astro build && wrangler deploy",
+		"typecheck": "astro check"
+	},
+	"dependencies": {
+		"@astrojs/cloudflare": "catalog:",
+		"@astrojs/node": "catalog:",
+		"@astrojs/react": "catalog:",
+		"@bcc/plugin": "workspace:*",
+		"@bcc/theme": "workspace:*",
+		"@emdash-cms/cloudflare": "workspace:*",
+		"@emdash-cms/plugin-field-kit": "workspace:*",
+		"@tailwindcss/vite": "catalog:",
+		"astro": "catalog:",
+		"better-sqlite3": "catalog:",
+		"emdash": "workspace:*",
+		"maplibre-gl": "catalog:",
+		"react": "catalog:",
+		"react-dom": "catalog:",
+		"tailwindcss": "catalog:"
+	},
+	"devDependencies": {
+		"@astrojs/check": "catalog:",
+		"@cloudflare/workers-types": "catalog:",
+		"@types/better-sqlite3": "catalog:",
+		"wrangler": "catalog:"
+	}
+}

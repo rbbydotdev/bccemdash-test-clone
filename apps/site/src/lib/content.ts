@@ -11,15 +11,33 @@ export interface Entry {
 	data: Record<string, unknown>;
 }
 
-/** Resolve a single media id to a servable URL (null when missing). */
-export async function mediaUrl(id: unknown): Promise<string | null> {
-	if (typeof id !== "string" || id.length === 0) return null;
+const fileUrl = (key: string): string => `/_emdash/api/media/file/${key}`;
+
+/**
+ * Resolve a media field value to a servable URL (null when missing).
+ * Accepts either a plain media-id string (how the settings bag stores images)
+ * or a resolved MediaValue object (how emdash's content API stores `image`
+ * collection fields: `{ id, filename, meta: { storageKey }, ... }`).
+ */
+export async function mediaUrl(value: unknown): Promise<string | null> {
+	if (!value) return null;
+
+	// Already a resolved MediaValue object (emdash `image` field on collections).
+	if (typeof value === "object") {
+		const v = value as { id?: unknown; storageKey?: unknown; meta?: { storageKey?: unknown } };
+		const key = v.meta?.storageKey ?? v.storageKey;
+		if (typeof key === "string" && key.length > 0) return fileUrl(key);
+		if (typeof v.id === "string" && v.id.length > 0) return mediaUrl(v.id);
+		return null;
+	}
+
+	// A media-id string (settings imagery) — look up its storage key.
+	if (typeof value !== "string" || value.length === 0) return null;
 	try {
 		const db = await getDb();
-		const item = await new MediaRepository(db).findById(id);
+		const item = await new MediaRepository(db).findById(value);
 		if (!item) return null;
-		const key = item.storageKey ?? item.id;
-		return `/_emdash/api/media/file/${key}`;
+		return fileUrl(item.storageKey ?? item.id);
 	} catch {
 		return null;
 	}

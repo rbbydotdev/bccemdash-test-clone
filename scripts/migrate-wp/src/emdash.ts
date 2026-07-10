@@ -54,8 +54,18 @@ async function fetchWithRetry(url: string, init: RequestInit): Promise<Response>
 	throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
-/** Establish a dev-admin session via the dev-bypass endpoint. */
+/**
+ * Establish an admin session.
+ * - Local dev: the dev-bypass endpoint (default).
+ * - Production: dev-bypass is disabled, so pass an authenticated session cookie
+ *   via `EMDASH_COOKIE` (copy it from an admin browser session).
+ */
 export async function login(): Promise<void> {
+	const provided = process.env.EMDASH_COOKIE;
+	if (provided && provided.trim()) {
+		sessionCookie = provided.trim();
+		return;
+	}
 	const response = await fetchWithRetry(`${API}/setup/dev-bypass?redirect=/_emdash/admin`, {
 		redirect: "manual",
 	});
@@ -63,7 +73,8 @@ export async function login(): Promise<void> {
 	if (cookies.length === 0) {
 		throw new Error(
 			`dev-bypass returned no session cookie (status ${response.status}). ` +
-				`Is the dev server running at ${BASE_URL}? Start it with: cd apps/site && corepack pnpm dev`,
+				`In production, dev-bypass is disabled — set EMDASH_COOKIE to an admin session cookie. ` +
+				`Locally, is the dev server running at ${BASE_URL}? (cd apps/site && corepack pnpm dev)`,
 		);
 	}
 	sessionCookie = cookies.map((cookie) => cookie.split(";")[0]!).join("; ");

@@ -15,7 +15,14 @@ import { FloppyDisk, Plus, Trash } from "@phosphor-icons/react";
 import * as React from "react";
 
 import type { BccSettings, CycleNode, StatItem } from "../settings.js";
-import { ErrorNotice, PageHeader, pluginGet, pluginSend } from "./lib.js";
+import {
+	ErrorNotice,
+	PageHeader,
+	fetchMediaList,
+	pluginGet,
+	pluginSend,
+	type MediaItem,
+} from "./lib.js";
 
 // Font choices mirror the WP Customizer select lists exactly.
 const DISPLAY_FONTS = [
@@ -74,6 +81,7 @@ function FieldGrid({ children }: { children: React.ReactNode }) {
 }
 
 /** Imagery field: a media id text input plus a live thumbnail preview. */
+/** Searchable media picker: browse/search the library, click to select. */
 function MediaField({
 	label,
 	value,
@@ -83,30 +91,108 @@ function MediaField({
 	value: string;
 	onChange: (v: string) => void;
 }) {
-	const [broken, setBroken] = React.useState(false);
-	React.useEffect(() => setBroken(false), [value]);
-	const id = value.trim();
-	const src = id ? `/_emdash/api/media/file/${id}` : "";
+	const [items, setItems] = React.useState<MediaItem[]>([]);
+	const [loading, setLoading] = React.useState(true);
+	const [query, setQuery] = React.useState("");
+	const [open, setOpen] = React.useState(false);
+	const boxRef = React.useRef<HTMLDivElement>(null);
+
+	React.useEffect(() => {
+		let alive = true;
+		fetchMediaList()
+			.then((m) => alive && (setItems(m), setLoading(false)))
+			.catch(() => alive && setLoading(false));
+		return () => {
+			alive = false;
+		};
+	}, []);
+
+	React.useEffect(() => {
+		const onDoc = (e: MouseEvent) => {
+			if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+		};
+		document.addEventListener("mousedown", onDoc);
+		return () => document.removeEventListener("mousedown", onDoc);
+	}, []);
+
+	const selected = items.find((i) => i.id === value.trim()) ?? null;
+	const q = query.trim().toLowerCase();
+	const filtered = (
+		q ? items.filter((i) => `${i.filename} ${i.alt ?? ""}`.toLowerCase().includes(q)) : items
+	).slice(0, 24);
+
+	const pick = (it: MediaItem) => {
+		onChange(it.id);
+		setOpen(false);
+		setQuery("");
+	};
+
 	return (
-		<div className="space-y-2">
-			<Input
-				className="w-full"
-				label={label}
-				description="Paste a media id from the Media library. Leave blank to use the default."
-				placeholder="media id"
-				value={value}
-				onChange={(e) => onChange(e.target.value)}
-			/>
-			{src && !broken ? (
-				<img
-					src={src}
-					alt=""
-					onError={() => setBroken(true)}
-					className="border-kumo-line h-32 w-auto rounded-lg border object-cover"
-				/>
-			) : id && broken ? (
-				<p className="text-kumo-subtle text-xs">No preview for this id yet. It will resolve once saved.</p>
-			) : null}
+		<div className="space-y-1.5" ref={boxRef}>
+			<span className="text-sm font-medium">{label}</span>
+			<div className="relative">
+				<div className="border-kumo-line flex items-center gap-3 rounded-lg border p-2">
+					{selected ? (
+						<img src={selected.url} alt="" className="h-12 w-12 shrink-0 rounded object-cover" />
+					) : (
+						<div className="bg-kumo-muted text-kumo-subtle flex h-12 w-12 shrink-0 items-center justify-center rounded text-[0.65rem]">
+							none
+						</div>
+					)}
+					<div className="min-w-0 flex-1">
+						<p className="truncate text-sm">{selected ? selected.filename : "No image selected"}</p>
+						<p className="text-kumo-subtle truncate text-xs">
+							{selected ? (selected.alt ?? "") : "Search the media library"}
+						</p>
+					</div>
+					<Button size="sm" variant="secondary" onClick={() => setOpen((o) => !o)}>
+						{selected ? "Change" : "Choose"}
+					</Button>
+					{selected && (
+						<Button size="sm" variant="ghost" onClick={() => onChange("")}>
+							Clear
+						</Button>
+					)}
+				</div>
+
+				{open && (
+					<div className="border-kumo-line bg-kumo-base absolute z-20 mt-1 w-full rounded-lg border p-2 shadow-lg">
+						<Input
+							autoFocus
+							size="sm"
+							placeholder="Search images by name..."
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
+						/>
+						{loading ? (
+							<div className="flex justify-center py-6">
+								<Loader />
+							</div>
+						) : (
+							<ul className="mt-2 max-h-64 space-y-1 overflow-y-auto">
+								{filtered.length === 0 && (
+									<li className="text-kumo-subtle px-2 py-3 text-sm">No matching images.</li>
+								)}
+								{filtered.map((it) => (
+									<li key={it.id}>
+										<button
+											type="button"
+											onClick={() => pick(it)}
+											className="hover:bg-kumo-muted flex w-full items-center gap-3 rounded p-1.5 text-left"
+										>
+											<img src={it.url} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />
+											<span className="min-w-0 flex-1">
+												<span className="block truncate text-sm">{it.filename}</span>
+												{it.alt && <span className="text-kumo-subtle block truncate text-xs">{it.alt}</span>}
+											</span>
+										</button>
+									</li>
+								))}
+							</ul>
+						)}
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

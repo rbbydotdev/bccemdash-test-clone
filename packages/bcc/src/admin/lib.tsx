@@ -39,6 +39,26 @@ export interface GeocodeResult {
 	label: string;
 }
 
+export interface MediaItem {
+	id: string;
+	filename: string;
+	url: string;
+	alt: string | null;
+	mimeType?: string;
+}
+
+let mediaCache: MediaItem[] | null = null;
+
+/** Load the media library (cached per session) for the picker. */
+export async function fetchMediaList(force = false): Promise<MediaItem[]> {
+	if (mediaCache && !force) return mediaCache;
+	// 100 is the media endpoint's max page size (200 -> 400).
+	const res = await apiFetch("/_emdash/api/media?limit=100");
+	const data = await parseApiResponse<{ items: MediaItem[] }>(res);
+	mediaCache = (data.items ?? []).filter((m) => (m.mimeType ?? "").startsWith("image/") || !m.mimeType);
+	return mediaCache;
+}
+
 // ── API helpers ─────────────────────────────────────────────────────
 
 export async function pluginGet<T>(route: string): Promise<T> {

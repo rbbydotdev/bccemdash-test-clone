@@ -9,3 +9,80 @@
 	--bcc-font-body: var(--font-body-webfont, "EB Garamond"), ui-serif, Georgia, serif;
 	--bcc-font-accent: var(--font-accent-webfont, "Josefin Sans"), ui-sans-serif, system-ui, sans-serif;
 }
+
+/* ── Business-donor map (MapLibre) ──────────────────────────────── */
+.bcc-donor-map {
+	border-radius: var(--radius-card);
+	overflow: hidden;
+	box-shadow: var(--shadow-amber-glow);
+}
+/* Darken the tile canvas into the night theme; DOM markers are unaffected. */
+.bcc-donor-map .maplibregl-canvas {
+	filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(0.92) saturate(0.8);
+}
+.bcc-donor-marker {
+	background: transparent;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+	filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.5));
+	transition: transform 200ms var(--ease-cinematic);
+}
+.bcc-donor-marker:hover,
+.bcc-donor-marker:focus-visible {
+	transform: translateY(-2px) scale(1.08);
+	outline: none;
+}
+.bcc-donor-dot {
+	display: block;
+	width: 18px;
+	height: 18px;
+	border-radius: 9999px;
+	background: var(--color-amber);
+	border: 2px solid var(--color-night);
+	box-shadow: 0 0 0 2px var(--color-amber);
+}
+.bcc-donor-thumb {
+	display: block;
+	width: 44px;
+	height: 44px;
+	border-radius: 9999px;
+	background-size: cover;
+	background-position: center;
+	background-color: var(--color-deep);
+	border: 2px solid var(--color-amber);
+	box-shadow: 0 0 0 2px var(--color-night);
+}
+.bcc-donor-map .maplibregl-popup-content {
+	background: var(--color-night);
+	color: var(--color-moon);
+	border: 1px solid rgb(from var(--color-amber) r g b / 0.35);
+	border-radius: var(--radius-card);
+	box-shadow: var(--shadow-amber-glow);
+	padding: 0.75rem 1rem;
+	font-family: var(--font-body);
+}
+.bcc-donor-map .maplibregl-popup-tip {
+	border-top-color: var(--color-night);
+	border-bottom-color: var(--color-night);
+}
+.bcc-donor-popup {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.35rem;
+	min-width: 120px;
+	text-align: center;
+}
+.bcc-donor-popup strong {
+	font-family: var(--font-display);
+	font-size: 1.05rem;
+	color: var(--color-moon);
+}
+.bcc-donor-popup a {
+	font-family: var(--font-accent);
+	font-size: 0.65rem;
+	text-transform: uppercase;
+	letter-spacing: var(--tracking-label);
+	color: var(--color-amber);
+}

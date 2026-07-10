@@ -1,0 +1,83 @@
+---
+/**
+ * Trust — a seamless partner marquee (logos or text fallback) plus, when there
+ * are devoting businesses, a MapLibre map of them. Partners and business_donors
+ * are collections.
+ */
+import { getBccSettings } from "@bcc/plugin/server";
+import { publishedEntries, mediaUrl, str } from "../../lib/content";
+import DonorMap, { type Donor } from "../../islands/DonorMap";
+
+const s = await getBccSettings();
+
+const partnerEntries = await publishedEntries("partners");
+const partners = await Promise.all(
+	partnerEntries.map(async (p) => ({
+		title: str(p.data, "title"),
+		url: str(p.data, "partner_url"),
+		logo: await mediaUrl(p.data.logo),
+	})),
+);
+// Duplicate for a seamless loop when there are enough to scroll.
+const marquee = partners.length >= 4 ? [...partners, ...partners] : partners;
+
+const donorEntries = await publishedEntries("business_donors");
+const donors: Donor[] = [];
+for (const d of donorEntries) {
+	const loc = d.data.location as { lat?: number; lng?: number } | undefined;
+	if (loc && typeof loc.lat === "number" && typeof loc.lng === "number") {
+		donors.push({
+			title: str(d.data, "title"),
+			lat: loc.lat,
+			lng: loc.lng,
+			url: str(d.data, "business_url") || undefined,
+			logo: await mediaUrl(d.data.logo),
+		});
+	}
+}
+---
+
+<section id="trust" class="border-y border-white/5 bg-deep py-[var(--spacing-section-sm)]">
+	<div class="mx-auto max-w-[var(--width-shell)] px-[var(--spacing-gutter)]">
+		<p data-animate class="text-center text-sm text-silver/70">{s.trust.heading}</p>
+
+		{marquee.length > 0 && (
+			<div class="bcc-marquee mt-10" role="region" aria-label="Partners">
+				<div class="bcc-marquee__track">
+					{marquee.map((p, i) => (
+						<>
+							{i > 0 && <span class="text-silver/10">·</span>}
+							{p.logo ? (
+								<a href={p.url || "#"} class="shrink-0">
+									<img src={p.logo} alt={p.title} class="h-10 w-auto opacity-70 transition hover:opacity-100" />
+								</a>
+							) : p.url ? (
+								<a
+									href={p.url}
+									class="shrink-0 font-accent text-sm uppercase tracking-[var(--tracking-label)] text-silver/40 transition hover:text-amber"
+								>
+									{p.title}
+								</a>
+							) : (
+								<span class="shrink-0 font-accent text-sm uppercase tracking-[var(--tracking-label)] text-silver/30">
+									{p.title}
+								</span>
+							)}
+						</>
+					))}
+				</div>
+			</div>
+		)}
+
+		{donors.length > 0 && (
+			<div data-animate class="mt-16">
+				<p class="text-center font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
+					Devoting Businesses
+				</p>
+				<div class="mt-6">
+					<DonorMap donors={donors} client:visible />
+				</div>
+			</div>
+		)}
+	</div>
+</section>

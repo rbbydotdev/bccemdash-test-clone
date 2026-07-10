@@ -1,10 +1,19 @@
 ---
 /**
- * Homepage (scaffold stub). The full cinematic single-page build — hero with
- * starfield, story, mission, devotions, experiences, founder, trust, closing —
- * lands in Phase 4. This stub verifies the shell + tokens render.
+ * Homepage — the immersive single page. Eight scenes composed against anchor
+ * ids the header nav smooth-scrolls to. All copy/imagery is CMS-editable
+ * (BccSettings) and the tiers/experiences/partners/donors are collections.
  */
 import Base from "../layouts/Base.astro";
+import Hero from "../components/sections/Hero.astro";
+import Story from "../components/sections/Story.astro";
+import Mission from "../components/sections/Mission.astro";
+import Devotions from "../components/sections/Devotions.astro";
+import Experiences from "../components/sections/Experiences.astro";
+import Founder from "../components/sections/Founder.astro";
+import Trust from "../components/sections/Trust.astro";
+import Closing from "../components/sections/Closing.astro";
+import Contact from "../components/sections/Contact.astro";
 ---
 
 <Base
@@ -12,25 +21,13 @@ import Base from "../layouts/Base.astro";
 	description="Bat City Council connects culture, commerce, and conservation in Austin, Texas, home of the world's largest urban bat colony."
 	transparentHeader
 >
-	<section
-		id="hero"
-		class="relative flex min-h-screen items-center justify-center overflow-hidden text-center"
-	>
-		<div class="relative z-10 mx-auto max-w-[var(--width-prose)] px-[var(--spacing-gutter)]">
-			<p class="font-accent text-sm uppercase tracking-[var(--tracking-eyebrow)] text-amber">
-				Est. 2026 · Austin, Texas
-			</p>
-			<h1 class="mt-6 font-display text-[clamp(3.5rem,8vw+1rem,8rem)] font-light leading-[0.95] text-moon">
-				Bat City<br /><span class="text-gradient-amber">Council</span>
-			</h1>
-			<p class="mt-6 font-display text-2xl italic text-moon/80">
-				Guardians of Austin's Night Sky
-			</p>
-			<hr class="divider-amber" />
-			<p class="mx-auto mt-6 max-w-prose text-moon/80">
-				Every dusk, 1.5 million bats take flight from the heart of Austin. They are the soul of Bat
-				City. And they need your devotion.
-			</p>
-		</div>
-	</section>
+	<Hero />
+	<Story />
+	<Mission />
+	<Devotions />
+	<Experiences />
+	<Founder />
+	<Trust />
+	<Closing />
+	<Contact source="home" />
 </Base>

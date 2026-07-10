@@ -1,7 +1,8 @@
 ---
 /**
- * Site header (scaffold stub — full sticky/transparent + mobile overlay lands
- * in Phase 4). Fixed, transparent over the hero, amber "Devote Now" CTA.
+ * Site header — fixed, transparent over the hero, solidifies on scroll
+ * (data-header + .is-scrolled toggled by src/scripts/site.ts). Mobile
+ * hamburger opens a full-screen night overlay.
  */
 import { getBccSettings } from "@bcc/plugin/server";
 
@@ -22,17 +23,26 @@ const links = [
 	{ label: "Founder", href: "/#founder" },
 	{ label: "Contact", href: "/#contact" },
 ];
+
+const BAT =
+	"M50 30 C45 15, 20 5, 2 20 C15 18, 25 22, 35 28 C38 20, 44 16, 50 14 C56 16, 62 20, 65 28 C75 22, 85 18, 98 20 C80 5, 55 15, 50 30Z";
 ---
 
 <header
-	class:list={[
-		"fixed inset-x-0 top-0 z-50 transition-colors duration-500",
-		transparent ? "bg-transparent" : "bg-night/92 backdrop-blur-[var(--blur-glass)]",
-	]}
+	data-header
+	class:list={["fixed inset-x-0 top-0 z-50 transition-colors duration-500", !transparent && "is-solid"]}
 >
 	<div class="mx-auto flex h-20 max-w-[var(--width-shell)] items-center justify-between px-[var(--spacing-gutter)]">
-		<a href="/" class="font-display text-xl tracking-wide text-moon">Bat City Council</a>
-		<nav class="nav-primary hidden items-center gap-10 lg:flex" aria-label="Primary">
+		<a href="/" class="group flex items-center gap-3" aria-label="Bat City Council home">
+			<svg viewBox="0 0 100 60" class="h-7 w-8 text-amber transition-transform group-hover:scale-110" aria-hidden="true">
+				<path d={BAT} fill="currentColor" />
+			</svg>
+			<span class="hidden font-accent text-xs uppercase tracking-[var(--tracking-label)] text-moon sm:inline">
+				Bat City Council
+			</span>
+		</a>
+
+		<nav class="hidden items-center gap-10 lg:flex" aria-label="Primary">
 			<ul class="flex items-center gap-10">
 				{links.map((l) => (
 					<li>
@@ -47,10 +57,104 @@ const links = [
 			</ul>
 			<a
 				href={devoteUrl}
-				class="rounded-sm bg-amber px-6 py-3 font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:bg-amber-light"
+				class="rounded-sm bg-amber px-6 py-3 font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:-translate-y-0.5 hover:bg-amber-light hover:shadow-[var(--shadow-amber-glow-strong)]"
 			>
 				{ctaLabel}
 			</a>
 		</nav>
+
+		<button
+			data-menu-toggle
+			type="button"
+			aria-expanded="false"
+			aria-label="Menu"
+			class="mobile-toggle flex flex-col gap-[6px] p-2 lg:hidden"
+		>
+			<span></span><span></span><span></span>
+		</button>
 	</div>
 </header>
+
+<div
+	data-mobile-menu
+	class="mobile-overlay fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-night/98 lg:hidden"
+>
+	{links.map((l) => (
+		<a href={l.href} class="font-display text-3xl text-moon transition-colors hover:text-amber">
+			{l.label}
+		</a>
+	))}
+	<a
+		href={devoteUrl}
+		class="mt-4 rounded-sm bg-amber px-8 py-4 font-accent text-sm font-semibold uppercase tracking-[var(--tracking-label)] text-night"
+	>
+		{ctaLabel}
+	</a>
+</div>
+
+<style>
+	[data-header].is-solid,
+	[data-header].is-scrolled {
+		background: rgb(from var(--color-night) r g b / 0.92);
+		backdrop-filter: blur(var(--blur-glass));
+		box-shadow: 0 2px 40px rgb(0 0 0 / 0.4);
+	}
+	[data-header].is-menu-open {
+		z-index: 60;
+	}
+
+	.mobile-toggle span {
+		display: block;
+		height: 1.5px;
+		width: 22px;
+		background: var(--color-amber);
+		transition:
+			transform 300ms var(--ease-cinematic),
+			opacity 200ms ease;
+	}
+	[data-menu-toggle][aria-expanded="true"] span:nth-child(1) {
+		transform: translateY(7.5px) rotate(45deg);
+	}
+	[data-menu-toggle][aria-expanded="true"] span:nth-child(2) {
+		opacity: 0;
+	}
+	[data-menu-toggle][aria-expanded="true"] span:nth-child(3) {
+		transform: translateY(-7.5px) rotate(-45deg);
+	}
+
+	.mobile-overlay {
+		opacity: 0;
+		visibility: hidden;
+		transition:
+			opacity 400ms ease,
+			visibility 400ms ease;
+	}
+	.mobile-overlay.is-open {
+		opacity: 1;
+		visibility: visible;
+	}
+	.mobile-overlay a {
+		opacity: 0;
+		transform: translateY(24px);
+		transition:
+			opacity 400ms ease,
+			transform 400ms ease;
+	}
+	.mobile-overlay.is-open a {
+		opacity: 1;
+		transform: none;
+	}
+	.mobile-overlay.is-open a:nth-child(1) { transition-delay: 0.08s; }
+	.mobile-overlay.is-open a:nth-child(2) { transition-delay: 0.12s; }
+	.mobile-overlay.is-open a:nth-child(3) { transition-delay: 0.16s; }
+	.mobile-overlay.is-open a:nth-child(4) { transition-delay: 0.2s; }
+	.mobile-overlay.is-open a:nth-child(5) { transition-delay: 0.24s; }
+	.mobile-overlay.is-open a:nth-child(6) { transition-delay: 0.28s; }
+	.mobile-overlay.is-open a:nth-child(7) { transition-delay: 0.32s; }
+
+	@media (prefers-reduced-motion: reduce) {
+		.mobile-overlay,
+		.mobile-overlay a,
+		.mobile-toggle span { transition: none; }
+	}
+</style>

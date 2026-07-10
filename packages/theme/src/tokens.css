@@ -196,6 +196,85 @@ a, a:hover, a:focus, a:visited { text-decoration: none; }
 [data-animate-delay="500"].is-visible { transition-delay: 500ms; }
 [data-animate-delay="600"].is-visible { transition-delay: 600ms; }
 
+/* ── Tier cards — hover lift + per-tier accent bar + glow. ── */
+.bcc-tier-card {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 500ms var(--ease-cinematic),
+    box-shadow 500ms var(--ease-cinematic),
+    border-color 500ms var(--ease-cinematic);
+}
+.bcc-tier-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--tier-accent, var(--color-amber)), transparent);
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+.bcc-tier-card:hover {
+  transform: translateY(-10px);
+  border-color: rgb(from var(--color-amber) r g b / 0.35);
+  box-shadow: var(--shadow-amber-glow);
+}
+.bcc-tier-card:hover::after { opacity: 1; }
+.bcc-tier-card.is-flagship {
+  border-color: rgb(from var(--color-amber) r g b / 0.25);
+  box-shadow: var(--shadow-amber-glow);
+}
+
+/* ── Experience cards — image zoom + description slide-up on hover. ── */
+.bcc-exp-card { position: relative; overflow: hidden; }
+.bcc-exp-card img { transition: transform 800ms var(--ease-cinematic); }
+.bcc-exp-card:hover img,
+.bcc-exp-card:focus-within img { transform: scale(1.08); }
+.bcc-exp-card .bcc-exp-desc {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 600ms var(--ease-cinematic),
+    transform 600ms var(--ease-cinematic);
+}
+.bcc-exp-card:hover .bcc-exp-desc,
+.bcc-exp-card:focus-within .bcc-exp-desc {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Trust marquee — seamless CSS loop, paused on hover. ── */
+.bcc-marquee { overflow: hidden; }
+.bcc-marquee__track {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  width: max-content;
+  animation: var(--animate-trust-scroll);
+}
+.bcc-marquee:hover .bcc-marquee__track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bcc-exp-card .bcc-exp-desc { opacity: 1; transform: none; }
+  .bcc-marquee__track { animation: none; flex-wrap: wrap; justify-content: center; }
+}
+
+/* Per-section film grain — separates the night/deep tonal shifts. */
+.bcc-noise { position: relative; isolation: isolate; }
+.bcc-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.bcc-noise > * { position: relative; z-index: 1; }
+
 /* Global film-grain overlay (2.5% opacity). */
 .bcc-grain::before {
   content: '';

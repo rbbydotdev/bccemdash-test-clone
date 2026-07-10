@@ -1,0 +1,76 @@
+---
+/**
+ * Mission — the commerce/conservation/culture cycle on a deep-night ground.
+ * Three nodes with pulsing arrows between, a repeating-cycle caption, and the
+ * key-recipient callout. Copy from BccSettings.
+ */
+import { getBccSettings } from "@bcc/plugin/server";
+
+const s = await getBccSettings();
+
+// Fixed icons per node index (Heroicons-style, currentColor amber).
+const ICONS = [
+	// Commerce — storefront/building
+	"M3 21h18M4 21V7l8-4 8 4v14M9 21v-6h6v6M9 11h.01M15 11h.01",
+	// Conservation — globe
+	"M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18M12 3a15 15 0 000 18",
+	// Culture — sparkles
+	"M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9zM19 14l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z",
+];
+---
+
+<section id="mission" class="relative bcc-noise bg-deep py-[var(--spacing-section-lg)]">
+	<div class="mx-auto max-w-5xl px-[var(--spacing-gutter)] text-center">
+		<p data-animate class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
+			{s.mission.eyebrow}
+		</p>
+		<h2 data-animate class="mt-6 font-display text-[clamp(2.5rem,5vw,4rem)] leading-tight text-moon">
+			{s.mission.heading}<br /><span class="italic text-gradient-amber">{s.mission.headingAccent}</span> {s.mission.headingTail}
+		</h2>
+		<p data-animate data-animate-delay="200" class="mx-auto mt-8 max-w-3xl text-moon/70">
+			{s.mission.lede}
+		</p>
+
+		<div class="mt-16 grid items-stretch gap-6 md:grid-cols-3">
+			{s.mission.nodes.map((node, i) => (
+				<div
+					data-animate="scale"
+					data-animate-delay={String(i * 200)}
+					class="relative rounded-[var(--radius-card)] border border-amber/20 bg-night/60 p-8 backdrop-blur-[var(--blur-veil)]"
+				>
+					<div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-amber/40">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-7 w-7 text-amber" aria-hidden="true">
+							<path d={ICONS[i] ?? ICONS[0]} stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+					</div>
+					<h3 class="mt-6 font-accent text-sm uppercase tracking-[var(--tracking-label)] text-moon">
+						{node.title}
+					</h3>
+					<p class="mt-3 text-sm text-silver">{node.body}</p>
+					{i < s.mission.nodes.length - 1 && (
+						<span
+							class="absolute -right-3 top-1/2 hidden -translate-y-1/2 text-2xl text-amber md:block"
+							style="animation:var(--animate-arrow-pulse);"
+							aria-hidden="true">→</span>
+					)}
+				</div>
+			))}
+		</div>
+
+		<p data-animate data-animate-delay="300" class="mx-auto mt-12 max-w-2xl font-display text-xl italic text-moon/80">
+			{s.mission.caption}
+		</p>
+
+		<div
+			data-animate
+			data-animate-delay="400"
+			class="mx-auto mt-10 max-w-lg rounded-[var(--radius-card)] border border-amber/15 bg-night/40 p-6"
+		>
+			<p class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-amber">
+				{s.mission.recipientLabel}
+			</p>
+			<p class="mt-2 font-display text-2xl text-moon">{s.mission.recipientName}</p>
+			<p class="mt-2 text-sm text-silver">{s.mission.recipientDetail}</p>
+		</div>
+	</div>
+</section>

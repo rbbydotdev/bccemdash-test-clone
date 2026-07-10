@@ -1,0 +1,38 @@
+---
+/**
+ * Founder — portrait + three-paragraph bio, magazine-profile styling. Copy and
+ * image from BccSettings.
+ */
+import { getBccSettings } from "@bcc/plugin/server";
+import { mediaUrl } from "../../lib/content";
+
+const s = await getBccSettings();
+const img = await mediaUrl(s.founder.image);
+---
+
+<section id="founder" class="relative bcc-noise py-[var(--spacing-section-md)]">
+	<div class="mx-auto max-w-6xl px-[var(--spacing-gutter)]">
+		<p data-animate class="text-center font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
+			{s.founder.eyebrow}
+		</p>
+
+		<div class="mt-14 grid items-center gap-16 lg:grid-cols-5 lg:gap-20">
+			{img && (
+				<figure data-animate="left" class="lg:col-span-2">
+					<div class="relative aspect-[3/4] overflow-hidden rounded-[var(--radius-panel)] shadow-[var(--shadow-amber-glow)]">
+						<img src={img} alt={`${s.founder.name}, ${s.founder.title}`} class="absolute inset-0 h-full w-full object-cover" />
+					</div>
+				</figure>
+			)}
+
+			<div data-animate="right" data-animate-delay="200" class="lg:col-span-3">
+				<h2 class="font-display text-[clamp(2.25rem,4vw,3.25rem)] text-moon">{s.founder.name}</h2>
+				<p class="mt-2 font-display text-xl italic text-amber">{s.founder.title}</p>
+				<hr class="divider-amber !mx-0" />
+				{s.founder.bio.map((p) => (
+					<p class="mt-5 text-moon/70">{p}</p>
+				))}
+			</div>
+		</div>
+	</div>
+</section>

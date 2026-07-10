@@ -1,0 +1,92 @@
+---
+/**
+ * Hero — full-viewport cover with parallax bg image, twinkling starfield
+ * canvas, night gradient veil, and centered content. Copy + image from
+ * BccSettings; devote link routes the primary CTA.
+ */
+import { getBccSettings } from "@bcc/plugin/server";
+import { mediaUrl } from "../../lib/content";
+
+const s = await getBccSettings();
+const heroImg = await mediaUrl(s.hero.image);
+const devoteUrl = s.integrations.devoteUrl;
+---
+
+<section id="hero" class="relative flex min-h-screen items-center justify-center overflow-hidden text-center">
+	{heroImg ? (
+		<img
+			data-hero-bg
+			src={heroImg}
+			alt=""
+			class="absolute inset-0 h-full w-full scale-110 object-cover object-center will-change-transform"
+		/>
+	) : (
+		<div class="absolute inset-0 bg-gradient-to-b from-deep to-night"></div>
+	)}
+
+	<canvas data-starfield class="pointer-events-none absolute inset-0 z-[1] h-full w-full"></canvas>
+
+	<div
+		class="absolute inset-0 z-[1]"
+		style="background:linear-gradient(180deg, rgb(from var(--color-night) r g b /0.3) 0%, rgb(from var(--color-night) r g b /0.5) 30%, rgb(from var(--color-night) r g b /0.75) 60%, rgb(from var(--color-night) r g b /0.95) 85%, var(--color-night) 100%);"
+	>
+	</div>
+
+	<div class="relative z-10 mx-auto max-w-[var(--width-prose)] px-[var(--spacing-gutter)]">
+		<p
+			data-animate
+			class="font-accent text-sm uppercase tracking-[var(--tracking-eyebrow)] text-amber"
+			style="animation:var(--animate-ember-flicker);"
+		>
+			{s.hero.eyebrow}
+		</p>
+		<h1
+			data-animate
+			data-animate-delay="100"
+			class="mt-6 font-display text-[clamp(3.5rem,8vw+1rem,8rem)] font-light leading-[0.95] text-moon"
+		>
+			{s.hero.titleLine1}<br /><span class="text-gradient-amber">{s.hero.titleLine2}</span>
+		</h1>
+		<p data-animate data-animate-delay="200" class="mt-6 font-display text-2xl italic text-moon/80">
+			{s.hero.subhead}
+		</p>
+		<hr data-animate data-animate-delay="300" class="divider-amber" />
+		<p data-animate data-animate-delay="400" class="mx-auto mt-6 max-w-prose text-moon/80">
+			{s.hero.body}
+		</p>
+		<div data-animate data-animate-delay="500" class="mt-10 flex flex-wrap items-center justify-center gap-4">
+			<a
+				href={devoteUrl}
+				class="rounded-sm bg-amber px-10 py-4 font-accent text-sm font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:-translate-y-0.5 hover:bg-amber-light hover:shadow-[var(--shadow-amber-glow-strong)]"
+			>
+				{s.hero.ctaPrimary}
+			</a>
+			<a
+				href="#story"
+				class="rounded-sm border border-moon/30 px-10 py-4 font-accent text-sm uppercase tracking-[var(--tracking-label)] text-moon/80 transition hover:-translate-y-0.5 hover:border-amber hover:text-amber"
+			>
+				{s.hero.ctaSecondary}
+			</a>
+		</div>
+	</div>
+
+	<div class="scroll-indicator pointer-events-none absolute bottom-10 left-1/2 z-10 -translate-x-1/2" aria-hidden="true">
+		<svg width="24" height="36" viewBox="0 0 24 36" fill="none" class="text-silver/50">
+			<rect x="1" y="1" width="22" height="34" rx="11" stroke="currentColor" stroke-width="1.5"></rect>
+			<circle cx="12" cy="10" r="2.5" fill="currentColor">
+				<animate attributeName="cy" values="10;22;10" dur="2.5s" repeatCount="indefinite"></animate>
+				<animate attributeName="opacity" values="1;0.3;1" dur="2.5s" repeatCount="indefinite"></animate>
+			</circle>
+		</svg>
+	</div>
+</section>
+
+<style>
+	.scroll-indicator {
+		animation: scroll-float 2.5s ease-in-out infinite;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		[data-hero-bg] { transform: none !important; }
+		.scroll-indicator { animation: none; }
+	}
+</style>

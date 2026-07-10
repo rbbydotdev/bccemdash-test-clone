@@ -1,0 +1,77 @@
+---
+/**
+ * Story — "Austin Is Bat City. This Is Why." Two-column (prose | image) with a
+ * three-stat count-up row below. Copy/stats/image from BccSettings.
+ */
+import { getBccSettings } from "@bcc/plugin/server";
+import { mediaUrl } from "../../lib/content";
+
+const s = await getBccSettings();
+const storyImg = await mediaUrl(s.story.image);
+
+/** Split "1.5M" -> { target: 1.5, suffix: "M", decimals: 1 }. */
+function parseStat(value: string): { target: number; suffix: string; decimals: number } {
+	const m = value.match(/^([\d.,]+)(.*)$/);
+	const numStr = (m?.[1] ?? "0").replace(/,/g, "");
+	const target = Number.parseFloat(numStr) || 0;
+	const decimals = numStr.includes(".") ? (numStr.split(".")[1]?.length ?? 0) : 0;
+	return { target, suffix: m?.[2] ?? "", decimals };
+}
+---
+
+<section id="story" class="relative bcc-noise py-[var(--spacing-section-lg)]">
+	<div class="mx-auto max-w-[var(--width-shell)] px-[var(--spacing-gutter)]">
+		<p
+			data-animate
+			class="text-center font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber"
+		>
+			{s.story.eyebrow}
+		</p>
+
+		<div class="mt-14 grid items-center gap-16 lg:grid-cols-2 lg:gap-24">
+			<div>
+				<h2 data-animate class="font-display text-[clamp(2.5rem,5vw,4rem)] leading-tight text-moon">
+					{s.story.heading}<br /><span class="italic text-amber">{s.story.headingAccent}</span>
+				</h2>
+				{s.story.paragraphs.map((p, i) => (
+					<p data-animate data-animate-delay={String(200 + i * 100)} class="mt-6 text-moon/70">
+						{p}
+					</p>
+				))}
+			</div>
+
+			{storyImg && (
+				<figure data-animate="right" class="overflow-hidden rounded-[var(--radius-panel)]">
+					<div class="relative aspect-[4/5]">
+						<img src={storyImg} alt="Austin skyline as bats take flight" class="absolute inset-0 h-full w-full object-cover" />
+						<div class="absolute inset-0" style="background:linear-gradient(to top, rgb(from var(--color-night) r g b /0.6), rgb(from var(--color-night) r g b /0.2));"></div>
+					</div>
+				</figure>
+			)}
+		</div>
+
+		<div class="mt-24 grid gap-10 sm:grid-cols-3">
+			{s.story.stats.map((stat, i) => {
+				const { target, suffix, decimals } = parseStat(stat.value);
+				return (
+					<div data-animate data-animate-delay={String(i * 150)} class="text-center">
+						<p
+							data-counter={String(target)}
+							data-counter-suffix={suffix}
+							data-counter-decimals={String(decimals)}
+							aria-label={`${stat.value} ${stat.label}`}
+							class="font-display text-[clamp(3rem,6vw,4.5rem)] text-amber"
+							style="text-shadow:0 0 60px rgb(from var(--color-amber) r g b /0.2);"
+						>
+							{stat.value}
+						</p>
+						<hr class="divider-amber" />
+						<p class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">
+							{stat.label}
+						</p>
+					</div>
+				);
+			})}
+		</div>
+	</div>
+</section>

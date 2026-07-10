@@ -115,6 +115,22 @@ export interface BccSettings {
 		twitter: string;
 		facebook: string;
 	};
+	/** Design knobs (the WP Customizer equivalent). Emitted as :root --bcc-* vars. */
+	design: {
+		colors: {
+			night: string;
+			deep: string;
+			amber: string;
+			amberLight: string;
+			moon: string;
+			silver: string;
+		};
+		fonts: {
+			display: string;
+			body: string;
+			accent: string;
+		};
+	};
 }
 
 export const BCC_DEFAULTS: BccSettings = {
@@ -219,6 +235,21 @@ export const BCC_DEFAULTS: BccSettings = {
 		instagram: "",
 		twitter: "",
 		facebook: "",
+	},
+	design: {
+		colors: {
+			night: "#0A0E1A",
+			deep: "#111833",
+			amber: "#D4A03C",
+			amberLight: "#E8C060",
+			moon: "#C8D0E0",
+			silver: "#8892A8",
+		},
+		fonts: {
+			display: "Cormorant Garamond",
+			body: "EB Garamond",
+			accent: "Josefin Sans",
+		},
 	},
 };
 

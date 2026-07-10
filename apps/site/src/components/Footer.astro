@@ -1,20 +1,114 @@
 ---
 /**
- * Site footer (scaffold stub — full photo-caption footer lands in Phase 4).
+ * Site footer — a photo-caption strip over the footer image, then brand +
+ * navigate + connect columns, then the legal line. All copy/imagery from the
+ * editable BccSettings.
  */
 import { getBccSettings } from "@bcc/plugin/server";
+import { mediaUrl } from "../lib/content";
 
-const settings = await getBccSettings();
-const copyright = settings.footer.copyright;
-const tagline = settings.footer.tagline;
+const s = await getBccSettings();
+const footerImg = await mediaUrl(s.footer.image);
+
+const navLinks = [
+	{ label: "Story", href: "/#story" },
+	{ label: "Devotions", href: "/#devotions" },
+	{ label: "Experiences", href: "/#experiences" },
+	{ label: "Programs", href: "/programs" },
+	{ label: "Contact", href: "/#contact" },
+];
+
+const socials = [
+	{ key: "instagram", label: "Instagram", url: s.social.instagram },
+	{ key: "twitter", label: "X", url: s.social.twitter },
+	{ key: "facebook", label: "Facebook", url: s.social.facebook },
+].filter((x) => x.url);
+
+const BAT =
+	"M50 30 C45 15, 20 5, 2 20 C15 18, 25 22, 35 28 C38 20, 44 16, 50 14 C56 16, 62 20, 65 28 C75 22, 85 18, 98 20 C80 5, 55 15, 50 30Z";
 ---
 
-<footer id="contact" class="border-t border-white/5 bg-deep py-[var(--spacing-section-md)]">
-	<div class="mx-auto max-w-[var(--width-shell)] px-[var(--spacing-gutter)] text-center">
-		<p class="font-display text-2xl text-moon">Bat City Council</p>
-		<p class="mt-2 font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">
-			{tagline}
-		</p>
-		<p class="mt-8 text-sm text-silver/70" set:html={copyright} />
+<footer id="footer" class="relative bg-deep">
+	{footerImg && (
+		<div class="relative flex h-64 items-center justify-center overflow-hidden md:h-80">
+			<img src={footerImg} alt="" class="absolute inset-0 h-full w-full object-cover object-center" />
+			<div class="absolute inset-0 bg-night/70"></div>
+			<p
+				data-animate
+				class="relative z-10 px-6 text-center font-display text-3xl italic text-moon md:text-4xl"
+			>
+				{s.footer.caption}
+			</p>
+		</div>
+	)}
+
+	<div class="border-t border-white/5">
+		<div class="mx-auto grid max-w-[var(--width-shell)] gap-12 px-[var(--spacing-gutter)] py-20 md:grid-cols-3">
+			<div>
+				<a href="/" class="flex items-center gap-3" aria-label="Bat City Council home">
+					<svg viewBox="0 0 100 60" class="h-7 w-8 text-amber" aria-hidden="true">
+						<path d={BAT} fill="currentColor" />
+					</svg>
+					<span class="font-display text-xl text-moon">Bat City Council</span>
+				</a>
+				<p class="mt-4 font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">
+					{s.footer.tagline}
+				</p>
+				<p class="mt-4 max-w-xs text-sm text-silver/70">
+					Austin is a global example of how to live harmoniously with bats.
+				</p>
+			</div>
+
+			<div>
+				<p class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">Navigate</p>
+				<ul class="mt-4 flex flex-col gap-3">
+					{navLinks.map((l) => (
+						<li>
+							<a
+								href={l.href}
+								class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver transition-colors hover:text-amber"
+							>
+								{l.label}
+							</a>
+						</li>
+					))}
+				</ul>
+			</div>
+
+			<div>
+				<p class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">Connect</p>
+				<a
+					href="mailto:hello@batcitycouncil.org"
+					class="mt-4 block text-sm text-moon/80 transition-colors hover:text-amber"
+				>
+					hello@batcitycouncil.org
+				</a>
+				<a
+					href={s.footer.foundBatUrl}
+					class="mt-2 block text-sm text-moon/80 transition-colors hover:text-amber"
+				>
+					Found a bat?
+				</a>
+				{socials.length > 0 && (
+					<div class="mt-5 flex gap-3">
+						{socials.map((soc) => (
+							<a
+								href={soc.url}
+								aria-label={soc.label}
+								class="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 font-accent text-xs uppercase tracking-widest text-silver transition-colors hover:border-amber hover:text-amber"
+							>
+								{soc.label.slice(0, 2)}
+							</a>
+						))}
+					</div>
+				)}
+			</div>
+		</div>
+
+		<div class="border-t border-white/5">
+			<div class="mx-auto max-w-[var(--width-shell)] px-[var(--spacing-gutter)] py-8">
+				<p class="text-center text-xs text-silver/60" set:html={s.footer.copyright} />
+			</div>
+		</div>
 	</div>
 </footer>

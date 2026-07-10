@@ -1,0 +1,119 @@
+---
+/**
+ * Contact — the enquiry form. Posts JSON to the plugin's public enquiries route
+ * (honeypot + rate limit + optional Turnstile) with a no-JS fallback to
+ * /api/enquiry. Copy is light; this is the "Get in touch" surface.
+ */
+interface Props {
+	/** where the enquiry came from, stored on the record */
+	source?: string;
+}
+const { source = "contact" } = Astro.props;
+---
+
+<section id="contact" class="relative bcc-noise py-[var(--spacing-section-lg)]">
+	<div class="mx-auto max-w-2xl px-[var(--spacing-gutter)] text-center">
+		<p data-animate class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
+			Get in Touch
+		</p>
+		<h2 data-animate class="mt-6 font-display text-[clamp(2.25rem,4vw,3.25rem)] leading-tight text-moon">
+			Join the <span class="italic text-gradient-amber">colony.</span>
+		</h2>
+		<p data-animate data-animate-delay="200" class="mx-auto mt-6 max-w-lg text-moon/70">
+			Questions about a devotion, a bat experience, or a partnership? Send a note and we will be in touch.
+		</p>
+
+		<form
+			data-enquiry-form
+			method="POST"
+			action="/api/enquiry"
+			data-animate
+			data-animate-delay="300"
+			class="mt-10 space-y-4 text-left"
+		>
+			<input type="hidden" name="source" value={source} />
+			<div class="hidden" aria-hidden="true">
+				<label>Website<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+			</div>
+
+			<div class="grid gap-4 sm:grid-cols-2">
+				<label class="block">
+					<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">Name</span>
+					<input
+						type="text"
+						name="name"
+						required
+						class="mt-2 w-full rounded-sm border border-white/15 bg-deep/60 px-4 py-3 text-moon outline-none transition focus:border-amber"
+					/>
+				</label>
+				<label class="block">
+					<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">Email</span>
+					<input
+						type="email"
+						name="email"
+						required
+						class="mt-2 w-full rounded-sm border border-white/15 bg-deep/60 px-4 py-3 text-moon outline-none transition focus:border-amber"
+					/>
+				</label>
+			</div>
+			<label class="block">
+				<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">Message</span>
+				<textarea
+					name="message"
+					rows="4"
+					required
+					class="mt-2 w-full rounded-sm border border-white/15 bg-deep/60 px-4 py-3 text-moon outline-none transition focus:border-amber"
+				></textarea>
+			</label>
+
+			<div class="flex items-center gap-4">
+				<button
+					type="submit"
+					class="rounded-sm bg-amber px-8 py-4 font-accent text-sm font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:-translate-y-0.5 hover:bg-amber-light hover:shadow-[var(--shadow-amber-glow-strong)]"
+				>
+					Send
+				</button>
+				<p data-enquiry-status class="text-sm text-silver" role="status" aria-live="polite"></p>
+			</div>
+		</form>
+	</div>
+</section>
+
+<script>
+	const form = document.querySelector<HTMLFormElement>("[data-enquiry-form]");
+	const status = document.querySelector<HTMLElement>("[data-enquiry-status]");
+
+	// Reflect the no-JS redirect status flag.
+	const params = new URLSearchParams(window.location.search);
+	if (status && params.get("enquiry") === "ok") status.textContent = "Thank you. We will be in touch.";
+	if (status && params.get("enquiry") === "error") status.textContent = "Something went wrong. Please try again.";
+
+	form?.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		if (!status) return;
+		const data = new FormData(form);
+		if (data.get("website")) return; // honeypot
+		status.textContent = "Sending...";
+		try {
+			const res = await fetch("/_emdash/api/plugins/bcc/enquiries", {
+				method: "POST",
+				headers: { "Content-Type": "application/json", "X-EmDash-Request": "1" },
+				body: JSON.stringify({
+					name: data.get("name"),
+					email: data.get("email"),
+					message: data.get("message"),
+					source: data.get("source"),
+				}),
+			});
+			const json = (await res.json()) as { data?: { id?: string }; error?: { message?: string } };
+			if (res.ok && json.data?.id) {
+				status.textContent = "Thank you. We will be in touch.";
+				form.reset();
+			} else {
+				status.textContent = json.error?.message ?? "Something went wrong. Please try again.";
+			}
+		} catch {
+			status.textContent = "Something went wrong. Please try again.";
+		}
+	});
+</script>

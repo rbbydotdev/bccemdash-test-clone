@@ -1,0 +1,111 @@
+---
+/**
+ * Devotions — the tier grid. Business tiers render FIRST (client rule), then
+ * individual. Each card: pill label, price, statement, Devote Now button (per-
+ * tier devote_url or the site-wide Zeffy link). Tiers are the `tiers` collection.
+ */
+import { getBccSettings } from "@bcc/plugin/server";
+import { publishedEntries, str, num, type Entry } from "../../lib/content";
+
+const s = await getBccSettings();
+const devoteUrl = s.integrations.devoteUrl;
+
+const tiers = await publishedEntries("tiers");
+const business = tiers.filter((t) => str(t.data, "tier_type") === "business");
+const individual = tiers.filter((t) => str(t.data, "tier_type") === "individual");
+
+function priceParts(data: Record<string, unknown>): { price: string; period: string } {
+	const label = str(data, "amount_label");
+	const amount = num(data, "amount");
+	if (label.trim().startsWith("$")) return { price: label, period: "" };
+	const price = amount != null ? `$${amount.toLocaleString("en-US")}` : label;
+	return { price, period: label };
+}
+function accent(data: Record<string, unknown>): string {
+	const a = num(data, "amount") ?? 0;
+	if (a >= 25000) return "var(--color-amber-glow)";
+	if (a >= 10000) return "var(--color-amber-light)";
+	if (a >= 1000) return "var(--color-amber)";
+	return "var(--color-silver)";
+}
+
+const groups: Array<{ label: string; items: Entry[]; cols: string }> = [];
+if (business.length > 0)
+	groups.push({ label: s.devotions.businessLabel, items: business, cols: "mx-auto max-w-5xl md:grid-cols-3" });
+if (individual.length > 0)
+	groups.push({ label: s.devotions.individualLabel, items: individual, cols: "sm:grid-cols-2 lg:grid-cols-4" });
+---
+
+<section id="devotions" class="relative bcc-noise py-[var(--spacing-section-lg)]">
+	<div class="mx-auto max-w-[var(--width-shell)] px-[var(--spacing-gutter)]">
+		<div class="text-center">
+			<p data-animate class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
+				{s.devotions.eyebrow}
+			</p>
+			<h2 data-animate class="mt-6 font-display text-[clamp(2.5rem,5vw,4rem)] leading-tight text-moon">
+				{s.devotions.heading} <span class="italic text-gradient-amber">{s.devotions.headingAccent}</span>
+			</h2>
+			<p data-animate data-animate-delay="200" class="mx-auto mt-6 max-w-2xl text-moon/70">
+				{s.devotions.lede}
+			</p>
+		</div>
+
+		{groups.map((group) => (
+			<div class="mt-16">
+				<h3 data-animate class="text-center font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-silver">
+					{group.label}
+				</h3>
+				<div class:list={["mt-8 grid gap-6", group.cols]}>
+					{group.items.map((t, i) => {
+						const { price, period } = priceParts(t.data);
+						const flagship = (num(t.data, "amount") ?? 0) >= 25000;
+						const href = str(t.data, "devote_url") || devoteUrl;
+						const statement = str(t.data, "statement");
+						return (
+							<article
+								data-animate
+								data-animate-delay={String(i * 100)}
+								class:list={[
+									"bcc-tier-card flex flex-col rounded-[var(--radius-card)] border border-amber/10 bg-deep/50 p-7 backdrop-blur-[var(--blur-veil)]",
+									flagship && "is-flagship",
+								]}
+								style={`--tier-accent:${accent(t.data)};`}
+							>
+								<div class="flex items-start justify-between gap-2">
+									<p class="rounded-[var(--radius-pill)] border border-amber/20 px-3 py-1 font-accent text-[0.65rem] uppercase tracking-[var(--tracking-label)] text-amber">
+										{str(t.data, "title")}
+									</p>
+									{flagship && (
+										<span class="rounded-sm bg-amber/20 px-2 py-1 font-accent text-[0.6rem] font-semibold uppercase tracking-[var(--tracking-label)] text-amber-light">
+											Flagship
+										</span>
+									)}
+								</div>
+								<p class="mt-6 font-display text-4xl text-moon">{price}</p>
+								{period && (
+									<p class="font-accent text-[0.65rem] uppercase tracking-[var(--tracking-label)] text-silver">
+										{period === "/yr" ? "Per Year" : period}
+									</p>
+								)}
+								<hr class="divider-amber !mx-0" />
+								{statement && <p class="text-sm leading-relaxed text-silver">{statement}</p>}
+								<a
+									href={href}
+									aria-label={`Devote at the ${str(t.data, "title")} level`}
+									class="mt-auto block rounded-sm bg-amber px-5 py-3 pt-3 text-center font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:bg-amber-light"
+								>
+									Devote Now
+								</a>
+							</article>
+						);
+					})}
+				</div>
+			</div>
+		))}
+
+		<p data-animate class="mx-auto mt-14 max-w-2xl text-center font-display text-xl italic text-moon/80">
+			{s.devotions.closer}
+		</p>
+		<p class="mt-3 text-center text-xs text-silver/70">{s.devotions.note}</p>
+	</div>
+</section>

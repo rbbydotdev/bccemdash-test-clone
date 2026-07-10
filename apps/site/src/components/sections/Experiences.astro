@@ -1,0 +1,75 @@
+---
+/**
+ * Experiences — full-bleed hover cards on a deep-night ground. Image zooms,
+ * gradient deepens, description slides up on hover; signature badge top-right.
+ * Experiences are the `experiences` collection.
+ */
+import { getBccSettings } from "@bcc/plugin/server";
+import { publishedEntries, mediaUrl, str, bool } from "../../lib/content";
+
+const s = await getBccSettings();
+const entries = await publishedEntries("experiences");
+const cards = await Promise.all(
+	entries.map(async (e) => ({ e, img: await mediaUrl(e.data.image) })),
+);
+---
+
+<section id="experiences" class="relative bcc-noise bg-deep py-[var(--spacing-section-lg)]">
+	<div class="mx-auto max-w-[var(--width-shell)] px-[var(--spacing-gutter)]">
+		<div class="text-center">
+			<p data-animate class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
+				{s.experiences.eyebrow}
+			</p>
+			<h2 data-animate class="mt-6 font-display text-[clamp(2.5rem,5vw,4rem)] leading-tight text-moon">
+				{s.experiences.heading} <span class="italic text-gradient-amber">{s.experiences.headingAccent}</span>
+			</h2>
+			<p data-animate data-animate-delay="200" class="mx-auto mt-6 max-w-2xl text-moon/70">
+				{s.experiences.lede}
+			</p>
+		</div>
+
+		<div class="mt-14 grid gap-8 md:grid-cols-2">
+			{cards.map(({ e, img }, i) => (
+				<a
+					href="#contact"
+					data-animate
+					data-animate-delay={String(i * 100)}
+					class="bcc-exp-card group relative block h-[420px] rounded-[var(--radius-card)] md:h-[480px]"
+				>
+					{img ? (
+						<img src={img} alt={str(e.data, "title")} loading="lazy" class="absolute inset-0 h-full w-full object-cover" />
+					) : (
+						<div class="absolute inset-0 bg-night"></div>
+					)}
+					<div
+						class="absolute inset-0"
+						style="background:linear-gradient(to top, rgb(from var(--color-night) r g b /0.95) 0%, rgb(from var(--color-night) r g b /0.35) 55%, transparent 100%);"
+					>
+					</div>
+					{bool(e.data, "is_signature") && (
+						<span class="absolute right-4 top-4 rounded-sm bg-amber px-3 py-1 font-accent text-[0.6rem] font-bold uppercase tracking-[var(--tracking-label)] text-night">
+							Signature Experience
+						</span>
+					)}
+					<div class="absolute inset-x-0 bottom-0 p-7">
+						<h3 class="font-display text-2xl text-moon sm:text-3xl">{str(e.data, "title")}</h3>
+						<p class="bcc-exp-desc mt-3 max-w-md text-sm leading-relaxed text-moon/80">
+							{str(e.data, "description")}
+						</p>
+						{str(e.data, "cta_text") && (
+							<p class="bcc-exp-desc mt-4 font-accent text-xs uppercase tracking-[var(--tracking-label)] text-amber">
+								{str(e.data, "cta_text")} →
+							</p>
+						)}
+					</div>
+				</a>
+			))}
+		</div>
+
+		<p data-animate class="mt-12 text-center">
+			<a href="#contact" class="font-display text-xl italic text-moon/80 transition-colors hover:text-amber">
+				{s.experiences.outro}
+			</a>
+		</p>
+	</div>
+</section>

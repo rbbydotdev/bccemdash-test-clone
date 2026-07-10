@@ -61,6 +61,7 @@ async function fetchWithRetry(url: string, init: RequestInit): Promise<Response>
  *   via `EMDASH_COOKIE` (copy it from an admin browser session).
  */
 export async function login(): Promise<void> {
+	if (process.env.EMDASH_TOKEN?.trim()) return; // Bearer token: no session needed
 	const provided = process.env.EMDASH_COOKIE;
 	if (provided && provided.trim()) {
 		sessionCookie = provided.trim();
@@ -80,8 +81,15 @@ export async function login(): Promise<void> {
 	sessionCookie = cookies.map((cookie) => cookie.split(";")[0]!).join("; ");
 }
 
+/** Auth headers: a session cookie (dev-bypass or copied) or a Bearer API token. */
+function authHeaders(): Record<string, string> {
+	const token = process.env.EMDASH_TOKEN?.trim();
+	if (token) return { authorization: `Bearer ${token}` };
+	return { cookie: sessionCookie };
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-	const headers: Record<string, string> = { cookie: sessionCookie };
+	const headers: Record<string, string> = { ...authHeaders() };
 	if (method !== "GET") headers["X-EmDash-Request"] = "1";
 	let payload: string | undefined;
 	if (body !== undefined) {
@@ -186,7 +194,7 @@ export async function uploadMedia(
 	if (alt) form.append("alt", alt);
 	const response = await fetchWithRetry(`${API}/media`, {
 		method: "POST",
-		headers: { cookie: sessionCookie, "X-EmDash-Request": "1" },
+		headers: { ...authHeaders(), "X-EmDash-Request": "1" },
 		body: form,
 	});
 	const text = await response.text();

@@ -11,13 +11,13 @@ const { slug } = Astro.params;
 const { entry } = await getEmDashEntry("programs", slug ?? "");
 if (!entry) return Astro.rewrite("/404");
 
-const data = entry.data as Record<string, unknown>;
+const data = entry.data as unknown as Record<string, unknown>;
 const title = typeof data.title === "string" ? data.title : "Program";
 const img = await mediaUrl(data.image);
 const body = data.body;
 ---
 
-<Base title={title} content={{ collection: "programs", id: entry.id, slug: entry.slug }}>
+<Base title={title} content={{ collection: "programs", id: entry.id, slug }}>
 	<article class="px-[var(--spacing-gutter)] pt-32 pb-[var(--spacing-section-lg)]">
 		<div class="mx-auto max-w-[var(--width-prose)]">
 			<a href="/programs" class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-amber transition hover:text-amber-light">

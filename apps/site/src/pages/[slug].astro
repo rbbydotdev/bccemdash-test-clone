@@ -11,12 +11,12 @@ const { slug } = Astro.params;
 const { entry } = await getEmDashEntry("pages", slug ?? "");
 if (!entry) return Astro.rewrite("/404");
 
-const data = entry.data as Record<string, unknown>;
+const data = entry.data as unknown as Record<string, unknown>;
 const title = typeof data.title === "string" ? data.title : "Page";
 const body = data.body;
 ---
 
-<Base title={title} content={{ collection: "pages", id: entry.id, slug: entry.slug }}>
+<Base title={title} content={{ collection: "pages", id: entry.id, slug }}>
 	<article class="px-[var(--spacing-gutter)] pt-32 pb-[var(--spacing-section-lg)]">
 		<div class="mx-auto max-w-[var(--width-prose)]">
 			<h1 class="font-display text-[clamp(2.25rem,5vw,3.5rem)] leading-tight text-moon">{title}</h1>

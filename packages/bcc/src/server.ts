@@ -5,9 +5,18 @@
  * HTTP — a Worker cannot fetch() its own route on the same zone, so the contact
  * page's no-JS POST fallback goes through here.
  */
+import { OptionsRepository } from "emdash";
+import { getDb } from "emdash/runtime";
+
 import { createEnquiry, toEnquiryDTO, type EnquiryDTO } from "./db/repos/enquiries.repo.js";
 import { getBccDb } from "./routes/helpers.js";
-import { setUserPassword, verifyUserPassword, type AuthedUser } from "./services/auth.js";
+import {
+	countUsers,
+	createFirstAdmin,
+	setUserPassword,
+	verifyUserPassword,
+	type AuthedUser,
+} from "./services/auth.js";
 import { checkBccRateLimit } from "./services/rate-limit.js";
 
 export { passwordProblem } from "./services/password.js";
@@ -38,6 +47,36 @@ export async function checkLoginRateLimit(ip: string | null): Promise<boolean> {
 	const db = await getBccDb();
 	const r = await checkBccRateLimit(db, ip, "auth-login", 10, 600);
 	return r.allowed;
+}
+
+/** True when no user exists yet — the first-admin bootstrap is available. */
+export async function needsBootstrap(): Promise<boolean> {
+	try {
+		return (await countUsers(await getBccDb())) === 0;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * First-admin bootstrap: create the first admin with an email+password (no
+ * passkey needed) and mark setup complete. Returns null if a user already
+ * exists (the site is already configured). The caller sets the session.
+ */
+export async function bootstrapAdmin(
+	input: { email: string; password: string; name?: string | null },
+	origin?: string,
+): Promise<AuthedUser | null> {
+	const user = await createFirstAdmin(await getBccDb(), input);
+	if (!user) return null;
+
+	const options = new OptionsRepository((await getDb()) as never);
+	await options.set("emdash:setup_complete", true);
+	if (origin) await options.set("emdash:site_url", origin);
+	if (!(await options.get("emdash:site_title"))) {
+		await options.set("emdash:site_title", "Bat City Council");
+	}
+	return user;
 }
 
 // Re-export settings helpers so the host Astro app reads/writes the

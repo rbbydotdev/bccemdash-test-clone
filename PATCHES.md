@@ -42,5 +42,14 @@ rely on both; keep them across any future `git subtree pull`.
   `vendor/emdash/packages/core/src/astro/integration/runtime.ts`,
   `vendor/emdash/packages/admin/src/components/Sidebar.tsx`.
 
-No BCC-specific vendored patches have been needed so far — the plugin, seed, and host app cover
-everything. Add new entries here (and export `patches/NNNN-*.patch`) if that changes.
+### BCC-specific patches
+
+- **0003 — first-run setup routes to the email+password screen.** emdash is passkey-first: its setup
+  middleware redirects an unconfigured `/_emdash/admin` to the passkey wizard at `/_emdash/admin/setup`.
+  The client wants a WordPress-style email+password admin, so we redirect first-run setup to our own
+  `/login` screen instead (which shows the first-admin bootstrap form when no user exists). The passkey
+  wizard is untouched and still reachable directly at `/_emdash/admin/setup` for anyone who prefers it.
+  File: `vendor/emdash/packages/core/src/astro/middleware/setup.ts` (three `context.redirect` targets).
+  Rebuild `emdash` after applying (`pnpm --filter emdash build`). See `patches/0003-*.patch`.
+
+Add new entries here (and export `patches/NNNN-*.patch`) as needed.

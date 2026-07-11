@@ -20,5 +20,17 @@ export async function createTestDb(): Promise<BccDb> {
 		count INTEGER NOT NULL DEFAULT 1,
 		PRIMARY KEY (key, "window")
 	)`.execute(db);
+	// Minimal slice of emdash's users table (owned by emdash in production).
+	await sql`CREATE TABLE users (
+		id TEXT PRIMARY KEY,
+		email TEXT NOT NULL UNIQUE,
+		name TEXT,
+		role INTEGER NOT NULL DEFAULT 10,
+		email_verified INTEGER NOT NULL DEFAULT 0,
+		data TEXT,
+		created_at TEXT,
+		updated_at TEXT,
+		disabled INTEGER
+	)`.execute(db);
 	return db;
 }

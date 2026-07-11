@@ -6,14 +6,58 @@
  * credential and returns the user id; the caller does `session.set("user", …)`
  * exactly like every built-in emdash login route.
  */
+import { ulid } from "ulidx";
+
 import type { BccDb } from "../db/types.js";
 import { getPasswordHash, upsertPassword } from "../db/repos/passwords.repo.js";
 import { hashPassword, verifyPassword } from "./password.js";
+
+export const ROLE_ADMIN = 50;
 
 export interface AuthedUser {
 	id: string;
 	email: string;
 	role: number;
+}
+
+/** Count existing users — bootstrap (first-admin) is only allowed when zero. */
+export async function countUsers(db: BccDb): Promise<number> {
+	const row = await db
+		.selectFrom("users")
+		.select((eb) => eb.fn.countAll<number>().as("n"))
+		.executeTakeFirst();
+	return Number(row?.n ?? 0);
+}
+
+/**
+ * Create the first admin user with an email+password credential. Guards on
+ * "no users exist" so it can never take over an already-configured site.
+ * Returns null if a user already exists.
+ */
+export async function createFirstAdmin(
+	db: BccDb,
+	input: { email: string; password: string; name?: string | null },
+): Promise<AuthedUser | null> {
+	if ((await countUsers(db)) > 0) return null;
+
+	const id = ulid();
+	const now = new Date().toISOString();
+	const email = input.email.trim().toLowerCase();
+	await db
+		.insertInto("users")
+		.values({
+			id,
+			email,
+			name: input.name?.trim() || null,
+			role: ROLE_ADMIN,
+			// email_verified/created_at/updated_at exist on the emdash users table;
+			// cast through the read-only slice type which omits them.
+			...({ email_verified: 1, created_at: now, updated_at: now } as Record<string, unknown>),
+		} as never)
+		.execute();
+
+	await upsertPassword(db, id, await hashPassword(input.password));
+	return { id, email, role: ROLE_ADMIN };
 }
 
 export async function findUserByEmail(db: BccDb, email: string): Promise<AuthedUser | null> {

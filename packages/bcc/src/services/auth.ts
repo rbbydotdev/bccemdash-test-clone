@@ -29,20 +29,17 @@ export async function countUsers(db: BccDb): Promise<number> {
 	return Number(row?.n ?? 0);
 }
 
-/**
- * Create the first admin user with an email+password credential. Guards on
- * "no users exist" so it can never take over an already-configured site.
- * Returns null if a user already exists.
- */
-export async function createFirstAdmin(
+/** Create an admin user (no gating). Reuses an existing row for the email. */
+export async function createAdminUser(
 	db: BccDb,
-	input: { email: string; password: string; name?: string | null },
-): Promise<AuthedUser | null> {
-	if ((await countUsers(db)) > 0) return null;
+	input: { email: string; name?: string | null },
+): Promise<AuthedUser> {
+	const email = input.email.trim().toLowerCase();
+	const existing = await findUserByEmail(db, email);
+	if (existing) return existing;
 
 	const id = ulid();
 	const now = new Date().toISOString();
-	const email = input.email.trim().toLowerCase();
 	await db
 		.insertInto("users")
 		.values({
@@ -55,9 +52,22 @@ export async function createFirstAdmin(
 			...({ email_verified: 1, created_at: now, updated_at: now } as Record<string, unknown>),
 		} as never)
 		.execute();
-
-	await upsertPassword(db, id, await hashPassword(input.password));
 	return { id, email, role: ROLE_ADMIN };
+}
+
+/**
+ * Create the first admin user with an email+password credential. Guards on
+ * "no users exist" so it can never take over an already-configured site.
+ * Returns null if a user already exists.
+ */
+export async function createFirstAdmin(
+	db: BccDb,
+	input: { email: string; password: string; name?: string | null },
+): Promise<AuthedUser | null> {
+	if ((await countUsers(db)) > 0) return null;
+	const user = await createAdminUser(db, { email: input.email, name: input.name });
+	await upsertPassword(db, user.id, await hashPassword(input.password));
+	return user;
 }
 
 export async function findUserByEmail(db: BccDb, email: string): Promise<AuthedUser | null> {

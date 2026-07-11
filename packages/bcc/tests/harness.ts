@@ -32,5 +32,16 @@ export async function createTestDb(): Promise<BccDb> {
 		updated_at TEXT,
 		disabled INTEGER
 	)`.execute(db);
+	await sql`CREATE TABLE _emdash_api_tokens (
+		id TEXT PRIMARY KEY,
+		name TEXT NOT NULL,
+		token_hash TEXT NOT NULL UNIQUE,
+		prefix TEXT NOT NULL,
+		user_id TEXT NOT NULL,
+		scopes TEXT NOT NULL,
+		expires_at TEXT,
+		last_used_at TEXT,
+		created_at TEXT
+	)`.execute(db);
 	return db;
 }

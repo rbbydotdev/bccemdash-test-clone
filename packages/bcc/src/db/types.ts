@@ -49,6 +49,19 @@ export interface RateLimitsTable {
 	count: ColumnType<number, number | undefined, number>;
 }
 
+/** Core's API-token table (migration 016). We only INSERT PATs for agents. */
+export interface ApiTokensTable {
+	id: string;
+	name: string;
+	token_hash: string;
+	prefix: string;
+	user_id: string;
+	scopes: string; // JSON array
+	expires_at: string | null;
+	last_used_at: string | null;
+	created_at: Timestamp;
+}
+
 // ── Database ────────────────────────────────────────────────────────
 
 /** Read-only slice of emdash's `users` table (owned by emdash). */
@@ -65,6 +78,7 @@ export interface BccDatabase {
 	bcc_user_passwords: UserPasswordsTable;
 	_bcc_migrations: BccMigrationsTable;
 	_emdash_rate_limits: RateLimitsTable;
+	_emdash_api_tokens: ApiTokensTable;
 	users: UsersTable;
 }
 

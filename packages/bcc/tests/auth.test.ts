@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import { ADMIN_SCOPES, createApiToken } from "../src/services/api-token.js";
 import {
 	ROLE_ADMIN,
+	createAdminUser,
 	countUsers,
 	createFirstAdmin,
 	setUserPassword,
@@ -34,6 +36,24 @@ describe("first-admin bootstrap", () => {
 		});
 		expect(second).toBeNull();
 		expect(await countUsers(db)).toBe(1);
+	});
+
+	it("mints an ec_pat_ admin API token for an agent", async () => {
+		const db = await createTestDb();
+		const admin = await createAdminUser(db, { email: "agent@bcc.local", name: "Agent" });
+		const issued = await createApiToken(db, admin.id, "agent-token");
+		expect(issued.token.startsWith("ec_pat_")).toBe(true);
+		expect(issued.scopes).toEqual(ADMIN_SCOPES);
+
+		// Row is stored with a hash, not the raw token.
+		const row = await db
+			.selectFrom("_emdash_api_tokens")
+			.selectAll()
+			.where("id", "=", issued.tokenId)
+			.executeTakeFirst();
+		expect(row?.user_id).toBe(admin.id);
+		expect(row?.token_hash).toBeTruthy();
+		expect(row?.token_hash).not.toEqual(issued.token);
 	});
 
 	it("verifies against an existing user without a password set", async () => {

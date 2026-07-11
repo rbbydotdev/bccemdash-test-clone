@@ -3,7 +3,7 @@
 //   DEPLOY_TARGET=cloudflare  -> Workers + D1 + R2 (wrangler dev / deploy)
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig, fontProviders } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
 import { fieldKitPlugin } from "@emdash-cms/plugin-field-kit";
@@ -89,5 +89,14 @@ export default defineConfig({
 			fallbacks: ["sans-serif"],
 		},
 	],
+	// Server secrets read via getSecret() (portable across Node + Cloudflare;
+	// locals.runtime.env was removed in Astro v6). All optional.
+	env: {
+		schema: {
+			BCC_BOOTSTRAP_SECRET: envField.string({ context: "server", access: "secret", optional: true }),
+			BCC_AGENT_EMAIL: envField.string({ context: "server", access: "secret", optional: true }),
+			TURNSTILE_SECRET_KEY: envField.string({ context: "server", access: "secret", optional: true }),
+		},
+	},
 	devToolbar: { enabled: false },
 });

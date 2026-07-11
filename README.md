@@ -74,7 +74,7 @@ passkey/session:
 # 1. set a shared secret (once), then mint an admin token
 wrangler secret put BCC_BOOTSTRAP_SECRET          # in apps/site
 TOKEN=$(curl -s -X POST -H "x-bootstrap-secret: $SECRET" \
-  https://<site>/api/agent-token | jq -r .data.token)
+  https://<site>/api/auth/agent-token | jq -r .data.token)
 
 # 2. use it for REST + MCP
 curl -H "Authorization: Bearer $TOKEN" https://<site>/_emdash/api/content/tiers
@@ -84,6 +84,6 @@ curl -H "Authorization: Bearer $TOKEN" https://<site>/_emdash/api/content/tiers
 EMDASH_TOKEN=$TOKEN EMDASH_URL=https://<site> corepack pnpm --dir scripts/migrate-wp migrate
 ```
 
-`/api/agent-token` is disabled unless `BCC_BOOTSTRAP_SECRET` is set; it creates/uses an admin user
+`/api/auth/agent-token` is disabled unless `BCC_BOOTSTRAP_SECRET` is set; it creates/uses an admin user
 (`agent@…`, override with `BCC_AGENT_EMAIL`) and returns a full-access `ec_pat_*` token. On a fresh site it
 also completes setup, so an agent can bootstrap and populate everything unattended.

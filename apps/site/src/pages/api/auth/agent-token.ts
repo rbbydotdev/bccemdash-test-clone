@@ -10,20 +10,15 @@
  * `secret` field. Returns the raw token once — store it.
  */
 import type { APIRoute } from "astro";
+import { getSecret } from "astro:env/server";
 import { issueAgentToken, secretsMatch } from "@bcc/plugin/server";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
-	// Cloudflare secrets/vars live on locals.runtime.env, not process.env;
-	// Node dev uses process.env. Read both.
-	const env = ((locals as { runtime?: { env?: Record<string, string> } }).runtime?.env ?? {}) as Record<
-		string,
-		string | undefined
-	>;
-	const configured =
-		env.BCC_BOOTSTRAP_SECRET ??
-		(typeof process !== "undefined" ? process.env?.BCC_BOOTSTRAP_SECRET : undefined);
+export const POST: APIRoute = async ({ request }) => {
+	// getSecret() reads env/secrets portably across the Node and Cloudflare
+	// adapters (locals.runtime.env was removed in Astro v6 and throws on workerd).
+	const configured = getSecret("BCC_BOOTSTRAP_SECRET");
 	if (!configured) {
 		return json({ error: { message: "Agent token issuance is not enabled." } }, 403);
 	}
@@ -38,7 +33,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 	}
 
 	const issued = await issueAgentToken({
-		email: (typeof body.email === "string" ? body.email : undefined) ?? env.BCC_AGENT_EMAIL,
+		email: (typeof body.email === "string" ? body.email : undefined) ?? getSecret("BCC_AGENT_EMAIL"),
 		name: typeof body.name === "string" ? body.name : undefined,
 		origin: new URL(request.url).origin,
 	});

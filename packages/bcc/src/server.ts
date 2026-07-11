@@ -5,13 +5,17 @@
  * HTTP — a Worker cannot fetch() its own route on the same zone, so the contact
  * page's no-JS POST fallback goes through here.
  */
-import { secureCompare } from "@emdash-cms/auth";
 import { OptionsRepository } from "emdash";
 import { getDb } from "emdash/runtime";
 
 import { createEnquiry, toEnquiryDTO, type EnquiryDTO } from "./db/repos/enquiries.repo.js";
 import { getBccDb } from "./routes/helpers.js";
-import { createApiToken, deleteApiTokensByName, type IssuedToken } from "./services/api-token.js";
+import {
+	createApiToken,
+	deleteApiTokensByName,
+	secretsEqual,
+	type IssuedToken,
+} from "./services/api-token.js";
 import {
 	countUsers,
 	createAdminUser,
@@ -116,7 +120,7 @@ export async function issueTokenFor(userId: string, name = "bootstrap-token"): P
 
 /** Constant-time secret comparison (for the agent-token endpoint gate). */
 export function secretsMatch(a: string, b: string): boolean {
-	return secureCompare(a, b);
+	return secretsEqual(a, b);
 }
 
 // Re-export settings helpers so the host Astro app reads/writes the

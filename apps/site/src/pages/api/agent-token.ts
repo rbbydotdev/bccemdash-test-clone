@@ -1,21 +1,29 @@
 /**
  * Agent access: POST here with the shared bootstrap secret to receive a
- * full-access admin API token (`ec_pat_*`), with no browser/passkey needed. Use
- * it as `Authorization: Bearer <token>` against the REST API (/_emdash/api/*)
- * and MCP (/_emdash/api/mcp). Lets an automation agent set up and drive a fresh
- * (or existing) site.
+ * full-access admin API token (`ec_pat_*`), no browser/passkey needed. Use it as
+ * `Authorization: Bearer <token>` against the REST API (/_emdash/api/*) and MCP
+ * (/_emdash/api/mcp). Lets an automation agent set up and drive a fresh (or
+ * existing) site.
  *
  * Disabled unless `BCC_BOOTSTRAP_SECRET` is set (a Cloudflare secret / env var);
- * the caller must present the same value via the `x-bootstrap-secret` header or
- * a `secret` field. Returns the raw token once — store it.
+ * the caller presents the same value via the `x-bootstrap-secret` header or a
+ * `secret` field. Returns the raw token once — store it.
  */
 import type { APIRoute } from "astro";
 import { issueAgentToken, secretsMatch } from "@bcc/plugin/server";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
-	const configured = typeof process !== "undefined" ? process.env?.BCC_BOOTSTRAP_SECRET : undefined;
+export const POST: APIRoute = async ({ request, locals }) => {
+	// Cloudflare secrets/vars live on locals.runtime.env, not process.env;
+	// Node dev uses process.env. Read both.
+	const env = ((locals as { runtime?: { env?: Record<string, string> } }).runtime?.env ?? {}) as Record<
+		string,
+		string | undefined
+	>;
+	const configured =
+		env.BCC_BOOTSTRAP_SECRET ??
+		(typeof process !== "undefined" ? process.env?.BCC_BOOTSTRAP_SECRET : undefined);
 	if (!configured) {
 		return json({ error: { message: "Agent token issuance is not enabled." } }, 403);
 	}
@@ -30,7 +38,7 @@ export const POST: APIRoute = async ({ request }) => {
 	}
 
 	const issued = await issueAgentToken({
-		email: typeof body.email === "string" ? body.email : undefined,
+		email: (typeof body.email === "string" ? body.email : undefined) ?? env.BCC_AGENT_EMAIL,
 		name: typeof body.name === "string" ? body.name : undefined,
 		origin: new URL(request.url).origin,
 	});

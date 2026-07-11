@@ -12,6 +12,7 @@
 import { sql, type ColumnType, type Kysely } from "kysely";
 
 import * as m001 from "./migrations/001_init.js";
+import * as m002 from "./migrations/002_passwords.js";
 
 export interface BccMigration {
 	name: string;
@@ -19,7 +20,7 @@ export interface BccMigration {
 }
 
 /** Ordered, forward-only migration list. Append-only — never reorder. */
-const MIGRATIONS: BccMigration[] = [m001];
+const MIGRATIONS: BccMigration[] = [m001, m002];
 
 interface HistoryDb {
 	_bcc_migrations: {

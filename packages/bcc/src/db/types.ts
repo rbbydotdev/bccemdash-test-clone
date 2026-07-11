@@ -28,6 +28,13 @@ export interface EnquiriesTable {
 	updated_at: Timestamp;
 }
 
+export interface UserPasswordsTable {
+	user_id: string;
+	password_hash: string;
+	created_at: Timestamp;
+	updated_at: Timestamp;
+}
+
 export interface BccMigrationsTable {
 	name: string;
 	executed_at: Timestamp;
@@ -44,10 +51,21 @@ export interface RateLimitsTable {
 
 // ── Database ────────────────────────────────────────────────────────
 
+/** Read-only slice of emdash's `users` table (owned by emdash). */
+export interface UsersTable {
+	id: string;
+	email: string;
+	name: string | null;
+	role: number;
+	disabled: ColumnType<number, number | undefined, number> | null;
+}
+
 export interface BccDatabase {
 	enquiries: EnquiriesTable;
+	bcc_user_passwords: UserPasswordsTable;
 	_bcc_migrations: BccMigrationsTable;
 	_emdash_rate_limits: RateLimitsTable;
+	users: UsersTable;
 }
 
 export type BccDb = Kysely<BccDatabase>;

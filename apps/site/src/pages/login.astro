@@ -1,0 +1,69 @@
+---
+/**
+ * /login — email + password sign-in (an alternative to the passkey login at
+ * /_emdash/admin). Posts to /api/auth/login, which sets the emdash session on
+ * success and redirects to the admin.
+ */
+import Base from "../layouts/Base.astro";
+
+const error = Astro.url.searchParams.get("error");
+---
+
+<Base title="Sign In" description="Sign in to Bat City Council." robots="noindex" bare>
+	<section class="flex min-h-screen items-center justify-center px-[var(--spacing-gutter)] py-24">
+		<div class="w-full max-w-md">
+			<div class="text-center">
+				<a href="/" class="font-display text-2xl text-moon">Bat City Council</a>
+				<p class="mt-2 font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
+					Sign In
+				</p>
+			</div>
+
+			<form
+				method="POST"
+				action="/api/auth/login"
+				class="mt-8 space-y-4 rounded-[var(--radius-card)] border border-white/10 bg-deep/50 p-8 backdrop-blur-[var(--blur-veil)]"
+			>
+				{error && (
+					<p class="rounded-sm border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+						{error}
+					</p>
+				)}
+
+				<label class="block">
+					<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">Email</span>
+					<input
+						type="email"
+						name="email"
+						required
+						autocomplete="username"
+						class="mt-2 w-full rounded-sm border border-white/15 bg-night/60 px-4 py-3 text-moon outline-none transition focus:border-amber"
+					/>
+				</label>
+
+				<label class="block">
+					<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">Password</span>
+					<input
+						type="password"
+						name="password"
+						required
+						autocomplete="current-password"
+						class="mt-2 w-full rounded-sm border border-white/15 bg-night/60 px-4 py-3 text-moon outline-none transition focus:border-amber"
+					/>
+				</label>
+
+				<button
+					type="submit"
+					class="w-full rounded-sm bg-amber px-8 py-4 font-accent text-sm font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:bg-amber-light"
+				>
+					Sign In
+				</button>
+			</form>
+
+			<p class="mt-6 text-center text-sm text-silver/70">
+				Prefer a passkey?{" "}
+				<a href="/_emdash/admin" class="text-amber transition hover:text-amber-light">Sign in with a passkey</a>
+			</p>
+		</div>
+	</section>
+</Base>

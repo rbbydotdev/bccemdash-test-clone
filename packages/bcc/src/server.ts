@@ -7,6 +7,38 @@
  */
 import { createEnquiry, toEnquiryDTO, type EnquiryDTO } from "./db/repos/enquiries.repo.js";
 import { getBccDb } from "./routes/helpers.js";
+import { setUserPassword, verifyUserPassword, type AuthedUser } from "./services/auth.js";
+import { checkBccRateLimit } from "./services/rate-limit.js";
+
+export { passwordProblem } from "./services/password.js";
+export type { AuthedUser };
+
+/**
+ * Email+password helpers for the host app's Astro auth routes.
+ *
+ * These resolve the db via emdash's `getDb()` (through `getBccDb`) rather than
+ * `locals.emdash.db`, because anonymous, non-`/_emdash` routes (like the login
+ * POST) hit emdash's "anonymous fast path" which never populates
+ * `locals.emdash.db`. `getDb()` works there — it is the same ALS-backed handle
+ * the public site uses to read content. `verifyLogin` only checks the
+ * credential; the route sets the Astro session.
+ */
+export async function verifyLogin(email: unknown, password: unknown): Promise<AuthedUser | null> {
+	const db = await getBccDb();
+	return verifyUserPassword(db, email, password);
+}
+
+export async function saveUserPassword(userId: string, password: string): Promise<void> {
+	const db = await getBccDb();
+	await setUserPassword(db, userId, password);
+}
+
+/** Rate-limit login attempts (default 10 per 10 minutes per IP). Fail-open. */
+export async function checkLoginRateLimit(ip: string | null): Promise<boolean> {
+	const db = await getBccDb();
+	const r = await checkBccRateLimit(db, ip, "auth-login", 10, 600);
+	return r.allowed;
+}
 
 // Re-export settings helpers so the host Astro app reads/writes the
 // client-editable "Site Content" bag in-process (server-side only).

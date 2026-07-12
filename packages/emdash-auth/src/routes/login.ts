@@ -8,7 +8,8 @@
  * never reveal whether an email exists.
  */
 import type { APIRoute } from "astro";
-import { checkLoginRateLimit, verifyLogin } from "@bcc/plugin/server";
+import { checkLoginRateLimit, verifyLogin } from "emdash-auth/server";
+import { config } from "virtual:emdash-auth/config";
 
 export const prerender = false;
 
@@ -36,7 +37,7 @@ export const POST: APIRoute = async (ctx) => {
 			headers: { "content-type": "application/json" },
 		});
 	}
-	return redirect("/_emdash/admin", 303);
+	return redirect(config.loginRedirect, 303);
 };
 
 async function readCredentials(
@@ -71,5 +72,5 @@ function fail(
 			headers: { "content-type": "application/json" },
 		});
 	}
-	return ctx.redirect(`/login?error=${encodeURIComponent(message)}`, 303);
+	return ctx.redirect(`${config.loginPath}?error=${encodeURIComponent(message)}`, 303);
 }

@@ -1,10 +1,11 @@
 /**
  * Set (or change) the current user's password. Requires an authenticated
- * session (you sign in with your passkey first, then set a password here).
- * Accepts JSON (fetch) or a form POST (no-JS).
+ * session (you sign in with your passkey or password first, then set/rotate a
+ * password here). Accepts JSON (fetch) or a form POST (no-JS).
  */
 import type { APIRoute } from "astro";
-import { passwordProblem, saveUserPassword } from "@bcc/plugin/server";
+import { passwordProblem, saveUserPassword } from "emdash-auth/server";
+import { config } from "virtual:emdash-auth/config";
 
 export const prerender = false;
 
@@ -36,7 +37,7 @@ export const POST: APIRoute = async (ctx) => {
 			headers: { "content-type": "application/json" },
 		});
 	}
-	return ctx.redirect("/account/password?ok=1", 303);
+	return ctx.redirect(`${config.accountPasswordPath}?ok=1`, 303);
 };
 
 function fail(
@@ -51,5 +52,5 @@ function fail(
 			headers: { "content-type": "application/json" },
 		});
 	}
-	return ctx.redirect(`/account/password?error=${encodeURIComponent(message)}`, 303);
+	return ctx.redirect(`${config.accountPasswordPath}?error=${encodeURIComponent(message)}`, 303);
 }

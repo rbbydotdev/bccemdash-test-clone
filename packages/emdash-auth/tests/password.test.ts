@@ -4,9 +4,9 @@ import { hashPassword, passwordProblem, verifyPassword } from "../src/services/p
 
 describe("password hashing", () => {
 	it("round-trips a correct password", async () => {
-		const hash = await hashPassword("batcity-nightsky-2026");
+		const hash = await hashPassword("nightsky-passphrase-2026");
 		expect(hash.startsWith("pbkdf2$sha256$")).toBe(true);
-		expect(await verifyPassword("batcity-nightsky-2026", hash)).toBe(true);
+		expect(await verifyPassword("nightsky-passphrase-2026", hash)).toBe(true);
 	});
 
 	it("rejects a wrong password", async () => {

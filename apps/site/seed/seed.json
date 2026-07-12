@@ -47,6 +47,7 @@
 				{ "slug": "image", "label": "Image", "type": "image" },
 				{ "slug": "is_signature", "label": "Signature Experience", "type": "boolean", "defaultValue": false },
 				{ "slug": "cta_text", "label": "CTA Text", "type": "string" },
+				{ "slug": "body", "label": "Story", "type": "portableText", "searchable": true },
 				{ "slug": "order", "label": "Order", "type": "integer", "defaultValue": 0 }
 			]
 		},

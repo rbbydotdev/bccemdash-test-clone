@@ -1,15 +1,15 @@
 /**
  * Email+password auth service, layered on emdash's `users` table.
  *
- * These take a Kysely handle (the host app passes `locals.emdash.db`) so they
+ * These take a Kysely handle (resolved via emdash's runtime `getDb()`) so they
  * run inside an Astro route where the session lives. Login only VERIFIES the
  * credential and returns the user id; the caller does `session.set("user", …)`
- * exactly like every built-in emdash login route.
+ * exactly like every built-in emdash login route. Password storage lives in our
+ * own `_auth_user_passwords` table (repo functions inlined below).
  */
 import { ulid } from "ulidx";
 
-import type { BccDb } from "../db/types.js";
-import { getPasswordHash, upsertPassword } from "../db/repos/passwords.repo.js";
+import type { AuthDb } from "../db/types.js";
 import { hashPassword, verifyPassword } from "./password.js";
 
 export const ROLE_ADMIN = 50;
@@ -20,8 +20,35 @@ export interface AuthedUser {
 	role: number;
 }
 
+// --- password-credential storage (one row per emdash user) -------------------
+
+async function getPasswordHash(db: AuthDb, userId: string): Promise<string | null> {
+	const row = await db
+		.selectFrom("_auth_user_passwords")
+		.select("password_hash")
+		.where("user_id", "=", userId)
+		.executeTakeFirst();
+	return row?.password_hash ?? null;
+}
+
+async function upsertPassword(db: AuthDb, userId: string, hash: string): Promise<void> {
+	await db
+		.insertInto("_auth_user_passwords")
+		.values({ user_id: userId, password_hash: hash })
+		.onConflict((oc) =>
+			oc.column("user_id").doUpdateSet({ password_hash: hash, updated_at: new Date().toISOString() }),
+		)
+		.execute();
+}
+
+export async function deletePassword(db: AuthDb, userId: string): Promise<void> {
+	await db.deleteFrom("_auth_user_passwords").where("user_id", "=", userId).execute();
+}
+
+// --- users -------------------------------------------------------------------
+
 /** Count existing users — bootstrap (first-admin) is only allowed when zero. */
-export async function countUsers(db: BccDb): Promise<number> {
+export async function countUsers(db: AuthDb): Promise<number> {
 	const row = await db
 		.selectFrom("users")
 		.select((eb) => eb.fn.countAll<number>().as("n"))
@@ -31,7 +58,7 @@ export async function countUsers(db: BccDb): Promise<number> {
 
 /** Create an admin user (no gating). Reuses an existing row for the email. */
 export async function createAdminUser(
-	db: BccDb,
+	db: AuthDb,
 	input: { email: string; name?: string | null },
 ): Promise<AuthedUser> {
 	const email = input.email.trim().toLowerCase();
@@ -61,7 +88,7 @@ export async function createAdminUser(
  * Returns null if a user already exists.
  */
 export async function createFirstAdmin(
-	db: BccDb,
+	db: AuthDb,
 	input: { email: string; password: string; name?: string | null },
 ): Promise<AuthedUser | null> {
 	if ((await countUsers(db)) > 0) return null;
@@ -70,7 +97,7 @@ export async function createFirstAdmin(
 	return user;
 }
 
-export async function findUserByEmail(db: BccDb, email: string): Promise<AuthedUser | null> {
+export async function findUserByEmail(db: AuthDb, email: string): Promise<AuthedUser | null> {
 	const row = await db
 		.selectFrom("users")
 		.select(["id", "email", "role", "disabled"])
@@ -86,7 +113,7 @@ export async function findUserByEmail(db: BccDb, email: string): Promise<AuthedU
  * caller returns a single generic error so the two cases are indistinguishable.
  */
 export async function verifyUserPassword(
-	db: BccDb,
+	db: AuthDb,
 	email: unknown,
 	password: unknown,
 ): Promise<AuthedUser | null> {
@@ -99,6 +126,6 @@ export async function verifyUserPassword(
 }
 
 /** Set (or replace) a user's password. */
-export async function setUserPassword(db: BccDb, userId: string, password: string): Promise<void> {
+export async function setUserPassword(db: AuthDb, userId: string, password: string): Promise<void> {
 	await upsertPassword(db, userId, await hashPassword(password));
 }

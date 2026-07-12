@@ -17,16 +17,16 @@ describe("first-admin bootstrap", () => {
 		expect(await countUsers(db)).toBe(0);
 
 		const admin = await createFirstAdmin(db, {
-			email: "Admin@BatCity.org",
+			email: "Admin@Example.org",
 			password: "guardians-of-the-night-2026",
 			name: "Teresa",
 		});
 		expect(admin).not.toBeNull();
 		expect(admin?.role).toBe(ROLE_ADMIN);
-		expect(admin?.email).toBe("admin@batcity.org"); // normalized
+		expect(admin?.email).toBe("admin@example.org"); // normalized
 
 		// The credential works via the normal login path.
-		const login = await verifyUserPassword(db, "admin@batcity.org", "guardians-of-the-night-2026");
+		const login = await verifyUserPassword(db, "admin@example.org", "guardians-of-the-night-2026");
 		expect(login?.id).toBe(admin?.id);
 
 		// Bootstrap is one-shot: a second attempt returns null (site configured).
@@ -40,7 +40,7 @@ describe("first-admin bootstrap", () => {
 
 	it("mints an ec_pat_ admin API token for an agent", async () => {
 		const db = await createTestDb();
-		const admin = await createAdminUser(db, { email: "agent@bcc.local", name: "Agent" });
+		const admin = await createAdminUser(db, { email: "agent@example.local", name: "Agent" });
 		const issued = await createApiToken(db, admin.id, "agent-token");
 		expect(issued.token.startsWith("ec_pat_")).toBe(true);
 		expect(issued.scopes).toEqual(ADMIN_SCOPES);
@@ -56,11 +56,11 @@ describe("first-admin bootstrap", () => {
 		expect(row?.token_hash).not.toEqual(issued.token);
 	});
 
-	it("verifies against an existing user without a password set", async () => {
+	it("verifies against an existing user and honors a password change", async () => {
 		const db = await createTestDb();
 		const admin = await createFirstAdmin(db, { email: "a@b.com", password: "the-first-password-1" });
 		expect(admin).not.toBeNull();
-		// changing the password still verifies
+		// changing the password invalidates the old one and accepts the new
 		await setUserPassword(db, admin!.id, "the-second-password-2");
 		expect(await verifyUserPassword(db, "a@b.com", "the-first-password-1")).toBeNull();
 		expect(await verifyUserPassword(db, "a@b.com", "the-second-password-2")).not.toBeNull();

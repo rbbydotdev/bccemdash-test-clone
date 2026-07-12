@@ -1,0 +1,106 @@
+---
+/**
+ * /experiences/[slug] — a single bat experience.
+ *
+ * Cinematic full-bleed hero (title + signature badge over a night-graded photo,
+ * mirroring the Experiences section cards), the description as a lede, an
+ * optional rich `body`, and a CTA row (per-experience cta_text → contact, plus
+ * Devote). Follows the site's "Ritualistic Dusk" language.
+ */
+import { getEmDashEntry } from "emdash";
+import { PortableText } from "emdash/ui";
+import Base from "../../layouts/Base.astro";
+import { getBccSettings } from "@bcc/plugin/server";
+import { mediaUrl, str, bool } from "../../lib/content";
+
+const { slug } = Astro.params;
+const { entry } = await getEmDashEntry("experiences", slug ?? "");
+if (!entry) return Astro.rewrite("/404");
+
+const data = entry.data as unknown as Record<string, unknown>;
+const title = str(data, "title") || "Experience";
+const description = str(data, "description");
+const img = await mediaUrl(data.image);
+const isSignature = bool(data, "is_signature");
+const body = data.body;
+const ctaText = str(data, "cta_text") || "Get in touch";
+
+const s = await getBccSettings();
+const devoteUrl = s.integrations.devoteUrl;
+---
+
+<Base
+	title={title}
+	description={description}
+	image={img}
+	type="article"
+	content={{ collection: "experiences", id: entry.id, slug }}
+>
+	<article>
+		{/* ── Cinematic hero ── */}
+		<header class="relative flex min-h-[62vh] items-end overflow-hidden md:min-h-[72vh]">
+			{img ? (
+				<img src={img} alt={title} class="absolute inset-0 h-full w-full object-cover object-center" />
+			) : (
+				<div class="absolute inset-0 bg-deep"></div>
+			)}
+			<div
+				class="absolute inset-0"
+				style="background:linear-gradient(to top, rgb(from var(--color-night) r g b /0.97) 0%, rgb(from var(--color-night) r g b /0.55) 45%, rgb(from var(--color-night) r g b /0.2) 100%);"
+			>
+			</div>
+			<div class="relative mx-auto w-full max-w-[var(--width-shell)] px-[var(--spacing-gutter)] pb-[clamp(2.5rem,6vw,4.5rem)]">
+				<a
+					href="/#experiences"
+					class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-amber transition hover:text-amber-light"
+				>
+					&larr; Experiences
+				</a>
+				{isSignature && (
+					<span class="mt-5 inline-block rounded-sm bg-amber px-3 py-1 font-accent text-[0.6rem] font-bold uppercase tracking-[var(--tracking-label)] text-night">
+						Signature Experience
+					</span>
+				)}
+				<h1 class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,4.5rem)] leading-[1.03] text-moon">
+					{title}
+				</h1>
+				{description && (
+					<p class="mt-6 max-w-2xl text-lg leading-relaxed text-moon/80">{description}</p>
+				)}
+			</div>
+		</header>
+
+		{/* ── Optional rich body ── */}
+		{body && (
+			<div class="px-[var(--spacing-gutter)] pt-[var(--spacing-section-md)]">
+				<div class="typeset typeset-bcc mx-auto max-w-[var(--width-prose)] text-moon/80">
+					<PortableText value={body} />
+				</div>
+			</div>
+		)}
+
+		{/* ── CTA ── */}
+		<div class="px-[var(--spacing-gutter)] py-[var(--spacing-section-lg)]">
+			<div class="mx-auto max-w-[var(--width-prose)] text-center">
+				<hr class="divider-amber" />
+				<p class="font-display text-2xl italic text-moon/80 sm:text-3xl">
+					Ready to witness it yourself?
+				</p>
+				<div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+					<a
+						href="/#contact"
+						class="rounded-sm bg-amber px-9 py-4 font-accent text-sm font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:-translate-y-0.5 hover:bg-amber-light hover:shadow-[var(--shadow-amber-glow-strong)]"
+					>
+						{ctaText}
+					</a>
+					<a
+						href={devoteUrl}
+						class="rounded-sm border border-amber/40 px-9 py-4 font-accent text-sm font-semibold uppercase tracking-[var(--tracking-label)] text-amber transition hover:border-amber hover:text-amber-light"
+					>
+						Devote Now
+					</a>
+				</div>
+			</div>
+		</div>
+	</article>
+</Base>

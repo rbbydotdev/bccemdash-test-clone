@@ -25,6 +25,8 @@
   --font-display: var(--bcc-font-display, "Cormorant Garamond"), ui-serif, Georgia, serif;
   --font-body: var(--bcc-font-body, "EB Garamond"), ui-serif, Georgia, serif;
   --font-accent: var(--bcc-font-accent, "Josefin Sans"), ui-sans-serif, system-ui, sans-serif;
+  /* Monospace for code in prose (Typeset). System stack — no extra webfont. */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
   /* Body-font baseline bumped to 20px (cinematic read). Explicit Tailwind
      sizes (text-sm, text-4xl, …) still win where used. */

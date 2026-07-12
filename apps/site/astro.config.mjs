@@ -8,6 +8,7 @@ import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
 import { fieldKitPlugin } from "@emdash-cms/plugin-field-kit";
 import { bccPlugin } from "@bcc/plugin";
+import { passwordAuth } from "emdash-auth";
 
 const isCloudflare = process.env.DEPLOY_TARGET === "cloudflare";
 
@@ -60,6 +61,21 @@ export default defineConfig({
 			storage: platform.storage,
 			plugins: [bccPlugin(), fieldKitPlugin()],
 		}),
+		// Email+password sign-in, first-admin bootstrap, and the secret-gated
+		// agent-token endpoint — provided by the reusable `emdash-auth` package.
+		// It injects the /api/auth/* endpoints + registers BCC_BOOTSTRAP_SECRET /
+		// BCC_AGENT_EMAIL as server secrets. The BCC-branded /login and
+		// /account/password pages in src/pages take precedence over its generic
+		// ones (file routes beat injected routes).
+		passwordAuth({
+			siteName: "Bat City Council",
+			accent: "#f5a623",
+			// We ship our own themed /login + /account/password pages.
+			pages: false,
+			secretEnv: "BCC_BOOTSTRAP_SECRET",
+			agentEmailEnv: "BCC_AGENT_EMAIL",
+			defaultAgentEmail: "agent@batcitycouncil.local",
+		}),
 	],
 	// Astro-managed webfonts, namespaced (--font-*-webfont) so they don't collide
 	// with the @theme tokens in @bcc/theme. app.css bridges them via --bcc-font-*.
@@ -90,11 +106,11 @@ export default defineConfig({
 		},
 	],
 	// Server secrets read via getSecret() (portable across Node + Cloudflare;
-	// locals.runtime.env was removed in Astro v6). All optional.
+	// locals.runtime.env was removed in Astro v6). BCC_BOOTSTRAP_SECRET and
+	// BCC_AGENT_EMAIL are registered by the passwordAuth() integration; only the
+	// app-specific ones remain here. All optional.
 	env: {
 		schema: {
-			BCC_BOOTSTRAP_SECRET: envField.string({ context: "server", access: "secret", optional: true }),
-			BCC_AGENT_EMAIL: envField.string({ context: "server", access: "secret", optional: true }),
 			TURNSTILE_SECRET_KEY: envField.string({ context: "server", access: "secret", optional: true }),
 		},
 	},

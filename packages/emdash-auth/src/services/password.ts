@@ -2,7 +2,7 @@
  * Password hashing for the optional email+password sign-in.
  *
  * emdash is passwordless by design (passkeys / magic-link / OAuth); this adds a
- * self-contained password credential stored in our own `bcc_user_passwords`
+ * self-contained password credential stored in our own `_auth_user_passwords`
  * table, verified against emdash's existing `users` rows. PBKDF2-HMAC-SHA256 via
  * Web Crypto works identically on Node and Cloudflare Workers. Format is a
  * PHC-like string: `pbkdf2$sha256$<iterations>$<saltB64>$<hashB64>`.

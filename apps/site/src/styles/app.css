@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@bcc/theme/tokens.css";
+@import "@bcc/theme/typeset.css";
 
 /* Bridge the Astro-managed webfonts (astro.config.mjs `fonts`) into the theme's
    runtime font hooks. The @theme tokens in @bcc/theme resolve --font-display /

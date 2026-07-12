@@ -5,7 +5,8 @@
  * set the Astro session exactly like every emdash login.
  */
 import type { APIRoute } from "astro";
-import { bootstrapAdmin, needsBootstrap, passwordProblem } from "@bcc/plugin/server";
+import { bootstrapAdmin, needsBootstrap, passwordProblem } from "emdash-auth/server";
+import { config } from "virtual:emdash-auth/config";
 
 export const prerender = false;
 
@@ -20,7 +21,7 @@ export const POST: APIRoute = async (ctx) => {
 
 	// Someone raced us to setup, or the site is already configured.
 	if (!(await needsBootstrap())) {
-		return fail(ctx, "Setup is already complete. Please sign in.", 409, wantsJson, "/login");
+		return fail(ctx, "Setup is already complete. Please sign in.", 409, wantsJson, config.loginPath);
 	}
 
 	let email: string, password: string, name: string;
@@ -41,9 +42,9 @@ export const POST: APIRoute = async (ctx) => {
 	if (problem) return fail(ctx, problem, 400, wantsJson);
 
 	const origin = new URL(request.url).origin;
-	const user = await bootstrapAdmin({ email, password, name }, origin);
+	const user = await bootstrapAdmin({ email, password, name }, { origin, siteName: config.siteName });
 	if (!user) {
-		return fail(ctx, "Setup is already complete. Please sign in.", 409, wantsJson, "/login");
+		return fail(ctx, "Setup is already complete. Please sign in.", 409, wantsJson, config.loginPath);
 	}
 
 	session.set("user", { id: user.id });
@@ -53,7 +54,7 @@ export const POST: APIRoute = async (ctx) => {
 			headers: { "content-type": "application/json" },
 		});
 	}
-	return ctx.redirect("/_emdash/admin", 303);
+	return ctx.redirect(config.loginRedirect, 303);
 };
 
 function fail(
@@ -61,7 +62,7 @@ function fail(
 	message: string,
 	status: number,
 	wantsJson = true,
-	to = "/login",
+	to = config.loginPath,
 ): Response {
 	if (wantsJson) {
 		return new Response(JSON.stringify({ error: { message } }), {

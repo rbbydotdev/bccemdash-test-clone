@@ -1,0 +1,137 @@
+/* ─────────────────────────────────────────────────────────────
+   Typeset — the site's owned prose / rendered-markdown styling.
+
+   Adapted from shadcn/ui Typeset (https://ui.shadcn.com/docs/typeset): one CSS
+   file you own, driven by three knobs plus font vars —
+     --typeset-size     base text size
+     --typeset-leading  line-height
+     --typeset-flow     vertical space between blocks (derives heading rhythm)
+     --typeset-font-{body,heading,mono}
+   Every rule is wrapped in :where() so its specificity is zero — Tailwind
+   utilities and plain CSS on the elements always win without !important. Base
+   text color is left to INHERIT so a wrapper's text-* utility (e.g. text-moon/80)
+   flows through; only headings/links/marks set color explicitly.
+
+   Usage:  <div class="typeset typeset-bcc"> …rendered markdown… </div>
+   ───────────────────────────────────────────────────────────── */
+
+.typeset {
+	--typeset-font-body: inherit;
+	--typeset-font-heading: inherit;
+	--typeset-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	--typeset-size: 1rem;
+	--typeset-leading: 1.75;
+	--typeset-flow: 1.25em;
+
+	font-family: var(--typeset-font-body);
+	font-size: var(--typeset-size);
+	line-height: var(--typeset-leading);
+	text-wrap: pretty;
+}
+
+/* Block flow: space between consecutive blocks (heading rules below add more). */
+:where(.typeset > * + *) { margin-top: var(--typeset-flow); }
+:where(.typeset > :first-child) { margin-top: 0; }
+
+/* Headings */
+:where(.typeset :is(h1, h2, h3, h4)) {
+	font-family: var(--typeset-font-heading);
+	color: var(--color-moon);
+	line-height: 1.15;
+	font-weight: 500;
+	text-wrap: balance;
+}
+:where(.typeset h1) { font-size: 2.2em; }
+:where(.typeset h2) { font-size: 1.6em;  margin-top: calc(var(--typeset-flow) * 1.7); }
+:where(.typeset h3) { font-size: 1.3em;  margin-top: calc(var(--typeset-flow) * 1.4); }
+:where(.typeset h4) { font-size: 1.1em;  margin-top: calc(var(--typeset-flow) * 1.2); }
+
+/* Links */
+:where(.typeset a) {
+	color: var(--color-amber);
+	text-decoration: underline;
+	text-underline-offset: 0.18em;
+	text-decoration-thickness: 1px;
+	transition: color 200ms var(--ease-cinematic);
+}
+:where(.typeset a:hover) { color: var(--color-amber-light); }
+
+/* Emphasis */
+:where(.typeset strong) { color: var(--color-moon); font-weight: 600; }
+:where(.typeset em) { font-style: italic; }
+
+/* Lists */
+:where(.typeset :is(ul, ol)) { padding-left: 1.5em; }
+:where(.typeset ul) { list-style: disc; }
+:where(.typeset ol) { list-style: decimal; }
+:where(.typeset li + li) { margin-top: calc(var(--typeset-flow) * 0.4); }
+:where(.typeset li)::marker { color: var(--color-amber); }
+:where(.typeset :is(ul, ol) :is(ul, ol)) { margin-top: calc(var(--typeset-flow) * 0.4); }
+
+/* Blockquote */
+:where(.typeset blockquote) {
+	border-left: 2px solid var(--color-amber);
+	padding-left: 1.25em;
+	font-style: italic;
+	color: var(--color-moon);
+}
+
+/* Inline code */
+:where(.typeset :not(pre) > code) {
+	font-family: var(--typeset-font-mono);
+	font-size: 0.9em;
+	padding: 0.15em 0.4em;
+	border-radius: var(--radius-sm);
+	background: rgb(from var(--color-moon) r g b / 0.1);
+	color: var(--color-moon);
+}
+
+/* Code block */
+:where(.typeset pre) {
+	font-family: var(--typeset-font-mono);
+	font-size: 0.9em;
+	line-height: 1.6;
+	padding: 1.1em 1.25em;
+	border-radius: var(--radius-card);
+	border: 1px solid rgb(from var(--color-amber) r g b / 0.15);
+	background: rgb(from var(--color-night) r g b / 0.6);
+	overflow-x: auto;
+}
+:where(.typeset pre code) { all: unset; font-family: inherit; }
+
+/* Media */
+:where(.typeset :is(img, video)) {
+	border-radius: var(--radius-card);
+	max-width: 100%;
+	height: auto;
+}
+
+/* Horizontal rule — the site's amber hairline. */
+:where(.typeset hr) {
+	border: 0;
+	height: 1px;
+	margin-block: calc(var(--typeset-flow) * 1.5);
+	background: linear-gradient(90deg, transparent, rgb(from var(--color-amber) r g b / 0.5), transparent);
+}
+
+/* Tables */
+:where(.typeset table) { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+:where(.typeset :is(th, td)) {
+	padding: 0.6em 0.9em;
+	border-bottom: 1px solid rgb(from var(--color-moon) r g b / 0.15);
+	text-align: left;
+}
+:where(.typeset th) { font-family: var(--typeset-font-heading); color: var(--color-moon); font-weight: 600; }
+
+/* Opt-out: <div class="not-typeset"> or [data-not-typeset] escapes the styling. */
+:where(.typeset :is(.not-typeset, [data-not-typeset]) *) { all: revert; }
+
+/* ── BCC preset: wire Typeset to the "Ritualistic Dusk" font tokens. ── */
+.typeset-bcc {
+	--typeset-font-heading: var(--font-display);
+	--typeset-font-body: var(--font-body);
+	--typeset-font-mono: var(--font-mono);
+	--typeset-size: 1.125rem;
+	--typeset-leading: 1.75;
+	--typeset-flow: 1.4em;
+}

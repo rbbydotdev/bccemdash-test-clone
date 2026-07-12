@@ -12,15 +12,21 @@
 import { sql, type ColumnType, type Kysely } from "kysely";
 
 import * as m001 from "./migrations/001_init.js";
-import * as m002 from "./migrations/002_passwords.js";
 
 export interface BccMigration {
 	name: string;
 	up(db: Kysely<unknown>): Promise<void>;
 }
 
-/** Ordered, forward-only migration list. Append-only — never reorder. */
-const MIGRATIONS: BccMigration[] = [m001, m002];
+/**
+ * Ordered, forward-only migration list. Append-only — never reorder.
+ *
+ * NOTE: 002_passwords (the old `bcc_user_passwords` table) was retired when
+ * password auth moved to the reusable `emdash-auth` package (which owns
+ * `_auth_user_passwords`). Existing databases keep the recorded `002_passwords`
+ * history row and the now-unused table; neither is read anymore.
+ */
+const MIGRATIONS: BccMigration[] = [m001];
 
 interface HistoryDb {
 	_bcc_migrations: {

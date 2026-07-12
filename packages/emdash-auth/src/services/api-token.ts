@@ -11,7 +11,7 @@
  */
 import { ulid } from "ulidx";
 
-import type { BccDb } from "../db/types.js";
+import type { AuthDb } from "../db/types.js";
 
 const TOKEN_BYTES = 32;
 
@@ -64,7 +64,7 @@ export interface IssuedToken {
 
 /** Create a PAT for a user. Returns the raw token (shown once). */
 export async function createApiToken(
-	db: BccDb,
+	db: AuthDb,
 	userId: string,
 	name: string,
 	scopes: string[] = ADMIN_SCOPES,
@@ -87,7 +87,7 @@ export async function createApiToken(
 }
 
 /** Drop any existing tokens with this name for a user (idempotent re-mint). */
-export async function deleteApiTokensByName(db: BccDb, userId: string, name: string): Promise<void> {
+export async function deleteApiTokensByName(db: AuthDb, userId: string, name: string): Promise<void> {
 	await db
 		.deleteFrom("_emdash_api_tokens")
 		.where("user_id", "=", userId)

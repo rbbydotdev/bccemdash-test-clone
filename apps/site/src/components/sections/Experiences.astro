@@ -31,7 +31,7 @@ const cards = await Promise.all(
 		<div class="mt-14 grid gap-8 md:grid-cols-2">
 			{cards.map(({ e, img }, i) => (
 				<a
-					href="#contact"
+					href={`/experiences/${e.slug}`}
 					data-animate
 					data-animate-delay={String(i * 100)}
 					class="bcc-exp-card group relative block h-[420px] rounded-[var(--radius-card)] md:h-[480px]"

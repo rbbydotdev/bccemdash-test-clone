@@ -989,39 +989,6 @@ export type PageFragmentHandler = (
 	| Promise<PageFragmentContribution | PageFragmentContribution[] | null>;
 
 /**
- * Extra Content-Security-Policy sources for the admin (`/_emdash`). Each list is
- * appended to its directive; directives absent from emdash's base policy
- * (`worker-src`, `font-src`, `frame-src`) are added, seeded with `'self'`. For
- * admin UI that embeds external resources — e.g. a field widget rendering a map
- * (its tile host in `connect-src` + a `blob:` web worker).
- */
-export interface EmDashCspConfig {
-	/** Appended to `connect-src` (fetch / XHR / WebSocket) — e.g. a tile host. */
-	connectSrc?: string[];
-	/** Appended to `worker-src` — e.g. `"blob:"` for Web Workers. */
-	workerSrc?: string[];
-	/** Appended to `script-src`. */
-	scriptSrc?: string[];
-	/** Appended to `style-src`. */
-	styleSrc?: string[];
-	/** Appended to `img-src`. */
-	imgSrc?: string[];
-	/** Appended to `font-src`. */
-	fontSrc?: string[];
-	/** Appended to `frame-src`. */
-	frameSrc?: string[];
-}
-
-/**
- * Handler for the `csp:sources` hook. Returns the extra CSP sources a plugin
- * needs for its admin UI; emdash merges every plugin's contribution (plus the
- * app-level `csp` config) into the admin Content-Security-Policy.
- */
-export type CspSourcesHandler = (
-	ctx: PluginContext,
-) => EmDashCspConfig | null | undefined | Promise<EmDashCspConfig | null | undefined>;
-
-/**
  * Plugin hooks definition
  */
 export interface PluginHooks {
@@ -1067,9 +1034,6 @@ export interface PluginHooks {
 	// Public page hooks
 	"page:metadata"?: HookConfig<PageMetadataHandler> | PageMetadataHandler;
 	"page:fragments"?: HookConfig<PageFragmentHandler> | PageFragmentHandler;
-
-	// Admin CSP hook — contribute extra Content-Security-Policy sources
-	"csp:sources"?: HookConfig<CspSourcesHandler> | CspSourcesHandler;
 }
 
 /**
@@ -1389,7 +1353,6 @@ export interface ResolvedPluginHooks {
 	"comment:afterModerate"?: ResolvedHook<CommentAfterModerateHandler>;
 	"page:metadata"?: ResolvedHook<PageMetadataHandler>;
 	"page:fragments"?: ResolvedHook<PageFragmentHandler>;
-	"csp:sources"?: ResolvedHook<CspSourcesHandler>;
 }
 
 // =============================================================================

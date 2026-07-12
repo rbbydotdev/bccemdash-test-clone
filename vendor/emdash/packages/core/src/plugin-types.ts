@@ -80,7 +80,6 @@ import type {
 	PageFragmentHandler,
 	PageMetadataEvent,
 	PageMetadataHandler,
-	CspSourcesHandler,
 	PluginContext,
 	UninstallEvent,
 	UninstallHandler,
@@ -119,7 +118,6 @@ export interface HookHandlers {
 	"comment:afterModerate": CommentAfterModerateHandler;
 	"page:metadata": PageMetadataHandler;
 	"page:fragments": PageFragmentHandler;
-	"csp:sources": CspSourcesHandler;
 }
 
 /**

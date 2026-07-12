@@ -1,10 +1,6 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 
-import {
-	buildEmDashCsp,
-	getConfiguredStorageEndpoint,
-	mergeCspConfigs,
-} from "../../../src/astro/middleware/csp.js";
+import { buildEmDashCsp, getConfiguredStorageEndpoint } from "../../../src/astro/middleware/csp.js";
 
 describe("buildEmDashCsp", () => {
 	it("includes https: in img-src to allow external images", () => {
@@ -112,40 +108,6 @@ describe("buildEmDashCsp", () => {
 		expect(csp).toContain("default-src 'self'");
 		expect(csp).toContain("frame-ancestors 'none'");
 		expect(csp).toContain("img-src 'self' https: data: blob:");
-	});
-});
-
-describe("mergeCspConfigs", () => {
-	it("returns undefined when nothing is contributed", () => {
-		expect(mergeCspConfigs(undefined, null, {})).toBeUndefined();
-	});
-
-	it("concatenates sources per directive across configs", () => {
-		const merged = mergeCspConfigs(
-			{ connectSrc: ["https://a.example"] },
-			{ connectSrc: ["https://b.example"], workerSrc: ["blob:"] },
-		);
-		expect(merged).toEqual({
-			connectSrc: ["https://a.example", "https://b.example"],
-			workerSrc: ["blob:"],
-		});
-	});
-
-	it("skips nullish configs and empty source lists", () => {
-		expect(mergeCspConfigs(undefined, { connectSrc: [] }, { workerSrc: ["blob:"] })).toEqual({
-			workerSrc: ["blob:"],
-		});
-	});
-
-	it("feeds buildEmDashCsp so plugin + app sources both land, deduped", () => {
-		const extra = mergeCspConfigs(
-			{ connectSrc: ["https://tiles.example"] },
-			{ connectSrc: ["https://tiles.example"], workerSrc: ["blob:"] },
-		);
-		const csp = buildEmDashCsp(undefined, undefined, extra);
-		const connectSrc = csp.split("; ").find((d) => d.startsWith("connect-src"));
-		expect(connectSrc).toBe("connect-src 'self' https://tiles.example");
-		expect(csp.split("; ").find((d) => d.startsWith("worker-src"))).toBe("worker-src 'self' blob:");
 	});
 });
 

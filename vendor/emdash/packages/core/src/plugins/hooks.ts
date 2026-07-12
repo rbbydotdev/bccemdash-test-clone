@@ -55,8 +55,6 @@ import type {
 	PageFragmentEvent,
 	PageFragmentHandler,
 	PageFragmentContribution,
-	CspSourcesHandler,
-	EmDashCspConfig,
 } from "./types.js";
 
 // Hook name type for v2
@@ -85,8 +83,7 @@ type HookNameV2 =
 	| "comment:afterCreate"
 	| "comment:afterModerate"
 	| "page:metadata"
-	| "page:fragments"
-	| "csp:sources";
+	| "page:fragments";
 
 /**
  * Map from hook name to handler type — used for type-safe hook retrieval
@@ -124,7 +121,6 @@ interface HookHandlerMap {
 	"comment:afterModerate": CommentAfterModerateHandler;
 	"page:metadata": PageMetadataHandler;
 	"page:fragments": PageFragmentHandler;
-	"csp:sources": CspSourcesHandler;
 }
 
 /**
@@ -300,8 +296,6 @@ export class HookPipeline {
 		["comment:afterModerate", "users:read"],
 		// Page fragments — can inject arbitrary scripts into every public page
 		["page:fragments", "hooks.page-fragments:register"],
-		// CSP sources — can widen the admin Content-Security-Policy
-		["csp:sources", "hooks.csp:register"],
 	]);
 
 	/**
@@ -1179,38 +1173,6 @@ export class HookPipeline {
 			} catch (error) {
 				console.error(
 					`[page:fragments] Plugin "${hook.pluginId}" error:`,
-					error instanceof Error ? error.message : error,
-				);
-			}
-		}
-
-		return results;
-	}
-
-	/**
-	 * Run csp:sources hooks. Each registered plugin returns the extra
-	 * Content-Security-Policy sources its admin UI needs; the caller merges
-	 * them (with the app-level `csp` config) into the admin CSP. Errors are
-	 * logged but don't propagate — a broken contributor must not take down the
-	 * admin.
-	 */
-	async runCspSources(): Promise<EmDashCspConfig[]> {
-		const hooks = this.getTypedHooks("csp:sources");
-		const results: EmDashCspConfig[] = [];
-
-		for (const hook of hooks) {
-			const { handler } = hook;
-			const ctx = this.getContext(hook.pluginId);
-
-			try {
-				const result = await this.executeWithTimeout(
-					() => Promise.resolve(handler(ctx)),
-					hook.timeout,
-				);
-				if (result) results.push(result);
-			} catch (error) {
-				console.error(
-					`[csp:sources] Plugin "${hook.pluginId}" error:`,
 					error instanceof Error ? error.message : error,
 				);
 			}

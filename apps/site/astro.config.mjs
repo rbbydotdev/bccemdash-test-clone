@@ -59,10 +59,8 @@ export default defineConfig({
 			database: platform.database,
 			storage: platform.storage,
 			plugins: [sitePlugin(), fieldKitPlugin()],
-			// Admin CSP for the MapLibre map field (tile host + blob: worker).
-			// @myemdash/plugin ALSO declares these via the `csp:sources` hook, but
-			// that hook isn't firing in the admin request path yet (under
-			// investigation), so this app-level `csp` config is the reliable source.
+			// Widen the strict admin CSP for the MapLibre map field (bcc:location):
+			// its OpenFreeMap tile host + the blob: web worker it spawns.
 			csp: {
 				connectSrc: ["https://tiles.openfreemap.org"],
 				workerSrc: ["blob:"],

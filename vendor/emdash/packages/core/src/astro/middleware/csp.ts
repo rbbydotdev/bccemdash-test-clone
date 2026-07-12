@@ -14,12 +14,35 @@
  */
 import type { RegistryConfigInput } from "../../registry/types.js";
 import type { StorageDescriptor } from "../storage/types.js";
-import type { EmDashCspConfig } from "../../plugins/types.js";
 
-// Re-exported for back-compat: the type's home is `plugins/types.ts` (it is the
-// `csp:sources` hook's contribution shape), but importers of this module and
-// the public `EmDashConfig.csp` field expect it here too.
-export type { EmDashCspConfig };
+/**
+ * Extra CSP sources contributed by the host app (`emdash({ csp })`) for
+ * admin-rendered content that needs external resources — e.g. a native field
+ * widget that embeds a map (tile host in `connect-src`, `blob:` in `worker-src`).
+ * Each list is appended to its directive; directives absent from the base policy
+ * (`worker-src`, `font-src`, `frame-src`) are added, seeded with `'self'`.
+ *
+ * @example
+ * ```ts
+ * emdash({ csp: { connectSrc: ["https://tiles.example.com"], workerSrc: ["blob:"] } })
+ * ```
+ */
+export interface EmDashCspConfig {
+	/** Appended to `connect-src` (fetch / XHR / WebSocket) — e.g. a tile host. */
+	connectSrc?: string[];
+	/** Appended to `worker-src` — e.g. `"blob:"` for Web Workers. */
+	workerSrc?: string[];
+	/** Appended to `script-src`. */
+	scriptSrc?: string[];
+	/** Appended to `style-src`. */
+	styleSrc?: string[];
+	/** Appended to `img-src`. */
+	imgSrc?: string[];
+	/** Appended to `font-src`. */
+	fontSrc?: string[];
+	/** Appended to `frame-src`. */
+	frameSrc?: string[];
+}
 
 /** Entrypoint constant used by the `s3()` adapter (see `astro/storage/adapters.ts`). */
 const S3_ADAPTER_ENTRYPOINT = "emdash/storage/s3";
@@ -136,27 +159,4 @@ export function buildEmDashCsp(
 	];
 
 	return extra ? mergeCspExtras(directives, extra) : directives.join("; ");
-}
-
-/**
- * Combine several CSP-source configs into one, concatenating per directive.
- * Used to fold every plugin's `csp:sources` contribution together with the
- * app-level `csp` config before handing the result to {@link buildEmDashCsp}
- * (which de-duplicates on merge). Returns `undefined` when nothing was
- * contributed, so callers can skip the merge entirely.
- */
-export function mergeCspConfigs(
-	...configs: Array<EmDashCspConfig | null | undefined>
-): EmDashCspConfig | undefined {
-	let merged: EmDashCspConfig | undefined;
-	for (const config of configs) {
-		if (!config) continue;
-		for (const key of Object.keys(config) as Array<keyof EmDashCspConfig>) {
-			const sources = config[key];
-			if (!sources?.length) continue;
-			merged ??= {};
-			(merged[key] ??= []).push(...sources);
-		}
-	}
-	return merged;
 }

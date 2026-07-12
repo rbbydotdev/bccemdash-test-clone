@@ -34,7 +34,6 @@ export const CURRENT_PLUGIN_CAPABILITIES = [
 	"hooks.email-transport:register",
 	"hooks.email-events:register",
 	"hooks.page-fragments:register",
-	"hooks.csp:register",
 ] as const;
 
 /**
@@ -113,7 +112,6 @@ export const HOOK_NAMES = [
 	"comment:afterModerate",
 	"page:metadata",
 	"page:fragments",
-	"csp:sources",
 ] as const;
 
 /**

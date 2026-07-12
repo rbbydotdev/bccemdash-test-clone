@@ -51,9 +51,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 				})();
 
 			if (!isComplete) {
-				// BCC PATCH: route first-run setup to the email+password screen
-				// (WordPress-style). Passkey setup stays available at /_emdash/admin/setup.
-				return context.redirect("/login");
+				// Redirect to setup wizard
+				return context.redirect("/_emdash/admin/setup");
 			}
 
 			// Check auth mode - user verification differs by mode
@@ -70,16 +69,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
 					.executeTakeFirstOrThrow();
 
 				if (userCount.count === 0) {
-					// BCC PATCH: email+password first-admin screen (WordPress-style)
-					return context.redirect("/login");
+					// No users - need to complete admin creation
+					return context.redirect("/_emdash/admin/setup");
 				}
 			}
 		} catch (error) {
 			// If the options table doesn't exist yet, redirect to setup
 			// This handles fresh installations where migrations haven't run
 			if (error instanceof Error && error.message.includes("no such table")) {
-				// BCC PATCH: email+password first-admin screen (WordPress-style)
-				return context.redirect("/login");
+				return context.redirect("/_emdash/admin/setup");
 			}
 
 			// Other errors - let the admin handle them

@@ -4,9 +4,6 @@
  * For flows where a page must call BCC-domain logic in-process rather than over
  * HTTP — a Worker cannot fetch() its own route on the same zone, so the contact
  * page's no-JS POST fallback goes through here.
- *
- * Auth (email+password sign-in, first-admin bootstrap, agent tokens) lives in
- * the reusable `emdash-auth` package now — import those from `emdash-auth/server`.
  */
 import { createEnquiry, toEnquiryDTO, type EnquiryDTO } from "./db/repos/enquiries.repo.js";
 import { getBccDb } from "./routes/helpers.js";

@@ -21,10 +21,10 @@ export interface BccMigration {
 /**
  * Ordered, forward-only migration list. Append-only — never reorder.
  *
- * NOTE: 002_passwords (the old `bcc_user_passwords` table) was retired when
- * password auth moved to the reusable `emdash-auth` package (which owns
- * `_auth_user_passwords`). Existing databases keep the recorded `002_passwords`
- * history row and the now-unused table; neither is read anymore.
+ * NOTE: migration number 002 (`002_passwords` / `bcc_user_passwords`) was a
+ * retired experiment and is intentionally skipped — never reuse that number.
+ * Databases that ran it keep the recorded `002_passwords` history row and the
+ * now-unused table; neither is read anymore.
  */
 const MIGRATIONS: BccMigration[] = [m001];
 

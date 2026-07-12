@@ -5,7 +5,7 @@
  * posts JSON straight to /_emdash/api/plugins/bcc/enquiries instead.
  */
 import type { APIRoute } from "astro";
-import { submitEnquiry } from "@bcc/plugin/server";
+import { submitEnquiry } from "@myemdash/plugin/server";
 
 export const prerender = false;
 

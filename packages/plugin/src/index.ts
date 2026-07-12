@@ -7,7 +7,7 @@
  * posts, pages) are EmDash collections defined in apps/site/seed/seed.json.
  *
  * Two pieces in one file, per the native-plugin contract:
- *  - `bccPlugin()`   — build-time descriptor, imported by astro.config.mjs
+ *  - `sitePlugin()`   — build-time descriptor, imported by astro.config.mjs
  *  - `createPlugin()` — runtime, loaded through `entrypoint` by the plugin
  *    manager (native format imports the named `createPlugin` export)
  *
@@ -51,13 +51,13 @@ const FIELD_WIDGETS = [
 	{ name: "location", label: "Map location", fieldTypes: ["json" as const] },
 ];
 
-export function bccPlugin(options: BccOptions = {}): PluginDescriptor {
+export function sitePlugin(options: BccOptions = {}): PluginDescriptor {
 	return {
 		id: "bcc",
 		version: "0.1.0",
 		format: "native",
-		entrypoint: "@bcc/plugin",
-		adminEntry: "@bcc/plugin/admin",
+		entrypoint: "@myemdash/plugin",
+		adminEntry: "@myemdash/plugin/admin",
 		adminPages: ADMIN_PAGES,
 		adminWidgets: ADMIN_WIDGETS,
 		options,
@@ -73,6 +73,14 @@ async function runMigrations(
 	log.info(`[bcc] migrations ensured (${phase})`);
 }
 
+/**
+ * OpenFreeMap tile origin the MapLibre map loads from. Declared here — beside
+ * the plugin that owns the `bcc:location` field — and contributed to the admin
+ * CSP via the `csp:sources` hook. The map components (LocationField, DonorMap)
+ * point at `${MAP_TILE_ORIGIN}/styles/liberty`.
+ */
+const MAP_TILE_ORIGIN = "https://tiles.openfreemap.org";
+
 export function createPlugin(_options: BccOptions = {}) {
 	return definePlugin({
 		id: "bcc",
@@ -80,10 +88,11 @@ export function createPlugin(_options: BccOptions = {}) {
 
 		// Native/trusted: capabilities document intent and select which ctx
 		// accessors the context factory builds (content read, email send).
-		capabilities: ["content:read", "email:send"],
+		// `hooks.csp:register` lets us widen the admin CSP for the map field.
+		capabilities: ["content:read", "email:send", "hooks.csp:register"],
 
 		admin: {
-			entry: "@bcc/plugin/admin",
+			entry: "@myemdash/plugin/admin",
 			pages: ADMIN_PAGES,
 			widgets: ADMIN_WIDGETS,
 			fieldWidgets: FIELD_WIDGETS,
@@ -96,6 +105,13 @@ export function createPlugin(_options: BccOptions = {}) {
 			"plugin:activate": async (_event, ctx) => {
 				await runMigrations("activate", ctx.log);
 			},
+			// The bcc:location field renders a MapLibre map in the admin. Declare
+			// the tile host + the map's blob: web worker so emdash's strict admin
+			// CSP allows them (no app-level csp config needed).
+			"csp:sources": () => ({
+				connectSrc: [MAP_TILE_ORIGIN],
+				workerSrc: ["blob:"],
+			}),
 		},
 
 		routes: {

@@ -34,7 +34,7 @@ import { getAuthMode, type ExternalAuthMode } from "../../auth/mode.js";
 import type { ExternalAuthConfig } from "../../auth/types.js";
 import { resolveSessionUser } from "../session-user.js";
 import type { EmDashHandlers } from "../types.js";
-import { buildEmDashCsp, getConfiguredStorageEndpoint } from "./csp.js";
+import { buildEmDashCsp, getConfiguredStorageEndpoint, mergeCspConfigs, type EmDashCspConfig } from "./csp.js";
 
 declare global {
 	namespace App {
@@ -49,6 +49,27 @@ declare global {
 			hasSeenWelcome: boolean;
 		}
 	}
+}
+
+/**
+ * Resolve the extra admin-CSP sources: the app-level `csp` config merged with
+ * every plugin's `csp:sources` hook contribution. The hook runs only when a
+ * plugin registered it, so the common case stays near-zero cost.
+ *
+ * The parameter is typed structurally (rather than as `EmDashHandlers`) so it
+ * stays decoupled from the src/dist global-augmentation of `App.Locals.emdash`.
+ */
+async function resolveAdminCsp(
+	emdash:
+		| {
+				config?: { csp?: EmDashCspConfig };
+				hooks?: { hasHooks(name: string): boolean; runCspSources?(): Promise<EmDashCspConfig[]> };
+		  }
+		| undefined,
+): Promise<EmDashCspConfig | undefined> {
+	const configCsp = emdash?.config?.csp;
+	if (!emdash?.hooks?.hasHooks("csp:sources") || !emdash.hooks.runCspSources) return configCsp;
+	return mergeCspConfigs(configCsp, ...(await emdash.hooks.runCspSources()));
 }
 
 // Role level constants (matching @emdash-cms/auth)
@@ -309,6 +330,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 				buildEmDashCsp(
 					context.locals.emdash?.config.experimental?.registry,
 					getConfiguredStorageEndpoint(context.locals.emdash?.config.storage),
+					await resolveAdminCsp(context.locals.emdash),
 				),
 			);
 		}
@@ -324,6 +346,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 			buildEmDashCsp(
 				context.locals.emdash?.config.experimental?.registry,
 				getConfiguredStorageEndpoint(context.locals.emdash?.config.storage),
+				await resolveAdminCsp(context.locals.emdash),
 			),
 		);
 	}

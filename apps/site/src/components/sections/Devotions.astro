@@ -4,7 +4,7 @@
  * individual. Each card: pill label, price, statement, Devote Now button (per-
  * tier devote_url or the site-wide Zeffy link). Tiers are the `tiers` collection.
  */
-import { getBccSettings } from "@bcc/plugin/server";
+import { getBccSettings } from "@myemdash/plugin/server";
 import { publishedEntries, str, num, type Entry } from "../../lib/content";
 
 const s = await getBccSettings();

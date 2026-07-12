@@ -18,8 +18,10 @@ import type {
 } from "../../plugins/types.js";
 import type { ExperimentalConfig } from "../../registry/types.js";
 import type { StorageDescriptor } from "../storage/types.js";
+import type { EmDashCspConfig } from "../middleware/csp.js";
 
 export type { ExperimentalConfig, RegistryConfig } from "../../registry/types.js";
+export type { EmDashCspConfig } from "../middleware/csp.js";
 
 export type { ResolvedPlugin };
 export type { MediaProviderDescriptor };
@@ -167,6 +169,20 @@ export interface EmDashConfig {
 	 * Storage configuration (for media)
 	 */
 	storage?: StorageDescriptor;
+
+	/**
+	 * Extra Content-Security-Policy sources for the admin (`/_emdash`).
+	 *
+	 * emdash serves a strict CSP for admin + API routes. Host apps whose native
+	 * admin UI embeds external resources (e.g. a map field's tile host and its
+	 * `blob:` web worker) can allow the needed sources here, per directive.
+	 *
+	 * @example
+	 * ```ts
+	 * emdash({ csp: { connectSrc: ["https://tiles.openfreemap.org"], workerSrc: ["blob:"] } })
+	 * ```
+	 */
+	csp?: EmDashCspConfig;
 
 	/**
 	 * Optional distributed object cache for query results.

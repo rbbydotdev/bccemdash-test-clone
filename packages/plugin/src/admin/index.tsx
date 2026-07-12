@@ -1,5 +1,5 @@
 /**
- * BCC plugin admin entrypoint (`@bcc/plugin/admin`).
+ * BCC plugin admin entrypoint (`@myemdash/plugin/admin`).
  *
  * Statically imported into the admin SPA through the
  * `virtual:emdash/admin-registry` module generated from the descriptor's

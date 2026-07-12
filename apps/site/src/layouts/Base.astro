@@ -9,7 +9,7 @@
 import { getSiteSettings } from "emdash";
 import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
-import { getBccSettings } from "@bcc/plugin/server";
+import { getBccSettings } from "@myemdash/plugin/server";
 import { Font } from "astro:assets";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -47,7 +47,7 @@ const siteTitle = settings?.title ?? "Bat City Council";
 const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
 
 // Design tokens (the WP Customizer equivalent): emit :root --bcc-* custom
-// properties from the editable design settings. The @bcc/theme @theme tokens
+// properties from the editable design settings. The @myemdash/theme @theme tokens
 // read these hooks (var(--bcc-amber, fallback)), so edits retint the site.
 const bcc = await getBccSettings();
 const c = bcc.design.colors;

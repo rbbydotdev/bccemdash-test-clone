@@ -59,6 +59,7 @@ export type PluginCapability =
 	| "hooks.email-transport:register" // exclusive `email:deliver` (transport)
 	| "hooks.email-events:register" // `email:beforeSend` / `email:afterSend`
 	| "hooks.page-fragments:register" // `page:fragments` (script/style injection)
+	| "hooks.csp:register" // `csp:sources` (widen the admin Content-Security-Policy)
 	// Deprecated aliases (kept for the deprecation window; warnings emitted at
 	// bundle time, hard fail at publish time).
 	| "network:fetch"
@@ -185,6 +186,7 @@ export interface DeclaredAccess {
 	network?: { request?: { allowedHosts?: string[] } };
 	email?: { send?: AccessConstraints; events?: AccessConstraints; transport?: AccessConstraints };
 	page?: { fragments?: AccessConstraints };
+	csp?: { register?: AccessConstraints };
 	users?: { read?: AccessConstraints };
 }
 
@@ -231,6 +233,7 @@ export function capabilitiesToDeclaredAccess(
 	if (caps.has("hooks.email-events:register")) (out.email ??= {}).events = {};
 	if (caps.has("hooks.email-transport:register")) (out.email ??= {}).transport = {};
 	if (caps.has("hooks.page-fragments:register")) out.page = { fragments: {} };
+	if (caps.has("hooks.csp:register")) out.csp = { register: {} };
 	if (caps.has("users:read")) out.users = { read: {} };
 
 	return out;
@@ -278,6 +281,7 @@ export function declaredAccessToCapabilities(declaredAccess: DeclaredAccess): {
 	if (declaredAccess.email?.events) caps.add("hooks.email-events:register");
 	if (declaredAccess.email?.transport) caps.add("hooks.email-transport:register");
 	if (declaredAccess.page?.fragments) caps.add("hooks.page-fragments:register");
+	if (declaredAccess.csp?.register) caps.add("hooks.csp:register");
 	if (declaredAccess.users?.read) caps.add("users:read");
 
 	return { capabilities: [...caps], allowedHosts };

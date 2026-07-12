@@ -1,9 +1,9 @@
 @import "tailwindcss";
-@import "@bcc/theme/tokens.css";
-@import "@bcc/theme/typeset.css";
+@import "@myemdash/theme/tokens.css";
+@import "@myemdash/theme/typeset.css";
 
 /* Bridge the Astro-managed webfonts (astro.config.mjs `fonts`) into the theme's
-   runtime font hooks. The @theme tokens in @bcc/theme resolve --font-display /
+   runtime font hooks. The @theme tokens in @myemdash/theme resolve --font-display /
    --font-body / --font-accent from these --bcc-font-* custom properties. */
 :root {
 	--bcc-font-display: var(--font-display-webfont, "Cormorant Garamond"), ui-serif, Georgia, serif;

@@ -1,6 +1,10 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 
-import { buildEmDashCsp, getConfiguredStorageEndpoint } from "../../../src/astro/middleware/csp.js";
+import {
+	buildEmDashCsp,
+	getConfiguredStorageEndpoint,
+	mergeCspConfigs,
+} from "../../../src/astro/middleware/csp.js";
 
 describe("buildEmDashCsp", () => {
 	it("includes https: in img-src to allow external images", () => {
@@ -73,6 +77,75 @@ describe("buildEmDashCsp", () => {
 	it("blocks framing with frame-ancestors none", () => {
 		const csp = buildEmDashCsp();
 		expect(csp).toContain("frame-ancestors 'none'");
+	});
+
+	it("leaves the policy unchanged for an empty extra-sources config", () => {
+		expect(buildEmDashCsp(undefined, undefined, {})).toBe(buildEmDashCsp());
+	});
+
+	it("appends host-provided sources to connect-src", () => {
+		const csp = buildEmDashCsp(undefined, undefined, {
+			connectSrc: ["https://tiles.openfreemap.org"],
+		});
+		const connectSrc = csp.split("; ").find((d) => d.startsWith("connect-src"));
+		expect(connectSrc).toBe("connect-src 'self' https://tiles.openfreemap.org");
+	});
+
+	it("adds a worker-src directive (seeded with self) when configured", () => {
+		const csp = buildEmDashCsp(undefined, undefined, { workerSrc: ["blob:"] });
+		const workerSrc = csp.split("; ").find((d) => d.startsWith("worker-src"));
+		expect(workerSrc).toBe("worker-src 'self' blob:");
+	});
+
+	it("merges extra sources on top of registry + storage origins without duplicating", () => {
+		const csp = buildEmDashCsp("https://registry.emdashcms.com", undefined, {
+			connectSrc: ["https://registry.emdashcms.com", "https://tiles.openfreemap.org"],
+		});
+		const connectSrc = csp.split("; ").find((d) => d.startsWith("connect-src"));
+		expect(connectSrc).toBe(
+			"connect-src 'self' https://registry.emdashcms.com https://tiles.openfreemap.org",
+		);
+	});
+
+	it("preserves the base directives when adding extras", () => {
+		const csp = buildEmDashCsp(undefined, undefined, { workerSrc: ["blob:"] });
+		expect(csp).toContain("default-src 'self'");
+		expect(csp).toContain("frame-ancestors 'none'");
+		expect(csp).toContain("img-src 'self' https: data: blob:");
+	});
+});
+
+describe("mergeCspConfigs", () => {
+	it("returns undefined when nothing is contributed", () => {
+		expect(mergeCspConfigs(undefined, null, {})).toBeUndefined();
+	});
+
+	it("concatenates sources per directive across configs", () => {
+		const merged = mergeCspConfigs(
+			{ connectSrc: ["https://a.example"] },
+			{ connectSrc: ["https://b.example"], workerSrc: ["blob:"] },
+		);
+		expect(merged).toEqual({
+			connectSrc: ["https://a.example", "https://b.example"],
+			workerSrc: ["blob:"],
+		});
+	});
+
+	it("skips nullish configs and empty source lists", () => {
+		expect(mergeCspConfigs(undefined, { connectSrc: [] }, { workerSrc: ["blob:"] })).toEqual({
+			workerSrc: ["blob:"],
+		});
+	});
+
+	it("feeds buildEmDashCsp so plugin + app sources both land, deduped", () => {
+		const extra = mergeCspConfigs(
+			{ connectSrc: ["https://tiles.example"] },
+			{ connectSrc: ["https://tiles.example"], workerSrc: ["blob:"] },
+		);
+		const csp = buildEmDashCsp(undefined, undefined, extra);
+		const connectSrc = csp.split("; ").find((d) => d.startsWith("connect-src"));
+		expect(connectSrc).toBe("connect-src 'self' https://tiles.example");
+		expect(csp.split("; ").find((d) => d.startsWith("worker-src"))).toBe("worker-src 'self' blob:");
 	});
 });
 

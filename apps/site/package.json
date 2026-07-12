@@ -1,5 +1,5 @@
 {
-	"name": "@bcc/site",
+	"name": "@myemdash/site",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
@@ -19,8 +19,8 @@
 		"@astrojs/cloudflare": "catalog:",
 		"@astrojs/node": "catalog:",
 		"@astrojs/react": "catalog:",
-		"@bcc/plugin": "workspace:*",
-		"@bcc/theme": "workspace:*",
+		"@myemdash/plugin": "workspace:*",
+		"@myemdash/theme": "workspace:*",
 		"@emdash-cms/cloudflare": "workspace:*",
 		"@emdash-cms/plugin-field-kit": "workspace:*",
 		"@tailwindcss/vite": "catalog:",

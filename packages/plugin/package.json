@@ -1,5 +1,5 @@
 {
-	"name": "@bcc/plugin",
+	"name": "@myemdash/plugin",
 	"version": "0.1.0",
 	"description": "Bat City Council native EmDash plugin: enquiries inbox, contact form, donor map coordinate resolver, site/design settings",
 	"private": true,

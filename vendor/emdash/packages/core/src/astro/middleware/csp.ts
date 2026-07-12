@@ -14,6 +14,12 @@
  */
 import type { RegistryConfigInput } from "../../registry/types.js";
 import type { StorageDescriptor } from "../storage/types.js";
+import type { EmDashCspConfig } from "../../plugins/types.js";
+
+// Re-exported for back-compat: the type's home is `plugins/types.ts` (it is the
+// `csp:sources` hook's contribution shape), but importers of this module and
+// the public `EmDashConfig.csp` field expect it here too.
+export type { EmDashCspConfig };
 
 /** Entrypoint constant used by the `s3()` adapter (see `astro/storage/adapters.ts`). */
 const S3_ADAPTER_ENTRYPOINT = "emdash/storage/s3";
@@ -75,7 +81,40 @@ function getHttpOrigin(rawUrl: string | undefined): string | undefined {
 	}
 }
 
-export function buildEmDashCsp(registry?: RegistryConfigInput, storageEndpoint?: string): string {
+const CSP_EXTRA_DIRECTIVES: Array<[keyof EmDashCspConfig, string]> = [
+	["connectSrc", "connect-src"],
+	["workerSrc", "worker-src"],
+	["scriptSrc", "script-src"],
+	["styleSrc", "style-src"],
+	["imgSrc", "img-src"],
+	["fontSrc", "font-src"],
+	["frameSrc", "frame-src"],
+];
+
+/** Merge host-provided extra sources into the built directive list (deduped). */
+function mergeCspExtras(directives: string[], extra: EmDashCspConfig): string {
+	const byName = new Map<string, string[]>();
+	for (const directive of directives) {
+		const [name, ...sources] = directive.split(" ");
+		if (name) byName.set(name, sources);
+	}
+	for (const [key, name] of CSP_EXTRA_DIRECTIVES) {
+		const additions = extra[key];
+		if (!additions?.length) continue;
+		const sources = byName.get(name) ?? ["'self'"];
+		for (const src of additions) {
+			if (!sources.includes(src)) sources.push(src);
+		}
+		byName.set(name, sources);
+	}
+	return Array.from(byName, ([name, sources]) => `${name} ${sources.join(" ")}`).join("; ");
+}
+
+export function buildEmDashCsp(
+	registry?: RegistryConfigInput,
+	storageEndpoint?: string,
+	extra?: EmDashCspConfig,
+): string {
 	const connectSrc = ["connect-src 'self'"];
 	const origins = new Set<string>();
 	const registryAggregatorOrigin = getRegistryAggregatorOrigin(registry);
@@ -84,7 +123,7 @@ export function buildEmDashCsp(registry?: RegistryConfigInput, storageEndpoint?:
 	if (storageOrigin) origins.add(storageOrigin);
 	connectSrc.push(...origins);
 
-	return [
+	const directives = [
 		"default-src 'self'",
 		"script-src 'self' 'unsafe-inline'",
 		"style-src 'self' 'unsafe-inline'",
@@ -94,5 +133,30 @@ export function buildEmDashCsp(registry?: RegistryConfigInput, storageEndpoint?:
 		"img-src 'self' https: data: blob:",
 		"object-src 'none'",
 		"base-uri 'self'",
-	].join("; ");
+	];
+
+	return extra ? mergeCspExtras(directives, extra) : directives.join("; ");
+}
+
+/**
+ * Combine several CSP-source configs into one, concatenating per directive.
+ * Used to fold every plugin's `csp:sources` contribution together with the
+ * app-level `csp` config before handing the result to {@link buildEmDashCsp}
+ * (which de-duplicates on merge). Returns `undefined` when nothing was
+ * contributed, so callers can skip the merge entirely.
+ */
+export function mergeCspConfigs(
+	...configs: Array<EmDashCspConfig | null | undefined>
+): EmDashCspConfig | undefined {
+	let merged: EmDashCspConfig | undefined;
+	for (const config of configs) {
+		if (!config) continue;
+		for (const key of Object.keys(config) as Array<keyof EmDashCspConfig>) {
+			const sources = config[key];
+			if (!sources?.length) continue;
+			merged ??= {};
+			(merged[key] ??= []).push(...sources);
+		}
+	}
+	return merged;
 }

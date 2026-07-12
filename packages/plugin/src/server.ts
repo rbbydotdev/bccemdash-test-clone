@@ -1,5 +1,5 @@
 /**
- * Server-side entrypoints for the host Astro app (`@bcc/plugin/server`).
+ * Server-side entrypoints for the host Astro app (`@myemdash/plugin/server`).
  *
  * For flows where a page must call BCC-domain logic in-process rather than over
  * HTTP — a Worker cannot fetch() its own route on the same zone, so the contact

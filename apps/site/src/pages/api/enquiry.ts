@@ -5,7 +5,7 @@
  * posts JSON straight to /_emdash/api/plugins/bcc/enquiries instead.
  */
 import type { APIRoute } from "astro";
-import { submitEnquiry } from "@myemdash/plugin/server";
+import { submitEnquiry, verifyTurnstileToken } from "@myemdash/plugin/server";
 
 export const prerender = false;
 
@@ -15,6 +15,17 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 	// Honeypot: silently redirect as success.
 	if (form.get("website")) {
 		return redirect("/?enquiry=ok#contact");
+	}
+
+	// Turnstile must be checked here too — otherwise this fallback route is a
+	// bot bypass around the widget on the JS path. No-ops when no secret is set.
+	const token = form.get("cf-turnstile-response");
+	const ok = await verifyTurnstileToken(
+		typeof token === "string" ? token : undefined,
+		clientAddress ?? null,
+	);
+	if (!ok) {
+		return redirect("/?enquiry=error#contact");
 	}
 
 	const result = await submitEnquiry({

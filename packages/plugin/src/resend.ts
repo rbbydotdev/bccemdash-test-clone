@@ -24,6 +24,7 @@
 import type { PluginDescriptor, ResolvedPlugin } from "emdash";
 import { definePlugin } from "emdash";
 
+import { readEnvSecret } from "./services/env.js";
 import { getBccSettings } from "./settings.js";
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
@@ -45,27 +46,6 @@ export interface ResendEmailConfig {
 }
 
 /**
- * Read a secret at delivery time.
- *
- * Hooks run without request context, so this cannot come from
- * `Astro.locals.runtime`. On Workers, `cloudflare:workers` exposes the same env
- * to any bundled code; on Node we fall back to `process.env`.
- */
-async function readApiKey(name: string): Promise<string | undefined> {
-	try {
-		// @ts-ignore - virtual module, only resolvable on the Workers runtime
-		const mod = await import(/* @vite-ignore */ "cloudflare:workers");
-		const env = (mod as { env?: Record<string, unknown> }).env;
-		const value = env?.[name];
-		if (typeof value === "string" && value) return value;
-	} catch {
-		// Not on workerd — fall through to process.env (Node / local dev).
-	}
-	if (typeof process !== "undefined" && process.env?.[name]) return process.env[name];
-	return undefined;
-}
-
-/**
  * Build the `email:deliver` handler. Exported for testing — production code
  * should use {@link resendEmail}.
  *
@@ -82,7 +62,7 @@ export function createResendDeliver(config: ResendEmailConfig = {}) {
 		// sender can be changed from the dashboard with no redeploy. Settings are
 		// read server-side only and never rendered into a page.
 		const settings = await getBccSettings().catch(() => null);
-		const apiKey = settings?.integrations.resendApiKey?.trim() || (await readApiKey(apiKeyEnv));
+		const apiKey = settings?.integrations.resendApiKey?.trim() || (await readEnvSecret(apiKeyEnv));
 		const from = settings?.integrations.resendFrom?.trim() || config.from || RESEND_SHARED_SENDER;
 
 		if (!apiKey) {

@@ -8,7 +8,9 @@
 import type { RouteContext } from "emdash";
 
 import { createEnquiry, toEnquiryDTO } from "../db/repos/enquiries.repo.js";
+import { fail } from "../errors.js";
 import { sendEnquiryNotification, type EmailCapableCtx } from "../services/emails.js";
+import { verifyTurnstileToken } from "../services/turnstile.js";
 import { getBccSettings } from "../settings.js";
 import {
 	asRecord,
@@ -19,26 +21,6 @@ import {
 	requireCsrfHeader,
 	requireMethod,
 } from "./helpers.js";
-
-/** Verify a Cloudflare Turnstile token when a secret is configured. */
-async function verifyTurnstile(token: string | undefined, secret: string | undefined, ip: string | null): Promise<boolean> {
-	if (!secret) return true; // not configured (dev) → skip
-	if (!token) return false;
-	try {
-		const body = new FormData();
-		body.append("secret", secret);
-		body.append("response", token);
-		if (ip) body.append("remoteip", ip);
-		const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-			method: "POST",
-			body,
-		});
-		const data = (await res.json()) as { success?: boolean };
-		return data.success === true;
-	} catch {
-		return false;
-	}
-}
 
 export async function publicEnquiryHandler(ctx: RouteContext): Promise<unknown> {
 	requireMethod(ctx, "POST");
@@ -53,13 +35,10 @@ export async function publicEnquiryHandler(ctx: RouteContext): Promise<unknown> 
 	if (trap) return { id: "ok" };
 
 	const settings = await getBccSettings();
-	// The Turnstile SECRET is an env var (never in the public settings bag).
-	const turnstileSecret =
-		typeof process !== "undefined" ? process.env?.TURNSTILE_SECRET_KEY : undefined;
 	const token = readString(body, "turnstileToken");
 	const ip = ctx.requestMeta?.ip ?? null;
-	if (!(await verifyTurnstile(token, turnstileSecret, ip))) {
-		return { error: { code: "turnstile_failed", message: "Verification failed. Please try again." } };
+	if (!(await verifyTurnstileToken(token, ip))) {
+		fail("turnstile_failed", "Verification failed. Please try again.");
 	}
 
 	const name = readString(body, "name", { required: true, maxLength: 200 })!;

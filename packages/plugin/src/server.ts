@@ -7,6 +7,14 @@
  */
 import { createEnquiry, toEnquiryDTO, type EnquiryDTO } from "./db/repos/enquiries.repo.js";
 import { getBccDb } from "./routes/helpers.js";
+import { verifyTurnstileToken } from "./services/turnstile.js";
+
+/**
+ * Verify a Turnstile token (server secret resolved internally). Exported so
+ * the host app's no-JS form fallback can gate on it too — without this the
+ * fallback route would be a bot bypass around the widget.
+ */
+export { verifyTurnstileToken };
 
 // Re-export settings helpers so the host Astro app reads/writes the
 // client-editable "Site Content" bag in-process (server-side only).

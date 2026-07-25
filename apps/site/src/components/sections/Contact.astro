@@ -14,6 +14,9 @@ interface Props {
 const { source = "contact" } = Astro.props;
 const s = await getBccSettings();
 const c = s.contact;
+// Cloudflare Turnstile (bot protection). Only rendered when a site key is set,
+// so local/dev without a key still works. The server verifies the token.
+const turnstileSiteKey = s.integrations.turnstileSiteKey.trim();
 ---
 
 <section id="contact" class="relative bcc-noise py-[var(--spacing-section-lg)]">
@@ -71,6 +74,16 @@ const c = s.contact;
 				></textarea>
 			</label>
 
+			{turnstileSiteKey && (
+				<div
+					class="cf-turnstile"
+					data-sitekey={turnstileSiteKey}
+					data-action="turnstile-spin-v1"
+					data-theme="dark"
+				>
+				</div>
+			)}
+
 			<div class="flex items-center gap-4">
 				<button
 					type="submit"
@@ -84,9 +97,24 @@ const c = s.contact;
 	</div>
 </section>
 
+{turnstileSiteKey && (
+	<script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
+)}
+
 <script>
 	const form = document.querySelector<HTMLFormElement>("[data-enquiry-form]");
 	const status = document.querySelector<HTMLElement>("[data-enquiry-status]");
+
+	// Turnstile tokens are single-use — reset the widget after a failed submit
+	// so the visitor can retry without reloading the page.
+	function resetTurnstile() {
+		const ts = (window as unknown as { turnstile?: { reset: () => void } }).turnstile;
+		try {
+			ts?.reset();
+		} catch {
+			/* widget not present or not ready */
+		}
+	}
 
 	// Reflect the no-JS redirect status flag.
 	const params = new URLSearchParams(window.location.search);
@@ -98,6 +126,17 @@ const c = s.contact;
 		if (!status) return;
 		const data = new FormData(form);
 		if (data.get("website")) return; // honeypot
+
+		// Turnstile writes its token into this hidden input. Only enforced when
+		// the widget is present (i.e. a site key is configured); the server does
+		// the authoritative check either way.
+		const widget = form.querySelector(".cf-turnstile");
+		const turnstileToken = (data.get("cf-turnstile-response") as string | null) ?? "";
+		if (widget && !turnstileToken) {
+			status.textContent = "Please complete the verification check.";
+			return;
+		}
+
 		status.textContent = "Sending...";
 		try {
 			const res = await fetch("/_emdash/api/plugins/bcc/enquiries", {
@@ -108,6 +147,7 @@ const c = s.contact;
 					email: data.get("email"),
 					message: data.get("message"),
 					source: data.get("source"),
+					turnstileToken,
 				}),
 			});
 			const json = (await res.json()) as { data?: { id?: string }; error?: { message?: string } };
@@ -116,9 +156,11 @@ const c = s.contact;
 				form.reset();
 			} else {
 				status.textContent = json.error?.message ?? "Something went wrong. Please try again.";
+				resetTurnstile();
 			}
 		} catch {
 			status.textContent = "Something went wrong. Please try again.";
+			resetTurnstile();
 		}
 	});
 </script>

@@ -30,6 +30,7 @@ export interface Experience {
   image?: { id: string; src?: string; alt?: string; width?: number; height?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> };
   is_signature?: boolean;
   cta_text?: string;
+  body?: PortableTextBlock[];
   order?: number;
   createdAt: Date;
   updatedAt: Date;

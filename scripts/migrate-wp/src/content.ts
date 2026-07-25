@@ -40,7 +40,7 @@ export const TIERS: Entry[] = [
 		data: {
 			title: "Business Ally",
 			statement:
-				"Bat City Council Certified seal (digital and storefront), directory listing, social media recognition, annual impact report.",
+				"Bat City Council Certified seal (digital + storefront), directory listing, social media recognition, annual impact report.",
 			amount: 2500,
 			amount_label: "/yr",
 			tier_type: "business",
@@ -116,19 +116,9 @@ export const TIERS: Entry[] = [
 			order: 3,
 		},
 	},
-	{
-		slug: "night-council",
-		status: "draft",
-		data: {
-			title: "Night Council",
-			statement: "The inner circle. Legacy recognition, private expeditions, category exclusivity.",
-			amount: 25000,
-			amount_label: "$25K+",
-			tier_type: "individual",
-			devote_url: DEVOTE_URL,
-			order: 4,
-		},
-	},
+	// Night Council ($25K+ individual tier) existed as a draft in an earlier
+	// WP snapshot but was permanently deleted from prod since; omitted here to
+	// match current WP. Re-add if the client wants it revived.
 	// The published "give any amount" catch-all.
 	{
 		slug: "individual-support-any-amount",
@@ -145,6 +135,9 @@ export const TIERS: Entry[] = [
 	},
 ];
 
+const GET_IN_TOUCH_URL =
+	"https://docs.google.com/forms/d/e/1FAIpQLSeFdjXcQ1k1OUb7sdoUccaBtxYnftMQ5ClvWho6Gg3xoCDJRw/viewform";
+
 export const EXPERIENCES: Entry[] = [
 	{
 		slug: "congress-avenue-bridge",
@@ -157,6 +150,13 @@ export const EXPERIENCES: Entry[] = [
 				"The iconic experience. Watch 1.5 million Brazilian free-tailed bats emerge from the Congress Avenue Bridge at dusk. Beautiful and unforgettable when viewed from the bridge itself, the trail below, or by boat or kayak on Lady Bird Lake.",
 			is_signature: false,
 			cta_text: "Plan your visit",
+			body: [
+				ptLink([
+					"Devotees of Bat City Council have access to guided experiences and special offers, ",
+					{ text: "get in touch", href: GET_IN_TOUCH_URL },
+					" to schedule.",
+				]),
+			],
 			order: 1,
 		},
 	},
@@ -168,9 +168,16 @@ export const EXPERIENCES: Entry[] = [
 		data: {
 			title: "Austin Bat Refuge: Private Encounter",
 			description:
-				"An exclusive, intimate experience. Meet rescued bats face to face at Austin Bat Refuge, the devoted stewards of Austin's mascot mammal and staple of Bat City culture. Available for devotees of Bat City Council.",
+				"An exclusive, intimate experience. Meet rescued bats face to face at Austin Bat Refuge, the dedicated stewards of Austin's mascot mammal and staple of Bat City culture.",
 			is_signature: true,
 			cta_text: "Request access",
+			body: [
+				ptLink([
+					"Available for devotees of Bat City Council, ",
+					{ text: "get in touch", href: GET_IN_TOUCH_URL },
+					" to schedule.",
+				]),
+			],
 			order: 2,
 		},
 	},
@@ -182,9 +189,37 @@ export const EXPERIENCES: Entry[] = [
 		data: {
 			title: "Beyond the Bridge",
 			description:
-				"Explore lesser-known bat roosts and bridges just outside Austin. For the curious and the devoted. Guided by Teresa Nichta.",
+				"For the curious and the devoted: guided trips to lesser-known bat roosts in Texas, Thailand, and Cuba.",
 			is_signature: false,
 			cta_text: "Get in touch",
+			body: [
+				ptLink([
+					"TEXAS - Explore lesser-known bat roosts and bridges just outside Austin. Experiences are customizable and vary by season and availability, ",
+					{ text: "just ask!", href: GET_IN_TOUCH_URL },
+				]),
+				ptLink(
+					[
+						"THAILAND - All are invited to join this ",
+						{
+							text: "one-of-a-kind field trip to Thailand",
+							href: "https://www.teresamaynichta.com/bats-and-beaches",
+						},
+						".",
+					],
+					"b2",
+				),
+				ptLink(
+					[
+						"CUBA - Amicusesse and ProyectoCUBABAT co-hosted ",
+						{
+							text: "cultural exchange field trips to Cuba",
+							href: "https://www.amicusesse.com/cuba2026",
+						},
+						".",
+					],
+					"b3",
+				),
+			],
 			order: 3,
 		},
 	},
@@ -199,6 +234,13 @@ export const EXPERIENCES: Entry[] = [
 				"Educational programs, group tours, private events, and conservation experiences, available any time of year. Austin is beautiful year-round. The bats at the bridge may not always be in full capacity, but there are always bats in town!",
 			is_signature: false,
 			cta_text: "Get in touch",
+			body: [
+				ptLink([
+					"Experiences are customizable and vary by season and availability, ",
+					{ text: "get in touch", href: GET_IN_TOUCH_URL },
+					" to inquire.",
+				]),
+			],
 			order: 4,
 		},
 	},
@@ -217,6 +259,8 @@ export const BUSINESS_DONORS: Entry[] = [
 		slug: "torchys-tacos",
 		status: "published",
 		data: {
+			// WP stores this as "torchys tacos" (no apostrophe, lowercase) -- a data-entry
+			// slip, not intentional styling. Using the real business name here.
 			title: "Torchy's Tacos",
 			business_url: "https://www.facebook.com/TorchysTacos/",
 			location: { lat: 30.2454642, lng: -97.7515802, address: "Torchy's Tacos, Austin, TX" },
@@ -235,6 +279,20 @@ function pt(text: string): unknown[] {
 			children: [{ _type: "span", _key: "s1", text, marks: [] }],
 		},
 	];
+}
+
+/** A portable text paragraph built from plain-text and {text, href} link segments. */
+function ptLink(segments: Array<string | { text: string; href: string }>, key = "b1"): unknown {
+	const markDefs: Array<{ _type: string; _key: string; href: string }> = [];
+	const children = segments.map((seg, i) => {
+		if (typeof seg === "string") {
+			return { _type: "span", _key: `${key}s${i}`, text: seg, marks: [] };
+		}
+		const markKey = `${key}link${i}`;
+		markDefs.push({ _type: "link", _key: markKey, href: seg.href });
+		return { _type: "span", _key: `${key}s${i}`, text: seg.text, marks: [markKey] };
+	});
+	return { _type: "block", _key: key, style: "normal", markDefs, children };
 }
 
 export const PROGRAMS: Entry[] = [

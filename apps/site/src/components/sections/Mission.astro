@@ -57,6 +57,10 @@ const ICONS = [
 			))}
 		</div>
 
+		<p data-animate data-animate-delay="250" class="mx-auto mt-10 max-w-2xl font-display text-lg italic text-moon/80">
+			&ldquo;{s.mission.quote}&rdquo;
+		</p>
+
 		<p data-animate data-animate-delay="300" class="mx-auto mt-12 max-w-2xl font-display text-xl italic text-moon/80">
 			{s.mission.caption}
 		</p>
@@ -67,10 +71,14 @@ const ICONS = [
 			class="mx-auto mt-10 max-w-lg rounded-[var(--radius-card)] border border-amber/15 bg-night/40 p-6"
 		>
 			<p class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-amber">
-				{s.mission.recipientLabel}
+				{s.mission.recipientsLabel}
 			</p>
-			<p class="mt-2 font-display text-2xl text-moon">{s.mission.recipientName}</p>
-			<p class="mt-2 text-sm text-silver">{s.mission.recipientDetail}</p>
+			{s.mission.recipients.map((recipient) => (
+				<div class="mt-3 first:mt-2">
+					<p class="font-display text-xl text-moon">{recipient.name}</p>
+					<p class="mt-1 text-sm text-silver">{recipient.detail}</p>
+				</div>
+			))}
 		</div>
 	</div>
 </section>

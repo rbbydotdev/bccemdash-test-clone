@@ -38,6 +38,16 @@ function parseStat(value: string): { target: number; suffix: string; decimals: n
 						{p}
 					</p>
 				))}
+				{s.story.challengeHeading && (
+					<>
+						<h3 data-animate data-animate-delay="400" class="mt-10 font-display text-2xl text-moon">
+							{s.story.challengeHeading}
+						</h3>
+						<p data-animate data-animate-delay="450" class="mt-4 text-moon/70">
+							{s.story.challengeBody}
+						</p>
+					</>
+				)}
 			</div>
 
 			{storyImg && (

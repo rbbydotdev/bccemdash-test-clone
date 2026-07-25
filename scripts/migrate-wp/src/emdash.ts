@@ -154,6 +154,11 @@ export async function createEntry(collection: string, input: CreateEntryInput): 
 	return result.item;
 }
 
+/** Overwrite an existing entry's data (used to re-sync content on re-runs). */
+export async function updateEntry(collection: string, id: string, data: Record<string, unknown>): Promise<void> {
+	await request("PUT", `/content/${collection}/${id}`, { data });
+}
+
 export async function publishEntry(collection: string, id: string, publishedAt?: string): Promise<void> {
 	await request("POST", `/content/${collection}/${id}/publish`, publishedAt ? { publishedAt } : {});
 }

@@ -14,7 +14,7 @@ import { Button, Input, Loader, Select, Switch, Tabs, Textarea, type TabsItem } 
 import { FloppyDisk, Plus, Trash } from "@phosphor-icons/react";
 import * as React from "react";
 
-import type { BccSettings, CycleNode, StatItem } from "../settings.js";
+import type { BccSettings, CycleNode, Recipient, StatItem } from "../settings.js";
 import {
 	ErrorNotice,
 	PageHeader,
@@ -371,6 +371,57 @@ function NodeListEditor({
 	);
 }
 
+/** Repeatable rows of name + detail (mission key recipients). */
+function RecipientListEditor({
+	values,
+	onChange,
+}: {
+	values: Recipient[];
+	onChange: (next: Recipient[]) => void;
+}) {
+	const patch = (i: number, part: Partial<Recipient>) =>
+		onChange(values.map((n, idx) => (idx === i ? { ...n, ...part } : n)));
+	return (
+		<div className="space-y-3">
+			<div className="text-sm font-medium">Key recipients</div>
+			{values.map((n, i) => (
+				<div key={i} className="border-kumo-line space-y-2 rounded-lg border p-3">
+					<div className="flex items-end gap-2">
+						<Input
+							className="w-full"
+							label="Name"
+							value={n.name}
+							onChange={(e) => patch(i, { name: e.target.value })}
+						/>
+						<Button
+							variant="ghost"
+							shape="square"
+							size="sm"
+							aria-label="Remove recipient"
+							onClick={() => onChange(values.filter((_, idx) => idx !== i))}
+						>
+							<Trash className="h-4 w-4" />
+						</Button>
+					</div>
+					<Input
+						className="w-full"
+						label="Detail"
+						value={n.detail}
+						onChange={(e) => patch(i, { detail: e.target.value })}
+					/>
+				</div>
+			))}
+			<Button
+				variant="secondary"
+				size="sm"
+				onClick={() => onChange([...values, { name: "", detail: "" }])}
+			>
+				<Plus className="mr-1 h-4 w-4" /> Add recipient
+			</Button>
+		</div>
+	);
+}
+
 // ── Page ────────────────────────────────────────────────────────────
 
 export function SettingsPage() {
@@ -613,6 +664,19 @@ export function SettingsPage() {
 						onChange={(v) => patchSection("story", { paragraphs: v })}
 						addLabel="Add paragraph"
 					/>
+					<Input
+						className="w-full"
+						label="Challenge heading"
+						value={s.story.challengeHeading}
+						onChange={(e) => patchSection("story", { challengeHeading: e.target.value })}
+					/>
+					<Textarea
+						className="w-full"
+						label="Challenge body"
+						rows={3}
+						value={s.story.challengeBody}
+						onChange={(e) => patchSection("story", { challengeBody: e.target.value })}
+					/>
 					<StatListEditor
 						values={s.story.stats}
 						onChange={(v) => patchSection("story", { stats: v })}
@@ -666,30 +730,27 @@ export function SettingsPage() {
 					/>
 					<Textarea
 						className="w-full"
+						label="Quote"
+						rows={2}
+						value={s.mission.quote}
+						onChange={(e) => patchSection("mission", { quote: e.target.value })}
+					/>
+					<Textarea
+						className="w-full"
 						label="Caption"
 						rows={2}
 						value={s.mission.caption}
 						onChange={(e) => patchSection("mission", { caption: e.target.value })}
 					/>
-					<FieldGrid>
-						<Input
-							className="w-full"
-							label="Recipient label"
-							value={s.mission.recipientLabel}
-							onChange={(e) => patchSection("mission", { recipientLabel: e.target.value })}
-						/>
-						<Input
-							className="w-full"
-							label="Recipient name"
-							value={s.mission.recipientName}
-							onChange={(e) => patchSection("mission", { recipientName: e.target.value })}
-						/>
-					</FieldGrid>
 					<Input
 						className="w-full"
-						label="Recipient detail"
-						value={s.mission.recipientDetail}
-						onChange={(e) => patchSection("mission", { recipientDetail: e.target.value })}
+						label="Recipients label"
+						value={s.mission.recipientsLabel}
+						onChange={(e) => patchSection("mission", { recipientsLabel: e.target.value })}
+					/>
+					<RecipientListEditor
+						values={s.mission.recipients}
+						onChange={(v) => patchSection("mission", { recipients: v })}
 					/>
 				</SectionCard>
 			)}

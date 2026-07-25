@@ -3,8 +3,9 @@
  *
  * Sources curated content (src/content.ts) and in-repo media originals
  * (scripts/migrate-wp/media/), and pushes them into the running emdash dev
- * server via REST. Fully self-contained (no external paths). Idempotent: media
- * skip-if-filename, content skip-if-slug. Run with the dev server up:
+ * server via REST. Fully self-contained (no external paths). Repeatable: media
+ * skip-if-filename, content upsert-by-slug (updates data on existing entries
+ * so content.ts fixes propagate on re-runs). Run with the dev server up:
  *
  *   cd apps/site && corepack pnpm dev            # in one shell
  *   cd scripts/migrate-wp && corepack pnpm migrate
@@ -19,6 +20,7 @@ import {
 	login,
 	publishEntry,
 	updateBccSettings,
+	updateEntry,
 	updateMediaMeta,
 	updateSiteSettings,
 	uploadMedia,
@@ -71,23 +73,28 @@ async function migrateMedia(): Promise<Map<string, string>> {
 	return map;
 }
 
-/** Create + publish a collection's entries (skip-if-slug). */
+/** Create or update a collection's entries, matched by slug. */
 async function migrateCollection(
 	collection: string,
 	entries: Entry[],
 	media: Map<string, string>,
 ): Promise<void> {
 	console.log(`• ${collection}`);
-	const existing = new Set((await listAllContent(collection)).map((c) => c.slug));
+	const existingBySlug = new Map((await listAllContent(collection)).map((c) => [c.slug, c]));
 	for (const entry of entries) {
-		if (existing.has(entry.slug)) {
-			console.log(`  = ${entry.slug} exists`);
-			continue;
-		}
 		const data = { ...entry.data };
 		if (entry.imageKey && entry.imageField) {
 			const id = media.get(entry.imageKey);
 			if (id) data[entry.imageField] = id;
+		}
+		const existing = existingBySlug.get(entry.slug);
+		if (existing) {
+			await updateEntry(collection, existing.id, data);
+			if (entry.status === "published" && existing.status !== "published") {
+				await publishEntry(collection, existing.id);
+			}
+			console.log(`  ~ ${entry.slug} updated`);
+			continue;
 		}
 		const item = await createEntry(collection, { slug: entry.slug, data });
 		if (entry.status === "published") await publishEntry(collection, item.id);

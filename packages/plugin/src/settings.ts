@@ -26,6 +26,10 @@ export interface CycleNode {
 	title: string;
 	body: string;
 }
+export interface Recipient {
+	name: string;
+	detail: string;
+}
 
 export interface BccSettings {
 	integrations: {
@@ -53,6 +57,8 @@ export interface BccSettings {
 		heading: string;
 		headingAccent: string;
 		paragraphs: string[];
+		challengeHeading: string;
+		challengeBody: string;
 		stats: StatItem[];
 		image: string;
 	};
@@ -62,11 +68,11 @@ export interface BccSettings {
 		headingAccent: string;
 		headingTail: string;
 		lede: string;
+		quote: string;
 		nodes: CycleNode[];
 		caption: string;
-		recipientLabel: string;
-		recipientName: string;
-		recipientDetail: string;
+		recipientsLabel: string;
+		recipients: Recipient[];
 	};
 	devotions: {
 		eyebrow: string;
@@ -148,8 +154,8 @@ export const BCC_DEFAULTS: BccSettings = {
 		eyebrow: "Est. 2026 · Austin, Texas",
 		titleLine1: "Bat City",
 		titleLine2: "Council",
-		subhead: "Guardians of Austin's Night Sky",
-		body: "Every dusk, 1.5 million bats take flight from the heart of Austin. They are the soul of Bat City. And they need your devotion.",
+		subhead: "Connecting culture, commerce and conservation.",
+		body: "In Bats We Trust - become a Certified Bat Business with your Devotion. Bats are the soul of Bat City. They need your devotion.",
 		ctaPrimary: "Make a Devotion",
 		ctaSecondary: "Explore the Mission",
 		image: "",
@@ -159,9 +165,12 @@ export const BCC_DEFAULTS: BccSettings = {
 		heading: "Austin Is Bat City.",
 		headingAccent: "This Is Why.",
 		paragraphs: [
-			"Beneath the Congress Avenue Bridge lives the largest urban bat colony on Earth: 1.5 million Brazilian free-tailed bats. Every evening from April through September, they erupt into the Austin sky in a spectacle that draws over 140,000 visitors each year just for the bats alone.",
-			"But Austin welcomes 60 million tourists annually. Most have never witnessed the flight. Bat City Council exists to change that, and to ensure the colony thrives for generations.",
+			"Beneath the Congress Avenue Bridge lives the largest urban bat colony on Earth: 1.5 million Brazilian free-tailed bats. They emerge into the Austin sky in a spectacle that draws over 140,000 visitors each year just for the bats alone.",
+			"But Austin welcomes 60 million tourists annually and most have never witnessed the flight. Bat City Council exists to share bat experiences with everyone and share the culture of living safely and harmoniously together with wildlife.",
 		],
+		challengeHeading: "The Challenge We Face",
+		challengeBody:
+			"Businesses benefit from bat tourism, but conservation funding is fragmented and under-supported. Sustainable tourism depends on healthy bat populations, yet the resources to protect them haven't kept pace with the economic impact they generate.",
 		stats: [
 			{ value: "1.5M", label: "Bats in the Colony" },
 			{ value: "140K+", label: "Annual Bat Tourists" },
@@ -171,27 +180,33 @@ export const BCC_DEFAULTS: BccSettings = {
 	},
 	mission: {
 		eyebrow: "The Mission",
-		heading: "Connecting Commerce &",
+		heading: "Connecting Culture, Commerce &",
 		headingAccent: "Conservation",
-		headingTail: "in Bat City",
-		lede: "Bat City Council is the bridge between Austin's thriving economy and the living ecosystem that makes this city legendary. Through business partnerships, individual devotions, and unforgettable bat experiences, we fund conservation directly, protecting the bats that protect Austin's identity.",
+		headingTail: "",
+		lede: "Bat City Council is the bridge between Austin's thriving economy and the living ecosystem that makes this city legendary. Through business partnerships, individual support, and unforgettable bat experiences, we fund and foster conservation directly, protecting the bats that are the hallmark of Austin's identity.",
+		quote: "You don't have to become a bat expert. You just have to care.",
 		nodes: [
 			{ title: "Commerce", body: "Businesses and individuals make devotions to the colony's future." },
-			{ title: "Conservation", body: "Funds support Austin Bat Refuge, radar research, education, and local bat care." },
+			{ title: "Conservation", body: "Funds support Austin Bat Refuge, radar research, education, and bat care." },
 			{ title: "Culture", body: "Enhanced bat tourism strengthens Austin's identity and economy." },
 		],
-		caption: "The cycle repeats. Conservation fuels commerce. Commerce funds conservation.",
-		recipientLabel: "Key Recipient",
-		recipientName: "Austin Bat Refuge",
-		recipientDetail: "Radar data collection · Educational outreach · Local bat care",
+		caption: "The sacred cycle: Conservation fuels commerce. Commerce funds conservation.",
+		recipientsLabel: "Key Recipients",
+		recipients: [
+			{ name: "Austin Bat Refuge", detail: "Radar data collection · Educational outreach · Local bat care" },
+			{ name: "Bat City Films", detail: "Media resources · Educational support" },
+			{ name: "EchoVision", detail: "XR Experience" },
+			{ name: "Proyecto CUBABAT", detail: "Ecotourism and Conservation in Cuba" },
+			{ name: "BatThai", detail: "Ecotourism and Conservation in Thailand" },
+		],
 	},
 	devotions: {
 		eyebrow: "Devotions",
 		heading: "Devote to the",
 		headingAccent: "Night",
-		lede: "Your devotion sustains Austin's night guardians. Choose your place in the colony.",
-		businessLabel: "Business Devotions",
-		individualLabel: "Individual Devotions",
+		lede: "Your devotion sustains Austin's night guardians through ecotourism. Choose your place in the colony.",
+		businessLabel: "For Business",
+		individualLabel: "For Individuals",
 		closer: "Every devotion, at every level, keeps Austin's night guardians in flight.",
 		note: "On the devotion page you'll find an option to devote any amount.",
 	},
@@ -199,17 +214,16 @@ export const BCC_DEFAULTS: BccSettings = {
 		eyebrow: "Experiences",
 		heading: "Experience the",
 		headingAccent: "Night",
-		lede: "Austin's bats are waiting. The best time to visit is April through September, but we facilitate bat activities year-round.",
-		outro: "Interested in a bat experience? Get in touch.",
+		lede: "Austin's bats are waiting. The best time to visit the bats is mid-March to mid-April and late July, continuing through August when the baby bats have learned to fly - but we facilitate bat experiences year-round.",
+		outro: "Interested in a batty experience? Get in touch.",
 	},
 	founder: {
 		eyebrow: "The Founder",
 		name: "Teresa Nichta",
 		title: "Founder, Bat City Council",
 		bio: [
-			"Teresa Nichta has led conservation expeditions across four continents, from Egypt and Cuba to Zambia and Ecuador. She has scaled organizations from the ground up, grown audiences from 300 to 75,000+, and produced exhibitions for the Onassis Foundation and the Smithsonian.",
-			"She is a trusted advisor to Austin Bat Refuge and holds the rare combination of scientific field experience, creative media innovation, major donor fundraising, and executive strategy in one leader.",
-			"A decade-plus network spanning donors, scientists, artists, cultural institutions, and global conservation partners. Purpose-built for this mission.",
+			"Teresa Nichta is a conservation leader, producer, and bridge-builder who has spent over 12 years connecting science, art, technology, and community in service of a more regenerative future. She champions human-wildlife coexistence, meaningful collaboration, and innovative approaches to conservation and social impact.",
+			"Drawing from experience in nonprofit leadership, conservation, media production, and fundraising, Teresa has helped grow organizations from the ground up, led conservation initiatives across four continents, and produced projects with internationally recognized cultural institutions. She is passionate about bringing together scientists, artists, technologists, donors, and communities to transform bold ideas into lasting impact - creating experiences and partnerships that deepen our connection to the natural world and inspire positive action and change.",
 		],
 		image: "",
 	},
@@ -219,7 +233,7 @@ export const BCC_DEFAULTS: BccSettings = {
 	closing: {
 		line1: "Every flight begins with",
 		line1Accent: "devotion.",
-		line2: "Join the Bat City Council.",
+		line2: "Support Bat City Council.",
 		line3: "Protect what makes Austin legendary.",
 		cta: "Make Your Devotion",
 		image: "",

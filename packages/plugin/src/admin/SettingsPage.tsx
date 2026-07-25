@@ -48,8 +48,10 @@ const TABS: TabsItem[] = [
 	{ value: "founder", label: "Founder" },
 	{ value: "trust", label: "Trust" },
 	{ value: "closing", label: "Closing" },
+	{ value: "contact", label: "Contact" },
 	{ value: "footer", label: "Footer" },
 	{ value: "social", label: "Social" },
+	{ value: "pages", label: "Other Pages" },
 	{ value: "design", label: "Design" },
 ];
 
@@ -942,6 +944,67 @@ export function SettingsPage() {
 				</SectionCard>
 			)}
 
+			{active === "contact" && (
+				<SectionCard
+					title="Contact"
+					description="The enquiry form section. Submissions land in the Enquiries inbox."
+				>
+					<FieldGrid>
+						<Input
+							className="w-full"
+							label="Eyebrow"
+							value={s.contact.eyebrow}
+							onChange={(e) => patchSection("contact", { eyebrow: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Heading"
+							value={s.contact.heading}
+							onChange={(e) => patchSection("contact", { heading: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Heading accent (italic amber)"
+							value={s.contact.headingAccent}
+							onChange={(e) => patchSection("contact", { headingAccent: e.target.value })}
+						/>
+					</FieldGrid>
+					<Textarea
+						className="w-full"
+						label="Lede"
+						rows={2}
+						value={s.contact.lede}
+						onChange={(e) => patchSection("contact", { lede: e.target.value })}
+					/>
+					<FieldGrid>
+						<Input
+							className="w-full"
+							label="Name field label"
+							value={s.contact.nameLabel}
+							onChange={(e) => patchSection("contact", { nameLabel: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Email field label"
+							value={s.contact.emailLabel}
+							onChange={(e) => patchSection("contact", { emailLabel: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Message field label"
+							value={s.contact.messageLabel}
+							onChange={(e) => patchSection("contact", { messageLabel: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Submit button"
+							value={s.contact.sendLabel}
+							onChange={(e) => patchSection("contact", { sendLabel: e.target.value })}
+						/>
+					</FieldGrid>
+				</SectionCard>
+			)}
+
 			{active === "footer" && (
 				<SectionCard title="Footer" description="The site footer copy and image.">
 					<FieldGrid>
@@ -956,6 +1019,30 @@ export function SettingsPage() {
 							label="Tagline"
 							value={s.footer.tagline}
 							onChange={(e) => patchSection("footer", { tagline: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Public contact email"
+							value={s.footer.contactEmail}
+							onChange={(e) => patchSection("footer", { contactEmail: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Nav column heading"
+							value={s.footer.navHeading}
+							onChange={(e) => patchSection("footer", { navHeading: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Connect column heading"
+							value={s.footer.connectHeading}
+							onChange={(e) => patchSection("footer", { connectHeading: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Found a bat label"
+							value={s.footer.foundBatLabel}
+							onChange={(e) => patchSection("footer", { foundBatLabel: e.target.value })}
 						/>
 						<Input
 							className="w-full"
@@ -1002,6 +1089,127 @@ export function SettingsPage() {
 						/>
 					</FieldGrid>
 				</SectionCard>
+			)}
+
+			{active === "pages" && (
+				<>
+					<SectionCard title="Badges" description="Small labels shown on cards across the site.">
+						<FieldGrid>
+							<Input
+								className="w-full"
+								label="Signature experience badge"
+								value={s.labels.signatureBadge}
+								onChange={(e) => patchSection("labels", { signatureBadge: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Flagship tier badge"
+								value={s.labels.flagshipBadge}
+								onChange={(e) => patchSection("labels", { flagshipBadge: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Per-year price suffix"
+								value={s.labels.perYear}
+								onChange={(e) => patchSection("labels", { perYear: e.target.value })}
+							/>
+						</FieldGrid>
+					</SectionCard>
+
+					<SectionCard title="Journal page" description="The /blog listing page.">
+						<FieldGrid>
+							<Input
+								className="w-full"
+								label="Eyebrow"
+								value={s.blog.eyebrow}
+								onChange={(e) => patchSection("blog", { eyebrow: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Heading"
+								value={s.blog.heading}
+								onChange={(e) => patchSection("blog", { heading: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Heading accent"
+								value={s.blog.headingAccent}
+								onChange={(e) => patchSection("blog", { headingAccent: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Empty state"
+								value={s.blog.empty}
+								onChange={(e) => patchSection("blog", { empty: e.target.value })}
+							/>
+						</FieldGrid>
+					</SectionCard>
+
+					<SectionCard title="Programs page" description="The /programs listing page.">
+						<FieldGrid>
+							<Input
+								className="w-full"
+								label="Eyebrow"
+								value={s.programs.eyebrow}
+								onChange={(e) => patchSection("programs", { eyebrow: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Heading"
+								value={s.programs.heading}
+								onChange={(e) => patchSection("programs", { heading: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Heading accent"
+								value={s.programs.headingAccent}
+								onChange={(e) => patchSection("programs", { headingAccent: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Empty state"
+								value={s.programs.empty}
+								onChange={(e) => patchSection("programs", { empty: e.target.value })}
+							/>
+						</FieldGrid>
+					</SectionCard>
+
+					<SectionCard title="404 page" description="Shown when a URL does not exist.">
+						<FieldGrid>
+							<Input
+								className="w-full"
+								label="Eyebrow"
+								value={s.notFound.eyebrow}
+								onChange={(e) => patchSection("notFound", { eyebrow: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Heading"
+								value={s.notFound.heading}
+								onChange={(e) => patchSection("notFound", { heading: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Heading accent"
+								value={s.notFound.headingAccent}
+								onChange={(e) => patchSection("notFound", { headingAccent: e.target.value })}
+							/>
+							<Input
+								className="w-full"
+								label="Button label"
+								value={s.notFound.cta}
+								onChange={(e) => patchSection("notFound", { cta: e.target.value })}
+							/>
+						</FieldGrid>
+						<Textarea
+							className="w-full"
+							label="Body"
+							rows={2}
+							value={s.notFound.body}
+							onChange={(e) => patchSection("notFound", { body: e.target.value })}
+						/>
+					</SectionCard>
+				</>
 			)}
 
 			{active === "design" && (

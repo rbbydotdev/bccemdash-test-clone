@@ -109,12 +109,52 @@ export interface BccSettings {
 		cta: string;
 		image: string;
 	};
+	contact: {
+		eyebrow: string;
+		heading: string;
+		headingAccent: string;
+		lede: string;
+		nameLabel: string;
+		emailLabel: string;
+		messageLabel: string;
+		sendLabel: string;
+	};
 	footer: {
 		caption: string;
 		tagline: string;
 		copyright: string;
+		contactEmail: string;
+		navHeading: string;
+		connectHeading: string;
+		foundBatLabel: string;
 		foundBatUrl: string;
 		image: string;
+	};
+	/** Small reusable UI labels (badges, units) shown across sections. */
+	labels: {
+		signatureBadge: string;
+		flagshipBadge: string;
+		perYear: string;
+	};
+	/** Standalone route copy: 404, blog index, programs index. */
+	notFound: {
+		eyebrow: string;
+		heading: string;
+		headingAccent: string;
+		body: string;
+		cta: string;
+	};
+	blog: {
+		eyebrow: string;
+		heading: string;
+		headingAccent: string;
+		empty: string;
+	};
+	programs: {
+		eyebrow: string;
+		heading: string;
+		headingAccent: string;
+		empty: string;
 	};
 	social: {
 		instagram: string;
@@ -238,12 +278,50 @@ export const BCC_DEFAULTS: BccSettings = {
 		cta: "Make Your Devotion",
 		image: "",
 	},
+	contact: {
+		eyebrow: "Get in Touch",
+		heading: "Join the",
+		headingAccent: "colony.",
+		lede: "Questions about a devotion, a bat experience, or a partnership? Send a note and we will be in touch.",
+		nameLabel: "Name",
+		emailLabel: "Email",
+		messageLabel: "Message",
+		sendLabel: "Send",
+	},
 	footer: {
 		caption: "Guardians of Austin's Night Sky.",
 		tagline: "Culture · Commerce · Conservation",
 		copyright: "© 2026 Bat City Council. Austin, Texas. 501c3 nonprofit, EIN 42-2391354",
+		contactEmail: "hello@batcitycouncil.org",
+		navHeading: "Navigate",
+		connectHeading: "Connect",
+		foundBatLabel: "Found a bat?",
 		foundBatUrl: "https://austinbatrefuge.org/found-a-bat/",
 		image: "",
+	},
+	labels: {
+		signatureBadge: "Signature Experience",
+		flagshipBadge: "Flagship",
+		perYear: "Per Year",
+	},
+	notFound: {
+		eyebrow: "Error 404",
+		heading: "Lost in the",
+		headingAccent: "Night",
+		body: "This page has taken flight. Let us guide you back to the colony.",
+		cta: "Return Home",
+	},
+	blog: {
+		eyebrow: "Journal",
+		heading: "From the",
+		headingAccent: "Colony",
+		empty: "Stories are coming soon.",
+	},
+	programs: {
+		eyebrow: "Programs",
+		heading: "What Your Devotion",
+		headingAccent: "Sustains",
+		empty: "Programs are coming soon.",
 	},
 	social: {
 		instagram: "",

@@ -2,26 +2,29 @@
 /**
  * /programs — editorial feed of the `programs` collection (blog-roll style).
  */
+import { getBccSettings } from "@myemdash/plugin/server";
 import Base from "../../layouts/Base.astro";
 import { publishedEntries, mediaUrl, str } from "../../lib/content";
 
+const s = await getBccSettings();
+const pg = s.programs;
 const entries = await publishedEntries("programs");
 const cards = await Promise.all(entries.map(async (e) => ({ e, img: await mediaUrl(e.data.image) })));
 ---
 
-<Base title="Programs" description="Bat City Council programs and initiatives.">
+<Base title={pg.eyebrow} description={`${pg.heading} ${pg.headingAccent}`.trim()}>
 	<section class="px-[var(--spacing-gutter)] pt-32 pb-[var(--spacing-section-lg)]">
 		<div class="mx-auto max-w-[var(--width-shell)]">
 			<p class="text-center font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
-				Programs
+				{pg.eyebrow}
 			</p>
 			<h1 class="mt-6 text-center font-display text-[clamp(2.5rem,5vw,4rem)] leading-tight text-moon">
-				What Your Devotion <span class="italic text-gradient-amber">Sustains</span>
+				{pg.heading} <span class="italic text-gradient-amber">{pg.headingAccent}</span>
 			</h1>
 
 			<div class="mx-auto mt-16 flex max-w-4xl flex-col gap-6">
 				{cards.length === 0 && (
-					<p class="text-center text-silver/70">Programs are coming soon.</p>
+					<p class="text-center text-silver/70">{pg.empty}</p>
 				)}
 				{cards.map(({ e, img }) => (
 					<a

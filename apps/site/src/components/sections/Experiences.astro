@@ -48,7 +48,7 @@ const cards = await Promise.all(
 					</div>
 					{bool(e.data, "is_signature") && (
 						<span class="absolute right-4 top-4 rounded-sm bg-amber px-3 py-1 font-accent text-[0.6rem] font-bold uppercase tracking-[var(--tracking-label)] text-night">
-							Signature Experience
+							{s.labels.signatureBadge}
 						</span>
 					)}
 					<div class="absolute inset-x-0 bottom-0 p-7">

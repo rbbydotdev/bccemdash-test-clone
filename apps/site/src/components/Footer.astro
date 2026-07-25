@@ -60,7 +60,7 @@ const BAT =
 			</div>
 
 			<div>
-				<p class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">Navigate</p>
+				<p class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">{s.footer.navHeading}</p>
 				<ul class="mt-4 flex flex-col gap-3">
 					{navLinks.map((l) => (
 						<li>
@@ -76,18 +76,18 @@ const BAT =
 			</div>
 
 			<div>
-				<p class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">Connect</p>
+				<p class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">{s.footer.connectHeading}</p>
 				<a
-					href="mailto:hello@batcitycouncil.org"
+					href={`mailto:${s.footer.contactEmail}`}
 					class="mt-4 block text-sm text-moon/80 transition-colors hover:text-amber"
 				>
-					hello@batcitycouncil.org
+					{s.footer.contactEmail}
 				</a>
 				<a
 					href={s.footer.foundBatUrl}
 					class="mt-2 block text-sm text-moon/80 transition-colors hover:text-amber"
 				>
-					Found a bat?
+					{s.footer.foundBatLabel}
 				</a>
 				{socials.length > 0 && (
 					<div class="mt-5 flex gap-3">

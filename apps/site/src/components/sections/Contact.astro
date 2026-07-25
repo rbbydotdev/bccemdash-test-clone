@@ -2,25 +2,30 @@
 /**
  * Contact — the enquiry form. Posts JSON to the plugin's public enquiries route
  * (honeypot + rate limit + optional Turnstile) with a no-JS fallback to
- * /api/enquiry. Copy is light; this is the "Get in touch" surface.
+ * /api/enquiry. Copy comes from the editable `contact` settings block; the
+ * transient status messages stay in the client script.
  */
+import { getBccSettings } from "@myemdash/plugin/server";
+
 interface Props {
 	/** where the enquiry came from, stored on the record */
 	source?: string;
 }
 const { source = "contact" } = Astro.props;
+const s = await getBccSettings();
+const c = s.contact;
 ---
 
 <section id="contact" class="relative bcc-noise py-[var(--spacing-section-lg)]">
 	<div class="mx-auto max-w-2xl px-[var(--spacing-gutter)] text-center">
 		<p data-animate class="font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
-			Get in Touch
+			{c.eyebrow}
 		</p>
 		<h2 data-animate class="mt-6 font-display text-[clamp(2.25rem,4vw,3.25rem)] leading-tight text-moon">
-			Join the <span class="italic text-gradient-amber">colony.</span>
+			{c.heading} <span class="italic text-gradient-amber">{c.headingAccent}</span>
 		</h2>
 		<p data-animate data-animate-delay="200" class="mx-auto mt-6 max-w-lg text-moon/70">
-			Questions about a devotion, a bat experience, or a partnership? Send a note and we will be in touch.
+			{c.lede}
 		</p>
 
 		<form
@@ -38,7 +43,7 @@ const { source = "contact" } = Astro.props;
 
 			<div class="grid gap-4 sm:grid-cols-2">
 				<label class="block">
-					<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">Name</span>
+					<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">{c.nameLabel}</span>
 					<input
 						type="text"
 						name="name"
@@ -47,7 +52,7 @@ const { source = "contact" } = Astro.props;
 					/>
 				</label>
 				<label class="block">
-					<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">Email</span>
+					<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">{c.emailLabel}</span>
 					<input
 						type="email"
 						name="email"
@@ -57,7 +62,7 @@ const { source = "contact" } = Astro.props;
 				</label>
 			</div>
 			<label class="block">
-				<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">Message</span>
+				<span class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">{c.messageLabel}</span>
 				<textarea
 					name="message"
 					rows="4"
@@ -71,7 +76,7 @@ const { source = "contact" } = Astro.props;
 					type="submit"
 					class="rounded-sm bg-amber px-8 py-4 font-accent text-sm font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:-translate-y-0.5 hover:bg-amber-light hover:shadow-[var(--shadow-amber-glow-strong)]"
 				>
-					Send
+					{c.sendLabel}
 				</button>
 				<p data-enquiry-status class="text-sm text-silver" role="status" aria-live="polite"></p>
 			</div>

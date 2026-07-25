@@ -81,14 +81,14 @@ if (individual.length > 0) groups.push({ label: s.devotions.individualLabel, ite
 									</p>
 									{flagship && (
 										<span class="rounded-sm bg-amber/20 px-2 py-1 font-accent text-[0.6rem] font-semibold uppercase tracking-[var(--tracking-label)] text-amber-light">
-											Flagship
+											{s.labels.flagshipBadge}
 										</span>
 									)}
 								</div>
 								<p class="mt-6 font-display text-4xl text-moon">{price}</p>
 								{period && (
 									<p class="font-accent text-[0.65rem] uppercase tracking-[var(--tracking-label)] text-silver">
-										{period === "/yr" ? "Per Year" : period}
+										{period === "/yr" ? s.labels.perYear : period}
 									</p>
 								)}
 								<hr class="divider-amber !mx-0" />
@@ -98,7 +98,7 @@ if (individual.length > 0) groups.push({ label: s.devotions.individualLabel, ite
 									aria-label={`Devote at the ${str(t.data, "title")} level`}
 									class="mt-auto block rounded-sm bg-amber px-5 py-3 pt-3 text-center font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:bg-amber-light"
 								>
-									Devote Now
+									{s.header.ctaLabel}
 								</a>
 							</article>
 						);

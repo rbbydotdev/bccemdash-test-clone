@@ -23,6 +23,7 @@ import type { Kysely } from "kysely";
 import { ensureBccMigrations } from "./db/migrator.js";
 import {
 	adminEnquiriesHandler,
+	adminEnquiryDeleteHandler,
 	adminEnquiryItemHandler,
 	adminGeocodeHandler,
 	adminSettingsHandler,
@@ -105,6 +106,7 @@ export function createPlugin(_options: BccOptions = {}) {
 			// ── Admin (core dispatcher: session + perms + CSRF) ──
 			"admin/enquiries": { handler: wrap(adminEnquiriesHandler) },
 			"admin/enquiries/item": { handler: wrap(adminEnquiryItemHandler) },
+			"admin/enquiries/delete": { handler: wrap(adminEnquiryDeleteHandler) },
 			"admin/stats": { handler: wrap(adminStatsHandler) },
 			"admin/settings": { handler: wrap(adminSettingsHandler) },
 			"admin/geocode": { handler: wrap(adminGeocodeHandler) },

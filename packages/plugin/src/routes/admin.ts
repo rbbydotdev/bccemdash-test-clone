@@ -11,6 +11,8 @@ import type { RouteContext } from "emdash";
 import {
 	ENQUIRY_STATUSES,
 	countEnquiriesByStatus,
+	deleteAllEnquiries,
+	deleteEnquiries,
 	getEnquiryById,
 	listEnquiries,
 	recentEnquiries,
@@ -58,6 +60,37 @@ export async function adminEnquiryItemHandler(ctx: RouteContext): Promise<unknow
 	const updated = await updateEnquiryStatus(db, id, status);
 	if (!updated) fail("enquiry_not_found", "Enquiry not found");
 	return toEnquiryDTO(updated);
+}
+
+/**
+ * POST admin/enquiries/delete — permanently remove enquiries.
+ *
+ * Body is either `{ ids: string[] }` (the selected rows) or `{ all: true,
+ * status? }` (everything, optionally limited to the inbox's active filter).
+ * POST rather than DELETE because the plugin dispatcher only parses JSON
+ * bodies for POST/PATCH. Returns `{ deleted }`.
+ */
+export async function adminEnquiryDeleteHandler(ctx: RouteContext): Promise<unknown> {
+	requireMethod(ctx, "POST");
+	const db = await getBccDb();
+	const body = asRecord(ctx.input);
+
+	if (body.all === true) {
+		const status = readString(body, "status") as EnquiryStatus | undefined;
+		if (status && !ENQUIRY_STATUSES.includes(status)) {
+			fail("validation_error", `status must be one of ${ENQUIRY_STATUSES.join(", ")}`);
+		}
+		return { deleted: await deleteAllEnquiries(db, status) };
+	}
+
+	const ids = body.ids;
+	if (!Array.isArray(ids) || ids.length === 0) {
+		fail("validation_error", "ids must be a non-empty array (or pass all: true)");
+	}
+	const clean = ids.filter((id): id is string => typeof id === "string" && id.length > 0);
+	if (clean.length === 0) fail("validation_error", "ids must contain at least one id");
+
+	return { deleted: await deleteEnquiries(db, clean) };
 }
 
 export async function adminStatsHandler(ctx: RouteContext): Promise<unknown> {

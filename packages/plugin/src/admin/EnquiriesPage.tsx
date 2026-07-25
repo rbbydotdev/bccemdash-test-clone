@@ -2,7 +2,7 @@
  * /enquiries — inbox with status chips (new/replied/closed/spam), a detail
  * panel with the full message, a mailto reply link, and status transitions.
  */
-import { Button, LinkButton, Loader, Pagination, Select, Table } from "@cloudflare/kumo";
+import { Button, Checkbox, LinkButton, Loader, Pagination, Select, Table } from "@cloudflare/kumo";
 import { X } from "@phosphor-icons/react";
 import * as React from "react";
 
@@ -26,23 +26,98 @@ const statusItems = [
 export function EnquiriesPage() {
 	const [status, setStatus] = React.useState("");
 	const [selected, setSelected] = React.useState<EnquiryDTO | null>(null);
+	const [checked, setChecked] = React.useState<Set<string>>(new Set());
+	const [busy, setBusy] = React.useState(false);
+	const [error, setError] = React.useState<string | null>(null);
 
 	const list = usePagedList<EnquiryDTO>("admin/enquiries", { status });
+
+	// Drop selections for rows that are no longer on screen (filter/page change).
+	const visibleIds = list.rows.map((r) => r.id);
+	React.useEffect(() => {
+		setChecked((prev) => {
+			const next = new Set([...prev].filter((id) => visibleIds.includes(id)));
+			return next.size === prev.size ? prev : next;
+		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [visibleIds.join(",")]);
+
+	const allChecked = list.rows.length > 0 && checked.size === list.rows.length;
+	const someChecked = checked.size > 0 && !allChecked;
+
+	const toggleAll = () =>
+		setChecked(allChecked ? new Set() : new Set(visibleIds));
+
+	const toggleOne = (id: string) =>
+		setChecked((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+
+	const runDelete = async (body: unknown, confirmMsg: string) => {
+		if (!window.confirm(confirmMsg)) return;
+		setBusy(true);
+		setError(null);
+		try {
+			const res = await pluginSend<{ deleted: number }>("admin/enquiries/delete", "POST", body);
+			if (selected && (body as { all?: boolean }).all) setSelected(null);
+			else if (selected && checked.has(selected.id)) setSelected(null);
+			setChecked(new Set());
+			list.reload();
+			return res;
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Failed to delete enquiries");
+		} finally {
+			setBusy(false);
+		}
+	};
+
+	const deleteSelected = () =>
+		void runDelete(
+			{ ids: [...checked] },
+			`Permanently delete ${checked.size} enquir${checked.size === 1 ? "y" : "ies"}? This cannot be undone.`,
+		);
+
+	const deleteAll = () =>
+		void runDelete(
+			status ? { all: true, status } : { all: true },
+			status
+				? `Permanently delete ALL enquiries with status "${status}"? This cannot be undone.`
+				: "Permanently delete ALL enquiries? This cannot be undone.",
+		);
 
 	return (
 		<div className="space-y-6">
 			<PageHeader title="Enquiries" subtitle="Messages from the website contact form" />
 
-			<div className="w-40">
-				<Select
-					label="Status"
-					size="sm"
-					value={status}
-					onValueChange={(v) => setStatus(v ?? "")}
-					items={statusItems}
-				/>
+			<div className="flex flex-wrap items-end justify-between gap-3">
+				<div className="w-40">
+					<Select
+						label="Status"
+						size="sm"
+						value={status}
+						onValueChange={(v) => setStatus(v ?? "")}
+						items={statusItems}
+					/>
+				</div>
+
+				<div className="flex items-center gap-2">
+					{checked.size > 0 && (
+						<Button size="sm" variant="secondary" disabled={busy} onClick={deleteSelected}>
+							Delete selected ({checked.size})
+						</Button>
+					)}
+					{list.total > 0 && (
+						<Button size="sm" variant="ghost" disabled={busy} onClick={deleteAll}>
+							{status ? `Delete all "${status}"` : "Delete all"}
+						</Button>
+					)}
+				</div>
 			</div>
 
+			{error && <ErrorNotice message={error} />}
 			{list.error && <ErrorNotice message={list.error} />}
 
 			<div className="flex items-start gap-6">
@@ -58,6 +133,14 @@ export function EnquiriesPage() {
 							<Table>
 								<Table.Header>
 									<Table.Row>
+										<Table.Head className="w-10">
+											<Checkbox
+												aria-label={allChecked ? "Deselect all" : "Select all"}
+												checked={allChecked}
+												indeterminate={someChecked}
+												onCheckedChange={toggleAll}
+											/>
+										</Table.Head>
 										<Table.Head>From</Table.Head>
 										<Table.Head>Message</Table.Head>
 										<Table.Head>Subject</Table.Head>
@@ -73,6 +156,14 @@ export function EnquiriesPage() {
 											className="cursor-pointer"
 											onClick={() => setSelected(e)}
 										>
+											{/* stopPropagation so ticking a row doesn't also open the drawer */}
+											<Table.Cell onClick={(ev) => ev.stopPropagation()}>
+												<Checkbox
+													aria-label={`Select enquiry from ${e.name}`}
+													checked={checked.has(e.id)}
+													onCheckedChange={() => toggleOne(e.id)}
+												/>
+											</Table.Cell>
 											<Table.Cell>
 												<div className="font-medium">{e.name}</div>
 												<div className="text-kumo-subtle text-xs">{e.email}</div>

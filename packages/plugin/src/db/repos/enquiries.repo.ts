@@ -134,6 +134,33 @@ export async function updateEnquiryStatus(
 	return getEnquiryById(db, id);
 }
 
+/**
+ * Permanently delete enquiries by id. Returns how many rows were removed.
+ * Chunked so a large selection stays under SQLite/D1's bind-parameter limit.
+ */
+export async function deleteEnquiries(db: BccDb, ids: string[]): Promise<number> {
+	if (ids.length === 0) return 0;
+	const CHUNK = 100;
+	let removed = 0;
+	for (let i = 0; i < ids.length; i += CHUNK) {
+		const batch = ids.slice(i, i + CHUNK);
+		const res = await db.deleteFrom("enquiries").where("id", "in", batch).executeTakeFirst();
+		removed += Number(res?.numDeletedRows ?? 0);
+	}
+	return removed;
+}
+
+/**
+ * Delete every enquiry, optionally limited to one status so "delete all" can
+ * respect the inbox's active filter. Returns how many rows were removed.
+ */
+export async function deleteAllEnquiries(db: BccDb, status?: EnquiryStatus): Promise<number> {
+	let q = db.deleteFrom("enquiries");
+	if (status) q = q.where("status", "=", status);
+	const res = await q.executeTakeFirst();
+	return Number(res?.numDeletedRows ?? 0);
+}
+
 /** Count enquiries by status (dashboard widget / stats). */
 export async function countEnquiriesByStatus(db: BccDb): Promise<Record<string, number>> {
 	const rows = await db

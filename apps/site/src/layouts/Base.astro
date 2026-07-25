@@ -64,6 +64,14 @@ const rootVars = [
 	`--bcc-font-accent:'${f.accent}',ui-sans-serif,system-ui,sans-serif`,
 ].join(";");
 
+// Analytics tags (public pages only — the admin never renders this layout).
+// The GA id is validated to GA's own format so a stray paste can't inject markup;
+// headSnippet is intentionally raw for other vendors' tags.
+const gaId = /^G-[A-Z0-9]+$/i.test(bcc.analytics.googleAnalyticsId.trim())
+	? bcc.analytics.googleAnalyticsId.trim()
+	: "";
+const headSnippet = bcc.analytics.headSnippet.trim();
+
 const pageCtx = createPublicPageContext({
 	Astro,
 	kind: content ? "content" : "custom",
@@ -90,6 +98,16 @@ const pageCtx = createPublicPageContext({
 		<title>{fullTitle}</title>
 		<style set:html={`:root{${rootVars}}`}></style>
 		<EmDashHead page={pageCtx} />
+		{gaId && (
+			<>
+				<script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
+				<script
+					is:inline
+					set:html={`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`}
+				/>
+			</>
+		)}
+		{headSnippet && <Fragment set:html={headSnippet} />}
 	</head>
 	<body class="bcc-grain">
 		<EmDashBodyStart page={pageCtx} />

@@ -37,6 +37,24 @@ export interface BccSettings {
 		heroVideoUrl: string;
 		notificationEmail: string;
 		turnstileSiteKey: string;
+		/**
+		 * Resend API key for outgoing mail. Server-side only — never rendered
+		 * into a page. Takes precedence over the RESEND_API_KEY env var/secret,
+		 * so it can be rotated from the admin without a redeploy.
+		 */
+		resendApiKey: string;
+		/** Sender address. Blank uses Resend's shared onboarding@resend.dev. */
+		resendFrom: string;
+	};
+	/**
+	 * Analytics / third-party tags, injected into the PUBLIC site's <head> only
+	 * (never the admin). Leave blank to inject nothing.
+	 */
+	analytics: {
+		/** GA4 measurement id, e.g. "G-XXXXXXXXXX". We render the gtag snippet. */
+		googleAnalyticsId: string;
+		/** Raw <head> markup for any other tag (Meta pixel, Plausible, ...). */
+		headSnippet: string;
 	};
 	header: {
 		ctaLabel: string;
@@ -185,6 +203,12 @@ export const BCC_DEFAULTS: BccSettings = {
 		heroVideoUrl: "",
 		notificationEmail: "",
 		turnstileSiteKey: "",
+		resendApiKey: "",
+		resendFrom: "",
+	},
+	analytics: {
+		googleAnalyticsId: "",
+		headSnippet: "",
 	},
 	header: {
 		ctaLabel: "Devote Now",

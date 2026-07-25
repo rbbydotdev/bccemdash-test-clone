@@ -8,7 +8,8 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./admin": "./src/admin/index.tsx",
-		"./server": "./src/server.ts"
+		"./server": "./src/server.ts",
+		"./resend": "./src/resend.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit",

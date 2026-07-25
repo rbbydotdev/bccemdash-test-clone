@@ -561,7 +561,38 @@ export function SettingsPage() {
 							value={s.integrations.turnstileSiteKey}
 							onChange={(e) => patchSection("integrations", { turnstileSiteKey: e.target.value })}
 						/>
+						<Input
+							className="w-full"
+							type="password"
+							autoComplete="off"
+							label="Resend API key"
+							description="From resend.com → API Keys. Used to send enquiry notifications. Overrides the server secret, so you can paste a new key here anytime."
+							value={s.integrations.resendApiKey}
+							onChange={(e) => patchSection("integrations", { resendApiKey: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Send from address"
+							description="Leave blank to use Resend's shared onboarding@resend.dev (only delivers to your own Resend account address). Set to an address on a domain you have verified in Resend to email anyone."
+							value={s.integrations.resendFrom}
+							onChange={(e) => patchSection("integrations", { resendFrom: e.target.value })}
+						/>
+						<Input
+							className="w-full"
+							label="Google Analytics ID"
+							description='GA4 measurement id, e.g. "G-XXXXXXXXXX". Leave blank to disable.'
+							value={s.analytics.googleAnalyticsId}
+							onChange={(e) => patchSection("analytics", { googleAnalyticsId: e.target.value })}
+						/>
 					</FieldGrid>
+					<Textarea
+						className="w-full"
+						label="Extra head code"
+						description="Advanced. Raw HTML added to every public page's <head> (other analytics, pixels, verification tags). Not added to the admin."
+						rows={4}
+						value={s.analytics.headSnippet}
+						onChange={(e) => patchSection("analytics", { headSnippet: e.target.value })}
+					/>
 				</SectionCard>
 			)}
 

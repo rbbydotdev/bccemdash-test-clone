@@ -8,6 +8,7 @@ import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
 import { fieldKitPlugin } from "@emdash-cms/plugin-field-kit";
 import { sitePlugin } from "@myemdash/plugin";
+import { resendEmail } from "@myemdash/plugin/resend";
 
 const isCloudflare = process.env.DEPLOY_TARGET === "cloudflare";
 
@@ -58,7 +59,11 @@ export default defineConfig({
 		emdash({
 			database: platform.database,
 			storage: platform.storage,
-			plugins: [sitePlugin(), fieldKitPlugin()],
+			// resendEmail provides the `email:deliver` transport (enquiry
+			// notifications). Sender defaults to Resend's shared onboarding@resend.dev,
+			// which needs no domain but only delivers to our own Resend account
+			// address. Key comes from the RESEND_API_KEY secret.
+			plugins: [sitePlugin(), resendEmail(), fieldKitPlugin()],
 			// Widen the strict admin CSP for the MapLibre map field (bcc:location):
 			// its OpenFreeMap tile host + the blob: web worker it spawns.
 			csp: {

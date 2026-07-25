@@ -59,6 +59,78 @@ export async function fetchMediaList(force = false): Promise<MediaItem[]> {
 	return mediaCache;
 }
 
+/**
+ * Upload a file to the media library and return its new media id.
+ *
+ * Two paths, mirroring emdash's own admin: prefer the signed-URL flow (ask for
+ * an upload URL, PUT the bytes straight to storage, confirm), and fall back to
+ * a direct multipart POST when the storage adapter has no signed-URL support —
+ * which is the case for the R2 binding this site uses (it answers
+ * NOT_SUPPORTED: "Use direct upload"). Invalidates the picker cache on success.
+ */
+export async function uploadMedia(file: File): Promise<string> {
+	const signed = await requestSignedUpload(file);
+
+	if (signed) {
+		const put = await fetch(signed.uploadUrl, {
+			method: signed.method || "PUT",
+			headers: signed.headers ?? { "Content-Type": file.type },
+			body: file,
+		});
+		if (!put.ok) throw new Error(`Upload failed (${put.status})`);
+
+		const confirmRes = await apiFetch(`/_emdash/api/media/${signed.mediaId}/confirm`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ size: file.size }),
+		});
+		await parseApiResponse<unknown>(confirmRes);
+		mediaCache = null;
+		return signed.mediaId;
+	}
+
+	// Direct multipart upload. No Content-Type header — the browser sets the
+	// multipart boundary itself.
+	const form = new FormData();
+	form.append("file", file);
+	const res = await apiFetch("/_emdash/api/media", { method: "POST", body: form });
+	const created = await parseApiResponse<{ id?: string; item?: { id: string } }>(res);
+	const id = created.id ?? created.item?.id;
+	if (!id) throw new Error("Upload succeeded but no media id was returned");
+
+	mediaCache = null; // force the picker to re-fetch so the new file shows up
+	return id;
+}
+
+/** Ask for a signed upload URL; null when the storage adapter doesn't offer one. */
+async function requestSignedUpload(file: File): Promise<{
+	uploadUrl: string;
+	method: string;
+	headers?: Record<string, string>;
+	mediaId: string;
+} | null> {
+	try {
+		const res = await apiFetch("/_emdash/api/media/upload-url", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				filename: file.name,
+				contentType: file.type || "application/octet-stream",
+				size: file.size,
+			}),
+		});
+		if (!res.ok) return null; // NOT_SUPPORTED (R2/local) → direct upload
+		return await parseApiResponse<{
+			uploadUrl: string;
+			method: string;
+			headers?: Record<string, string>;
+			mediaId: string;
+		}>(res);
+	} catch {
+		return null;
+	}
+}
+
 // ── API helpers ─────────────────────────────────────────────────────
 
 export async function pluginGet<T>(route: string): Promise<T> {

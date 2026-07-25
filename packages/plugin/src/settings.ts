@@ -181,6 +181,8 @@ export interface BccSettings {
 	};
 	/** Design knobs (the WP Customizer equivalent). Emitted as :root --bcc-* vars. */
 	design: {
+		/** Browser tab icon (emdash media id). Blank = no favicon emitted. */
+		favicon: string;
 		colors: {
 			night: string;
 			deep: string;
@@ -353,6 +355,7 @@ export const BCC_DEFAULTS: BccSettings = {
 		facebook: "",
 	},
 	design: {
+		favicon: "",
 		colors: {
 			night: "#0A0E1A",
 			deep: "#111833",

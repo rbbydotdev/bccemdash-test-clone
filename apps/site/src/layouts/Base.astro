@@ -10,6 +10,7 @@ import { getSiteSettings } from "emdash";
 import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
 import { getBccSettings } from "@myemdash/plugin/server";
+import { mediaUrl } from "../lib/content";
 import { Font } from "astro:assets";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -64,6 +65,9 @@ const rootVars = [
 	`--bcc-font-accent:'${f.accent}',ui-sans-serif,system-ui,sans-serif`,
 ].join(";");
 
+// Favicon: an emdash media id resolved to a servable URL. Blank = none emitted.
+const faviconUrl = await mediaUrl(bcc.design.favicon);
+
 // Analytics tags (public pages only — the admin never renders this layout).
 // The GA id is validated to GA's own format so a stray paste can't inject markup;
 // headSnippet is intentionally raw for other vendors' tags.
@@ -96,6 +100,7 @@ const pageCtx = createPublicPageContext({
 		<Font cssVariable="--font-body-webfont" preload />
 		<Font cssVariable="--font-accent-webfont" preload />
 		<title>{fullTitle}</title>
+		{faviconUrl && <link rel="icon" href={faviconUrl} />}
 		<style set:html={`:root{${rootVars}}`}></style>
 		<EmDashHead page={pageCtx} />
 		{gaId && (

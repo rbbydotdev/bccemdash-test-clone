@@ -19,6 +19,7 @@ import {
 	ErrorNotice,
 	PageHeader,
 	fetchMediaList,
+	uploadMedia,
 	pluginGet,
 	pluginSend,
 	type MediaItem,
@@ -97,7 +98,27 @@ function MediaField({
 	const [loading, setLoading] = React.useState(true);
 	const [query, setQuery] = React.useState("");
 	const [open, setOpen] = React.useState(false);
+	const [uploading, setUploading] = React.useState(false);
+	const [uploadError, setUploadError] = React.useState<string | null>(null);
 	const boxRef = React.useRef<HTMLDivElement>(null);
+	const fileRef = React.useRef<HTMLInputElement>(null);
+
+	/** Upload a new file, then select it immediately. */
+	const doUpload = async (file: File) => {
+		setUploading(true);
+		setUploadError(null);
+		try {
+			const id = await uploadMedia(file);
+			const fresh = await fetchMediaList(true);
+			setItems(fresh);
+			onChange(id);
+			setOpen(false);
+		} catch (err) {
+			setUploadError(err instanceof Error ? err.message : "Upload failed");
+		} finally {
+			setUploading(false);
+		}
+	};
 
 	React.useEffect(() => {
 		let alive = true;
@@ -147,15 +168,37 @@ function MediaField({
 							{selected ? (selected.alt ?? "") : "Search the media library"}
 						</p>
 					</div>
-					<Button size="sm" variant="secondary" onClick={() => setOpen((o) => !o)}>
+					<Button size="sm" variant="secondary" disabled={uploading} onClick={() => setOpen((o) => !o)}>
 						{selected ? "Change" : "Choose"}
 					</Button>
+					<Button
+						size="sm"
+						variant="secondary"
+						disabled={uploading}
+						onClick={() => fileRef.current?.click()}
+					>
+						{uploading ? "Uploading..." : "Upload"}
+					</Button>
 					{selected && (
-						<Button size="sm" variant="ghost" onClick={() => onChange("")}>
+						<Button size="sm" variant="ghost" disabled={uploading} onClick={() => onChange("")}>
 							Clear
 						</Button>
 					)}
+					{/* Hidden native picker — the Upload button proxies to it. */}
+					<input
+						ref={fileRef}
+						type="file"
+						accept="image/*,.ico,.svg"
+						className="hidden"
+						onChange={(e) => {
+							const file = e.target.files?.[0];
+							e.target.value = ""; // allow re-picking the same file
+							if (file) void doUpload(file);
+						}}
+					/>
 				</div>
+
+				{uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
 
 				{open && (
 					<div className="border-kumo-line bg-kumo-base absolute z-20 mt-1 w-full rounded-lg border p-2 shadow-lg">
@@ -1246,8 +1289,14 @@ export function SettingsPage() {
 			{active === "design" && (
 				<SectionCard
 					title="Design"
-					description="Brand colors and fonts. Changes retint and reset the whole site."
+					description="Brand icon, colors and fonts. Changes retint and reset the whole site."
 				>
+					<MediaField
+						label="Favicon (browser tab icon)"
+						value={s.design.favicon}
+						onChange={(v) => patchSection("design", { favicon: v })}
+					/>
+
 					<div>
 						<h3 className="mb-3 text-sm font-medium">Colors</h3>
 						<FieldGrid>

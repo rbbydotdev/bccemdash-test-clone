@@ -78,6 +78,68 @@ function SectionCard({
 	);
 }
 
+/**
+ * Live preview of the generated social card (the image shown when the site is
+ * shared on Twitter/Facebook/iMessage/Slack). It restates the hero, so it lives
+ * on this tab — edit the hero, save, then Refresh to see the new card.
+ *
+ * The card is rendered by a separate Worker. `ogWorkerUrl` points at it; blank
+ * means same-origin /og, which only exists when something proxies it locally.
+ */
+function SocialCardPreview({ ogWorkerUrl }: { ogWorkerUrl: string | undefined }) {
+	// Bust the browser cache on demand — the card itself is served `immutable`.
+	const [nonce, setNonce] = React.useState(() => Date.now());
+	const [failed, setFailed] = React.useState(false);
+
+	const base = (ogWorkerUrl ?? "").trim().replace(/\/$/, "");
+	const src = `${base || "/og"}/site.png?preview=${nonce}`;
+
+	const refresh = () => {
+		setFailed(false);
+		setNonce(Date.now());
+	};
+
+	return (
+		<div className="space-y-2">
+			<div className="flex items-center justify-between gap-3">
+				<span className="text-sm font-medium">Social card preview</span>
+				<Button size="sm" variant="secondary" onClick={refresh}>
+					Refresh
+				</Button>
+			</div>
+			<p className="text-kumo-subtle text-xs">
+				What people see when the site is shared. Save your hero edits, then Refresh.
+			</p>
+
+			{failed ? (
+				<div className="border-kumo-line text-kumo-subtle rounded-lg border border-dashed p-6 text-center text-sm">
+					<p>Could not load the card from {base || "/og"}.</p>
+					<p className="mt-1 text-xs">
+						The card is rendered by a separate service. Set its address under Integrations
+						("OG worker URL"), and in local development start it with{" "}
+						<code>pnpm --filter @myemdash/og-worker dev</code>.
+					</p>
+				</div>
+			) : (
+				<img
+					src={src}
+					alt="Preview of the social sharing card"
+					width={1200}
+					height={630}
+					onError={() => setFailed(true)}
+					className="border-kumo-line w-full rounded-lg border"
+				/>
+			)}
+
+			<p className="text-kumo-subtle truncate text-xs">
+				<a href={src} target="_blank" rel="noreferrer" className="underline">
+					Open full size
+				</a>
+			</p>
+		</div>
+	);
+}
+
 /** Two-column responsive grid for short inputs. */
 function FieldGrid({ children }: { children: React.ReactNode }) {
 	return <div className="grid gap-4 sm:grid-cols-2">{children}</div>;
@@ -713,6 +775,7 @@ export function SettingsPage() {
 						value={s.hero.image}
 						onChange={(v) => patchSection("hero", { image: v })}
 					/>
+					<SocialCardPreview ogWorkerUrl={s.integrations.ogWorkerUrl} />
 				</SectionCard>
 			)}
 

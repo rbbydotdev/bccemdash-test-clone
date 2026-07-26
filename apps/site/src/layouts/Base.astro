@@ -68,6 +68,25 @@ const rootVars = [
 // Favicon: an emdash media id resolved to a servable URL. Blank = none emitted.
 const faviconUrl = await mediaUrl(bcc.design.favicon);
 
+// Social card: pages without their own image fall back to the generated hero
+// card at /og/site.png. The ?v= tag is a short digest of the hero content, so
+// the URL changes when the client edits the hero and scrapers re-fetch instead
+// of serving a stale thumbnail.
+const h = bcc.hero;
+const ogVersion = [h.eyebrow, h.titleLine1, h.titleLine2, h.subhead, h.image, c.amber, c.night]
+	.join("|")
+	.split("")
+	.reduce((acc, ch) => ((acc * 31 + ch.charCodeAt(0)) | 0), 7)
+	.toString(36)
+	.replace("-", "z");
+// The card is rendered by a separate Worker (apps/og) so the 3.6 MB Takumi
+// WASM never ships in this bundle. Base URL is editable in Site Content so it
+// can be swapped without a redeploy; blank falls back to same-origin /og.
+const ogBase = (bcc.integrations.ogWorkerUrl || "").trim().replace(/\/$/, "");
+const ogPath = `/site.png?v=${ogVersion}`;
+const ogImage =
+	image ?? (ogBase ? `${ogBase}${ogPath}` : new URL(`/og${ogPath}`, Astro.url).href);
+
 // Analytics tags (public pages only — the admin never renders this layout).
 // The GA id is validated to GA's own format so a stray paste can't inject markup;
 // headSnippet is intentionally raw for other vendors' tags.
@@ -84,9 +103,9 @@ const pageCtx = createPublicPageContext({
 	pageTitle: title,
 	description,
 	canonical,
-	image,
+	image: ogImage,
 	content,
-	seo: { ogImage: image, robots },
+	seo: { ogImage, robots },
 	siteName: siteTitle,
 });
 ---

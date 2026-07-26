@@ -1,0 +1,25 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "bat-city-council-og",
+	"main": "./src/index.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	// Read-only use of the site's data: hero copy + brand colours live in the
+	// `bcc_site` option row, the hero photo in the media bucket. Rendered cards
+	// are written back to the same bucket under og-cache/.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "bat-city-council"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "bat-city-council-media"
+		}
+	],
+	"observability": {
+		"enabled": true
+	}
+}

@@ -1,0 +1,20 @@
+{
+	"name": "@myemdash/og-worker",
+	"version": "0.1.0",
+	"description": "Standalone Cloudflare Worker that renders the site's OG card with Takumi, content-addressed and cached in R2 + the edge cache.",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@myemdash/og": "workspace:*"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "catalog:",
+		"typescript": "catalog:",
+		"wrangler": "catalog:"
+	}
+}

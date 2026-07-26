@@ -148,5 +148,10 @@ catalog:
   tailwindcss: ^4.0.0
   "@tailwindcss/vite": ^4.0.0
   maplibre-gl: ^5.6.0
+  # takumi 2.4.0 — OG image rendering (all @takumi-rs/* + takumi-js in lockstep)
+  takumi-js: 2.4.0
+  "@takumi-rs/core": 2.4.0
+  "@takumi-rs/helpers": 2.4.0
+  "@takumi-rs/wasm": 2.4.0
   ulidx: ^2.4.1
   prettier: ^3.9.1

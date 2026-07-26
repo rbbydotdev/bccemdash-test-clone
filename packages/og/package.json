@@ -1,0 +1,33 @@
+{
+	"name": "@myemdash/og",
+	"version": "0.1.0",
+	"description": "Takumi-rendered Open Graph cards styled after the site hero. Runs on Node (native) and Cloudflare Workers (WASM).",
+	"private": true,
+	"type": "module",
+	"main": "src/index.ts",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"imports": {
+		"#backend": {
+			"workerd": "./src/backend/wasm.ts",
+			"worker": "./src/backend/wasm.ts",
+			"node": "./src/backend/node.ts",
+			"default": "./src/backend/node.ts"
+		}
+	},
+	"scripts": {
+		"embed-fonts": "node scripts/embed-fonts.mjs",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@takumi-rs/core": "catalog:",
+		"@takumi-rs/helpers": "catalog:",
+		"@takumi-rs/wasm": "catalog:",
+		"takumi-js": "catalog:"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"typescript": "catalog:"
+	}
+}

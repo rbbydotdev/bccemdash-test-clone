@@ -45,6 +45,12 @@ export interface BccSettings {
 		resendApiKey: string;
 		/** Sender address. Blank uses Resend's shared onboarding@resend.dev. */
 		resendFrom: string;
+		/**
+		 * Base URL of the OG card Worker (apps/og), e.g.
+		 * "https://bat-city-council-og.<sub>.workers.dev". Blank serves the card
+		 * from this origin under /og instead.
+		 */
+		ogWorkerUrl: string;
 	};
 	/**
 	 * Analytics / third-party tags, injected into the PUBLIC site's <head> only
@@ -207,6 +213,7 @@ export const BCC_DEFAULTS: BccSettings = {
 		turnstileSiteKey: "",
 		resendApiKey: "",
 		resendFrom: "",
+		ogWorkerUrl: "",
 	},
 	analytics: {
 		googleAnalyticsId: "",

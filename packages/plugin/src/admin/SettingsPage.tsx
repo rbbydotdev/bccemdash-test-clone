@@ -91,9 +91,11 @@ function MediaField({
 	onChange,
 }: {
 	label: string;
-	value: string;
+	/** Tolerates undefined: a settings bag written before this field existed. */
+	value: string | undefined;
 	onChange: (v: string) => void;
 }) {
+	const current = value ?? "";
 	const [items, setItems] = React.useState<MediaItem[]>([]);
 	const [loading, setLoading] = React.useState(true);
 	const [query, setQuery] = React.useState("");
@@ -138,7 +140,7 @@ function MediaField({
 		return () => document.removeEventListener("mousedown", onDoc);
 	}, []);
 
-	const selected = items.find((i) => i.id === value.trim()) ?? null;
+	const selected = items.find((i) => i.id === current.trim()) ?? null;
 	const q = query.trim().toLowerCase();
 	const filtered = (
 		q ? items.filter((i) => `${i.filename} ${i.alt ?? ""}`.toLowerCase().includes(q)) : items
@@ -249,9 +251,11 @@ function ColorField({
 	onChange,
 }: {
 	label: string;
-	value: string;
+	/** Tolerates undefined: a settings bag written before this field existed. */
+	value: string | undefined;
 	onChange: (v: string) => void;
 }) {
+	const current = value ?? "";
 	return (
 		<div className="flex items-end gap-2">
 			<Input

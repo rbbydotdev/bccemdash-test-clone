@@ -7,10 +7,26 @@
  * of the PNG. The authoritative render is one click away ("True preview"),
  * because DOM is fast but Takumi is the truth.
  *
- * Everything the client needs is on one screen: templates on the left, canvas
- * in the middle, properties on the right, and a ⌘K palette for actions.
+ * Laid out the way a drawing tool is: a tool rail on the left, the artboard on
+ * a workspace in the middle, and a tabbed dock on the right holding Design,
+ * Layers and Cards. That keeps exactly two fixed-width edges, so the artboard
+ * absorbs every window size instead of the columns fighting for room, and it
+ * puts the three things you switch between in one place rather than three.
+ *
+ * The chrome is styled inline against Kumo's CSS variables — see ui.tsx for
+ * why Tailwind classes cannot be trusted in this package.
  */
-import { Button, Input, Loader } from "@cloudflare/kumo";
+import {
+	ArrowClockwiseIcon,
+	ArrowCounterClockwiseIcon,
+	CopyIcon,
+	CursorIcon,
+	ImageSquareIcon,
+	SquareIcon,
+	TextTIcon,
+	TrashIcon,
+} from "@phosphor-icons/react";
+import { Button, DropdownMenu, Input, Loader, Tabs } from "@cloudflare/kumo";
 import * as React from "react";
 
 import {
@@ -27,6 +43,8 @@ import { Canvas } from "./og/canvas.js";
 import { ensureWebFonts } from "./og/fonts.js";
 import { CommandPalette, type Command } from "./og/palette.js";
 import { Inspector } from "./og/inspector.js";
+import { LayersPanel } from "./og/layers.js";
+import { Dock, Muted, Section, T, ToolButton } from "./og/ui.js";
 import {
 	ErrorNotice,
 	PageHeader,
@@ -48,6 +66,9 @@ interface TemplateDTO {
 /** Undo history depth — enough to feel safe, small enough to stay cheap. */
 const HISTORY_LIMIT = 50;
 
+/** The right-hand dock's panels. */
+type DockTab = "design" | "layers" | "cards";
+
 export function OgCardsPage() {
 	const [templates, setTemplates] = React.useState<TemplateDTO[]>([]);
 	const [settings, setSettings] = React.useState<BccSettings | null>(null);
@@ -60,6 +81,8 @@ export function OgCardsPage() {
 	const [busy, setBusy] = React.useState(false);
 	const [error, setError] = React.useState<string | null>(null);
 	const [paletteOpen, setPaletteOpen] = React.useState(false);
+	const [tab, setTab] = React.useState<DockTab>("design");
+	const [zoom, setZoom] = React.useState(1);
 	const [truePreview, setTruePreview] = React.useState<string | null>(null);
 	const [dirty, setDirty] = React.useState(false);
 
@@ -112,6 +135,18 @@ export function OgCardsPage() {
 	React.useEffect(() => {
 		ensureWebFonts(collectFontFamilies(scene));
 	}, [scene]);
+
+	/** Start a new, empty card. Shared by the toolbar menu and the palette. */
+	const newBlankCard = React.useCallback(() => {
+		past.current = [];
+		future.current = [];
+		setCurrentId(null);
+		setName("New card");
+		setScene({ width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT, background: "@night", layers: [] });
+		setSelection([]);
+		setDirty(true);
+		setTruePreview(null);
+	}, []);
 
 	const mediaUrls = React.useMemo(() => {
 		const map: Record<string, string> = {};
@@ -221,6 +256,18 @@ export function OgCardsPage() {
 			commit({ ...scene, layers: direction === "front" ? [...rest, ...picked] : [...picked, ...rest] });
 		},
 		[commit, scene, selection],
+	);
+
+	/** Drag-reorder from the layers panel: move one layer to another index. */
+	const moveLayer = React.useCallback(
+		(from: number, to: number) => {
+			const layers = [...scene.layers];
+			const [moved] = layers.splice(from, 1);
+			if (!moved) return;
+			layers.splice(to, 0, moved);
+			commit({ ...scene, layers });
+		},
+		[commit, scene],
 	);
 
 	const saveCard = React.useCallback(async (): Promise<string | null> => {
@@ -347,7 +394,7 @@ export function OgCardsPage() {
 
 	if (loading) {
 		return (
-			<div className="flex justify-center py-16">
+			<div style={{ display: "flex", justifyContent: "center", padding: "64px 0" }}>
 				<Loader />
 			</div>
 		);
@@ -356,7 +403,7 @@ export function OgCardsPage() {
 	const selectedLayer = scene.layers.find((l) => selection.length === 1 && l.id === selection[0]) ?? null;
 
 	return (
-		<div className="space-y-4">
+		<div style={{ display: "flex", flexDirection: "column", gap: 12, height: "calc(100vh - 150px)", minHeight: 540 }}>
 			<PageHeader
 				title="Social Cards"
 				subtitle="The image shown when the site is shared. Drag to arrange, double-click text to edit, ⌘K for commands."
@@ -364,9 +411,9 @@ export function OgCardsPage() {
 
 			{error && <ErrorNotice message={error} />}
 
-			<div className="flex flex-wrap items-center gap-2">
+			{/* Toolbar: everything that acts on the card as a whole. */}
+			<div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
 				<Input
-					className="w-56"
 					size="sm"
 					label=""
 					placeholder="Card name"
@@ -385,98 +432,213 @@ export function OgCardsPage() {
 				<Button size="sm" variant="secondary" disabled={busy} onClick={() => void showTruePreview()}>
 					Preview PNG
 				</Button>
+				<DropdownMenu>
+					<DropdownMenu.Trigger
+						render={
+							<Button size="sm" variant="secondary">
+								New card
+							</Button>
+						}
+					/>
+					<DropdownMenu.Content>
+						<DropdownMenu.Group>
+							<DropdownMenu.Label>Start from a template</DropdownMenu.Label>
+							{starters.map((s) => (
+								<DropdownMenu.Item key={s.id} title={s.description} onClick={() => startFrom(s.id)}>
+									{s.name}
+								</DropdownMenu.Item>
+							))}
+						</DropdownMenu.Group>
+						<DropdownMenu.Separator />
+						<DropdownMenu.Item onClick={newBlankCard}>Blank card</DropdownMenu.Item>
+					</DropdownMenu.Content>
+				</DropdownMenu>
 				<Button size="sm" variant="ghost" onClick={() => setPaletteOpen(true)}>
 					Commands ⌘K
 				</Button>
 			</div>
 
-			<div className="flex items-start gap-4">
-				{/* Templates */}
-				<div className="w-52 shrink-0 space-y-1">
-					<p className="text-kumo-subtle text-xs font-medium uppercase">Cards</p>
-					{templates.length === 0 && <p className="text-kumo-subtle text-xs">No saved cards yet.</p>}
-					{templates.map((t) => (
-						<button
-							key={t.id}
-							type="button"
-							onClick={() => openTemplate(t)}
-							className={`hover:bg-kumo-muted flex w-full items-center justify-between rounded p-2 text-left text-sm ${
-								t.id === currentId ? "bg-kumo-muted" : ""
-							}`}
-						>
-							<span className="truncate">{t.name}</span>
-							{t.isActive && <span className="text-kumo-subtle text-[0.6rem] uppercase">live</span>}
-						</button>
-					))}
-					<div className="pt-3">
-						<p className="text-kumo-subtle text-xs font-medium uppercase">Start from</p>
-						<p className="text-kumo-subtle mt-1 mb-1 text-[0.65rem] leading-snug">
-							Templates follow your live content and brand colours.
-						</p>
-						{starters.map((s) => (
-							<button
-								key={s.id}
-								type="button"
-								title={s.description}
-								onClick={() => startFrom(s.id)}
-								className="hover:bg-kumo-muted block w-full truncate rounded p-1.5 text-left text-sm"
-							>
-								{s.name}
-							</button>
-						))}
-						<button
-							type="button"
-							onClick={() => {
-								past.current = [];
-								future.current = [];
-								setCurrentId(null);
-								setName("New card");
-								setScene({ width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT, background: "@night", layers: [] });
-								setSelection([]);
-								setDirty(true);
-							}}
-							className="hover:bg-kumo-muted text-kumo-subtle block w-full rounded p-1.5 text-left text-sm"
-						>
-							Blank card
-						</button>
+			{/* Editor shell: rail, workspace, dock. */}
+			<div
+				style={{
+					display: "flex",
+					flex: 1,
+					minHeight: 0,
+					border: `1px solid ${T.line}`,
+					borderRadius: 10,
+					overflow: "hidden",
+					background: T.base,
+				}}
+			>
+				{/* Tool rail */}
+				<Dock side="left" width={46} style={{ alignItems: "center", padding: "8px 0", gap: 2 }}>
+					<ToolButton label="Add text" shortcut="T" onClick={() => addLayer(newText())}>
+						<TextTIcon size={17} />
+					</ToolButton>
+					<ToolButton label="Add rectangle" shortcut="R" onClick={() => addLayer(newShape())}>
+						<SquareIcon size={17} />
+					</ToolButton>
+					<ToolButton label="Add image" shortcut="I" onClick={() => addLayer(newImage(media[0]?.id ?? ""))}>
+						<ImageSquareIcon size={17} />
+					</ToolButton>
+					<ToolButton label="Deselect" shortcut="Esc" onClick={() => setSelection([])}>
+						<CursorIcon size={17} />
+					</ToolButton>
+					<div style={{ height: 1, width: 22, background: T.line, margin: "6px 0" }} />
+					<ToolButton label="Undo" shortcut="⌘Z" onClick={undo}>
+						<ArrowCounterClockwiseIcon size={17} />
+					</ToolButton>
+					<ToolButton label="Redo" shortcut="⇧⌘Z" onClick={redo}>
+						<ArrowClockwiseIcon size={17} />
+					</ToolButton>
+					<ToolButton label="Duplicate" shortcut="⌘D" onClick={duplicateSelected}>
+						<CopyIcon size={17} />
+					</ToolButton>
+					<ToolButton label="Delete" shortcut="⌫" onClick={removeSelected}>
+						<TrashIcon size={17} />
+					</ToolButton>
+				</Dock>
+
+				{/* Workspace: the artboard floats on a neutral ground and fits itself
+				    to whatever width is left over. */}
+				<div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", background: T.canvas }}>
+					{/* Block, not flex: the fit wrapper inside must take its width from
+					    this box rather than from the artboard it sizes. */}
+					<div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: 20 }}>
+						{truePreview ? (
+							<div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: "100%" }}>
+								<Muted>The real PNG for this card, rendered by the image service. Saved automatically.</Muted>
+								<img
+									src={truePreview}
+									alt="Rendered card"
+									style={{ maxWidth: "100%", borderRadius: 8, border: `1px solid ${T.line}` }}
+								/>
+								<div>
+									<Button size="sm" variant="ghost" onClick={() => setTruePreview(null)}>
+										Back to editing
+									</Button>
+								</div>
+							</div>
+						) : (
+							<Canvas
+								scene={scene}
+								context={context}
+								colors={colors}
+								mediaUrls={mediaUrls}
+								selection={selection}
+								onSelectionChange={setSelection}
+								onChange={patchLayers}
+								onScaleChange={setZoom}
+							/>
+						)}
+					</div>
+					<div
+						style={{
+							borderTop: `1px solid ${T.line}`,
+							padding: "5px 10px",
+							display: "flex",
+							justifyContent: "space-between",
+							fontSize: 11,
+							color: T.subtle,
+						}}
+					>
+						<span>
+							{scene.width ?? DEFAULT_WIDTH} × {scene.height ?? DEFAULT_HEIGHT}
+						</span>
+						<span>{Math.round(zoom * 100)}% · fit</span>
 					</div>
 				</div>
 
-				{/* Canvas */}
-				<div className="min-w-0 flex-1">
-					{truePreview ? (
-						<div className="space-y-2">
-							<p className="text-kumo-subtle text-xs">
-								The real PNG for this card, rendered by the image service. Saved automatically.
-							</p>
-							<img src={truePreview} alt="Rendered card" className="border-kumo-line w-full rounded-lg border" />
-							<Button size="sm" variant="ghost" onClick={() => setTruePreview(null)}>
-								Back to editing
-							</Button>
-						</div>
-					) : (
-						<Canvas
-							scene={scene}
-							context={context}
-							colors={colors}
-							mediaUrls={mediaUrls}
-							selection={selection}
-							onSelectionChange={setSelection}
-							onChange={patchLayers}
-							scale={0.62}
+				{/* Dock: the three things you switch between, in one place. */}
+				<Dock side="right" width={286}>
+					<div style={{ padding: 8, borderBottom: `1px solid ${T.line}` }}>
+						<Tabs
+							variant="segmented"
+							size="sm"
+							tabs={[
+								{ value: "design", label: "Design" },
+								{ value: "layers", label: "Layers" },
+								{ value: "cards", label: "Cards" },
+							]}
+							selectedValue={tab}
+							onValueChange={(v) => setTab(String(v) as DockTab)}
 						/>
-					)}
-				</div>
-
-				{/* Inspector */}
-				<Inspector
-					layer={selectedLayer}
-					media={media}
-					colors={colors}
-					onChange={(l) => patchLayers([l])}
-					onDelete={removeSelected}
-				/>
+					</div>
+					<div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+						{tab === "design" && (
+							<Inspector layer={selectedLayer} media={media} colors={colors} onChange={(l) => patchLayers([l])} />
+						)}
+						{tab === "layers" && (
+							<LayersPanel
+								scene={scene}
+								selection={selection}
+								onSelectionChange={setSelection}
+								onChange={patchLayers}
+								onReorder={moveLayer}
+							/>
+						)}
+						{tab === "cards" && (
+							<div style={{ overflowY: "auto" }}>
+								<Section title="Saved cards">
+									{templates.length === 0 && <Muted>No saved cards yet.</Muted>}
+									{templates.map((t) => (
+										<button
+											key={t.id}
+											type="button"
+											onClick={() => openTemplate(t)}
+											style={{
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "space-between",
+												gap: 8,
+												width: "100%",
+												padding: "6px 8px",
+												borderRadius: 6,
+												border: "none",
+												cursor: "pointer",
+												textAlign: "left",
+												fontSize: 12,
+												color: T.text,
+												background: t.id === currentId ? T.fill : "transparent",
+											}}
+										>
+											<span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+												{t.name}
+											</span>
+											{t.isActive && <span style={{ fontSize: 9, color: T.subtle }}>LIVE</span>}
+										</button>
+									))}
+								</Section>
+								<Section title="Start from">
+									<Muted>Templates follow your live content and brand colours.</Muted>
+									{starters.map((s) => (
+										<button
+											key={s.id}
+											type="button"
+											title={s.description}
+											onClick={() => startFrom(s.id)}
+											style={{
+												width: "100%",
+												padding: "6px 8px",
+												borderRadius: 6,
+												border: "none",
+												cursor: "pointer",
+												textAlign: "left",
+												fontSize: 12,
+												color: T.text,
+												background: "transparent",
+											}}
+										>
+											{s.name}
+										</button>
+									))}
+								</Section>
+							</div>
+						)}
+					</div>
+				</Dock>
 			</div>
+
 
 			<CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} commands={commands} />
 		</div>

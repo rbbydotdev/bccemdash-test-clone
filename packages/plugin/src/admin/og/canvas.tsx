@@ -49,8 +49,13 @@ export interface CanvasProps {
 	selection: string[];
 	onSelectionChange: (ids: string[]) => void;
 	onChange: (layers: OgLayer[]) => void;
-	/** Screen px per scene px. */
-	scale: number;
+	/**
+	 * Screen px per scene px. Omit to fit the artboard to the available width,
+	 * which is what keeps the canvas inside its column at any window size.
+	 */
+	scale?: number;
+	/** Reports the scale actually used, for a zoom readout. */
+	onScaleChange?: (scale: number) => void;
 }
 
 export function Canvas({
@@ -61,11 +66,46 @@ export function Canvas({
 	selection,
 	onSelectionChange,
 	onChange,
-	scale,
+	scale: fixedScale,
+	onScaleChange,
 }: CanvasProps) {
 	const width = scene.width ?? 1200;
 	const height = scene.height ?? 630;
 	const ref = React.useRef<HTMLDivElement>(null);
+	// Fit-to-view, so the whole artboard is always visible inside its column. A
+	// fixed scale was why it overflowed and slid under the inspector on a
+	// narrower window. Height is fitted as well as width, otherwise a wide
+	// workspace scales the card past the bottom of the panel.
+	//
+	// The measured element is block-level with `width: 100%`, so its width comes
+	// from its containing block and never from the artboard it sizes. That
+	// matters: when it was a flex *item* it sized to its content, so the observer
+	// measured the very thing it had just scaled, tripped the browser's resize
+	// loop protection, and stopped delivering — the artboard clipped instead of
+	// refitting. `resize` is a belt-and-braces fallback for the same reason.
+	const fitRef = React.useRef<HTMLDivElement>(null);
+	const [fitScale, setFitScale] = React.useState(0.5);
+	React.useLayoutEffect(() => {
+		const el = fitRef.current;
+		if (!el || fixedScale !== undefined) return;
+		const measure = () => {
+			const availableW = el.clientWidth;
+			const availableH = el.clientHeight;
+			if (availableW > 0 && availableH > 0) {
+				setFitScale(Math.min(1, availableW / width, availableH / height));
+			}
+		};
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(el);
+		window.addEventListener("resize", measure);
+		return () => {
+			observer.disconnect();
+			window.removeEventListener("resize", measure);
+		};
+	}, [fixedScale, height, width]);
+	const scale = fixedScale ?? fitScale;
+	React.useEffect(() => onScaleChange?.(scale), [onScaleChange, scale]);
 	const [drag, setDrag] = React.useState<DragMode>(null);
 	const [guides, setGuides] = React.useState<Guide[]>([]);
 	const [editing, setEditing] = React.useState<string | null>(null);
@@ -150,6 +190,18 @@ export function Canvas({
 
 	return (
 		<div
+			ref={fitRef}
+			style={{
+				// Exact 100%, not min-height: the measured box must not grow with the
+				// artboard it sizes, or fitting height would feed itself.
+				display: "flex",
+				width: "100%",
+				height: "100%",
+				alignItems: "center",
+				justifyContent: "center",
+			}}
+		>
+		<div
 			ref={ref}
 			onPointerDown={() => !editing && onSelectionChange([])}
 			style={{
@@ -159,8 +211,10 @@ export function Canvas({
 				overflow: "hidden",
 				background: resolveColor(scene.background, colors) ?? colors.night,
 				backgroundImage: scene.background?.includes("gradient(") ? scene.background : undefined,
+				border: "1px solid var(--color-kumo-line)",
+				borderRadius: 8,
+				boxShadow: "0 10px 30px rgb(0 0 0 / 0.35)",
 			}}
-			className="border-kumo-line rounded-lg border shadow-lg"
 		>
 			{/* Scene-space wrapper: one transform converts the whole document to
 			    screen pixels, so every layer keeps its true coordinates. */}
@@ -217,6 +271,7 @@ export function Canvas({
 					/>
 				)}
 			</div>
+		</div>
 		</div>
 	);
 }

@@ -7,6 +7,8 @@
  */
 import * as React from "react";
 
+import { T } from "./ui.js";
+
 export interface Command {
 	id: string;
 	label: string;
@@ -81,7 +83,15 @@ export function CommandPalette({
 				role="dialog"
 				aria-label="Commands"
 				onPointerDown={(e) => e.stopPropagation()}
-				className="border-kumo-line bg-kumo-base w-full max-w-md overflow-hidden rounded-lg border shadow-2xl"
+				style={{
+					width: "100%",
+					maxWidth: 440,
+					overflow: "hidden",
+					borderRadius: 10,
+					border: `1px solid ${T.line}`,
+					background: T.base,
+					boxShadow: "0 20px 50px rgb(0 0 0 / 0.45)",
+				}}
 			>
 				<input
 					ref={inputRef}
@@ -106,11 +116,20 @@ export function CommandPalette({
 							choose(active);
 						}
 					}}
-					className="border-kumo-line w-full border-b bg-transparent px-4 py-3 text-sm outline-none"
+					style={{
+						width: "100%",
+						padding: "11px 15px",
+						fontSize: 14,
+						color: T.text,
+						background: "transparent",
+						border: "none",
+						borderBottom: `1px solid ${T.line}`,
+						outline: "none",
+					}}
 				/>
-				<ul className="max-h-72 overflow-y-auto py-1">
+				<ul style={{ maxHeight: 300, overflowY: "auto", padding: "4px 0", margin: 0, listStyle: "none" }}>
 					{filtered.length === 0 && (
-						<li className="text-kumo-subtle px-4 py-3 text-sm">No matching command.</li>
+						<li style={{ padding: "11px 15px", fontSize: 13, color: T.subtle }}>No matching command.</li>
 					)}
 					{filtered.map((c, i) => (
 						<li key={c.id}>
@@ -118,12 +137,23 @@ export function CommandPalette({
 								type="button"
 								onMouseEnter={() => setActive(i)}
 								onClick={() => choose(i)}
-								className={`flex w-full items-center justify-between px-4 py-2 text-left text-sm ${
-									i === active ? "bg-kumo-muted" : ""
-								}`}
+								style={{
+									display: "flex",
+									width: "100%",
+									alignItems: "center",
+									justifyContent: "space-between",
+									gap: 10,
+									padding: "7px 15px",
+									border: "none",
+									cursor: "pointer",
+									textAlign: "left",
+									fontSize: 13,
+									color: T.text,
+									background: i === active ? T.fill : "transparent",
+								}}
 							>
 								<span>{c.label}</span>
-								{c.hint && <span className="text-kumo-subtle text-xs">{c.hint}</span>}
+									{c.hint && <span style={{ fontSize: 11, color: T.subtle }}>{c.hint}</span>}
 							</button>
 						</li>
 					))}

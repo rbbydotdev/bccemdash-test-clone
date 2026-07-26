@@ -7,7 +7,8 @@
 	"main": "src/index.ts",
 	"exports": {
 		".": "./src/index.ts",
-		"./scene": "./src/scene.ts"
+		"./scene": "./src/scene.ts",
+		"./templates": "./src/templates.ts"
 	},
 	"imports": {
 		"#backend": {

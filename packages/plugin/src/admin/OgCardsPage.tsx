@@ -16,12 +16,15 @@ import * as React from "react";
 import {
 	DEFAULT_HEIGHT,
 	DEFAULT_WIDTH,
+	collectFontFamilies,
 	type OgLayer,
 	type OgScene,
 	type SceneColors,
 } from "@myemdash/og/scene";
+import { builtInTemplates } from "@myemdash/og/templates";
 
 import { Canvas } from "./og/canvas.js";
+import { ensureWebFonts } from "./og/fonts.js";
 import { CommandPalette, type Command } from "./og/palette.js";
 import { Inspector } from "./og/inspector.js";
 import {
@@ -82,6 +85,33 @@ export function OgCardsPage() {
 		() => ({ hero: settings?.hero ?? {}, footer: settings?.footer ?? {}, contact: settings?.contact ?? {} }),
 		[settings],
 	);
+
+	/** Built-in starting points, tinted with the site's current palette. */
+	const starters = React.useMemo(() => builtInTemplates(colors.night), [colors.night]);
+
+	const startFrom = React.useCallback(
+		(templateId: string) => {
+			const template = starters.find((s) => s.id === templateId);
+			if (!template) return;
+			past.current = [];
+			future.current = [];
+			setCurrentId(null);
+			setName(template.name);
+			// Deep-copy so editing a new card never mutates the shared built-in.
+			setScene(JSON.parse(JSON.stringify(template.scene)) as OgScene);
+			setSelection([]);
+			setDirty(true);
+			setTruePreview(null);
+		},
+		[starters],
+	);
+
+	// Make sure the browser has every face the scene names, so the canvas draws
+	// what the renderer will. Loading a card built elsewhere is the case that
+	// matters: its fonts were never picked in this session.
+	React.useEffect(() => {
+		ensureWebFonts(collectFontFamilies(scene));
+	}, [scene]);
 
 	const mediaUrls = React.useMemo(() => {
 		const map: Record<string, string> = {};
@@ -193,7 +223,7 @@ export function OgCardsPage() {
 		[commit, scene, selection],
 	);
 
-	const save = React.useCallback(async () => {
+	const saveCard = React.useCallback(async (): Promise<string | null> => {
 		setBusy(true);
 		setError(null);
 		try {
@@ -207,12 +237,16 @@ export function OgCardsPage() {
 			setDirty(false);
 			const list = await pluginGet<{ items: TemplateDTO[] }>("admin/og/templates");
 			setTemplates(list.items ?? []);
+			return saved.id;
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to save");
+			return null;
 		} finally {
 			setBusy(false);
 		}
 	}, [currentId, name, scene]);
+
+	const save = saveCard;
 
 	const makeActive = React.useCallback(async () => {
 		if (!currentId) return;
@@ -239,11 +273,22 @@ export function OgCardsPage() {
 		setTruePreview(null);
 	};
 
-	/** Ask the OG worker for the real PNG of the saved card. */
-	const showTruePreview = React.useCallback(() => {
+	/**
+	 * Render THIS card through Takumi and show the result. The canvas is a close
+	 * DOM approximation; this is the actual PNG, so fonts and wrapping are exact.
+	 * Saves first when needed, because the renderer reads the card from the
+	 * server rather than from the browser.
+	 */
+	const showTruePreview = React.useCallback(async () => {
+		let id = currentId;
+		if (!id || dirty) {
+			const saved = await saveCard();
+			if (!saved) return;
+			id = saved;
+		}
 		const base = (settings?.integrations.ogWorkerUrl ?? "").trim().replace(/\/$/, "");
-		setTruePreview(`${base || "/og"}/site.png?preview=${Date.now()}`);
-	}, [settings]);
+		setTruePreview(`${base || "/og"}/site.png?template=${id}&t=${Date.now()}`);
+	}, [currentId, dirty, saveCard, settings]);
 
 	const commands: Command[] = React.useMemo(
 		() => [
@@ -257,10 +302,15 @@ export function OgCardsPage() {
 			{ id: "undo", label: "Undo", hint: "⌘Z", run: undo },
 			{ id: "redo", label: "Redo", hint: "⇧⌘Z", run: redo },
 			{ id: "save", label: "Save card", hint: "⌘S", run: () => void save() },
-			{ id: "true", label: "True preview (render PNG)", run: showTruePreview },
+			{ id: "true", label: "Preview PNG (render this card for real)", run: () => void showTruePreview() },
+			...starters.map((s) => ({
+				id: `tpl-${s.id}`,
+				label: `Start from: ${s.name}`,
+				run: () => startFrom(s.id),
+			})),
 			{ id: "active", label: "Use as the site card", run: () => void makeActive() },
 		],
-		[addLayer, colors, duplicateSelected, makeActive, media, redo, removeSelected, reorder, save, showTruePreview, undo],
+		[addLayer, colors, duplicateSelected, makeActive, media, redo, removeSelected, reorder, save, showTruePreview, startFrom, starters, undo],
 	);
 
 	// Keyboard shortcuts. Ignored while typing so text editing keeps its keys.
@@ -309,7 +359,7 @@ export function OgCardsPage() {
 		<div className="space-y-4">
 			<PageHeader
 				title="Social Cards"
-				subtitle="The image shown when the site is shared. Drag to arrange, double-click text to edit."
+				subtitle="The image shown when the site is shared. Drag to arrange, double-click text to edit, ⌘K for commands."
 			/>
 
 			{error && <ErrorNotice message={error} />}
@@ -332,8 +382,8 @@ export function OgCardsPage() {
 				<Button size="sm" variant="secondary" disabled={busy || !currentId} onClick={() => void makeActive()}>
 					Use as site card
 				</Button>
-				<Button size="sm" variant="secondary" onClick={showTruePreview}>
-					True preview
+				<Button size="sm" variant="secondary" disabled={busy} onClick={() => void showTruePreview()}>
+					Preview PNG
 				</Button>
 				<Button size="sm" variant="ghost" onClick={() => setPaletteOpen(true)}>
 					Commands ⌘K
@@ -358,27 +408,47 @@ export function OgCardsPage() {
 							{t.isActive && <span className="text-kumo-subtle text-[0.6rem] uppercase">live</span>}
 						</button>
 					))}
-					<Button
-						size="sm"
-						variant="ghost"
-						className="w-full"
-						onClick={() => {
-							past.current = [];
-							setCurrentId(null);
-							setName("New card");
-							setScene({ width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT, background: "@night", layers: [] });
-							setSelection([]);
-							setDirty(true);
-						}}
-					>
-						New card
-					</Button>
+					<div className="pt-3">
+						<p className="text-kumo-subtle text-xs font-medium uppercase">Start from</p>
+						<p className="text-kumo-subtle mt-1 mb-1 text-[0.65rem] leading-snug">
+							Templates follow your live content and brand colours.
+						</p>
+						{starters.map((s) => (
+							<button
+								key={s.id}
+								type="button"
+								title={s.description}
+								onClick={() => startFrom(s.id)}
+								className="hover:bg-kumo-muted block w-full truncate rounded p-1.5 text-left text-sm"
+							>
+								{s.name}
+							</button>
+						))}
+						<button
+							type="button"
+							onClick={() => {
+								past.current = [];
+								future.current = [];
+								setCurrentId(null);
+								setName("New card");
+								setScene({ width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT, background: "@night", layers: [] });
+								setSelection([]);
+								setDirty(true);
+							}}
+							className="hover:bg-kumo-muted text-kumo-subtle block w-full rounded p-1.5 text-left text-sm"
+						>
+							Blank card
+						</button>
+					</div>
 				</div>
 
 				{/* Canvas */}
 				<div className="min-w-0 flex-1">
 					{truePreview ? (
 						<div className="space-y-2">
+							<p className="text-kumo-subtle text-xs">
+								The real PNG for this card, rendered by the image service. Saved automatically.
+							</p>
 							<img src={truePreview} alt="Rendered card" className="border-kumo-line w-full rounded-lg border" />
 							<Button size="sm" variant="ghost" onClick={() => setTruePreview(null)}>
 								Back to editing
@@ -402,6 +472,7 @@ export function OgCardsPage() {
 				<Inspector
 					layer={selectedLayer}
 					media={media}
+					colors={colors}
 					onChange={(l) => patchLayers([l])}
 					onDelete={removeSelected}
 				/>

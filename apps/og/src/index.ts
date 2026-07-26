@@ -70,7 +70,10 @@ export default {
 			if (target.kind === "entry" && !entry) return new Response("Not found", { status: 404 });
 
 			const context: SceneContext = { ...settings, ...(entry ? { entry } : {}) };
-			const scene = await loadScene(env, colors.night);
+			// `?template=<id>` renders one specific saved card — the admin editor
+			// uses it to preview the card being edited, rather than whichever one
+			// happens to be live.
+			const scene = await loadScene(env, colors.night, url.searchParams.get("template"));
 			const key = `${CACHE_PREFIX}${await digest(scene, context, colors)}.png`;
 
 			// Tier 1 — edge cache, keyed by the content-addressed name.
@@ -164,11 +167,15 @@ async function digest(scene: OgScene, context: SceneContext, colors: SceneColors
  * editor, else the built-in hero. A malformed saved scene falls back rather
  * than failing the request.
  */
-async function loadScene(env: Env, night: string): Promise<OgScene> {
+async function loadScene(env: Env, night: string, templateId?: string | null): Promise<OgScene> {
 	try {
-		const row = await env.DB.prepare(
-			"SELECT scene FROM og_templates WHERE is_active = 1 LIMIT 1",
-		).first<{ scene: string }>();
+		const row = templateId
+			? await env.DB.prepare("SELECT scene FROM og_templates WHERE id = ? LIMIT 1")
+					.bind(templateId)
+					.first<{ scene: string }>()
+			: await env.DB.prepare("SELECT scene FROM og_templates WHERE is_active = 1 LIMIT 1").first<{
+					scene: string;
+				}>();
 		if (row?.scene) {
 			const parsed = JSON.parse(row.scene) as OgScene;
 			if (Array.isArray(parsed?.layers)) return parsed;

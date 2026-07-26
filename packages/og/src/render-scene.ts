@@ -5,7 +5,10 @@
  * bytes the caller already fetched (a Worker cannot fetch its own origin, so
  * media is always read from storage upstream and handed in here).
  */
-import { container, text, type Node } from "@takumi-rs/helpers";
+import { container, googleFonts, text, type Node } from "@takumi-rs/helpers";
+
+/** Google's css2 `ital` axis, as Takumi types it. */
+type FontStyle = "normal" | "italic";
 import { render } from "takumi-js";
 
 import { getOgRenderer } from "./renderer.js";
@@ -37,6 +40,49 @@ export interface RenderSceneOptions {
 
 /** Takumi resolves image layers against these synthetic srcs. */
 const imageSrc = (id: string) => `media://${id}`;
+
+/**
+ * Google Font families a scene asks for, with the weights and styles it uses.
+ *
+ * The two brand faces stay embedded (they are the default and must render with
+ * no network at all), but anything else is fetched at render time, so the whole
+ * Google catalogue is available without growing the Worker bundle. Takumi
+ * caches the css2 metadata process-wide and skips font files it has already
+ * loaded, and our own renders are content-addressed and cached, so the fetch
+ * cost lands on the rare miss rather than on every request.
+ */
+function googleFontRequests(scene: OgScene): Array<{ name: string; weight: number[]; style: FontStyle[] }> {
+	const byFamily = new Map<string, { weights: Set<number>; styles: Set<FontStyle> }>();
+	for (const layer of scene.layers) {
+		if (layer.hidden || layer.type !== "text") continue;
+		const name = layer.fontFamily?.trim();
+		if (!name) continue;
+		let entry = byFamily.get(name);
+		if (!entry) byFamily.set(name, (entry = { weights: new Set(), styles: new Set() }));
+		entry.weights.add(layer.weight ?? 400);
+		entry.styles.add(layer.italic ? "italic" : "normal");
+	}
+	return [...byFamily].map(([name, { weights, styles }]) => ({
+		name,
+		weight: [...weights],
+		style: [...styles],
+	}));
+}
+
+/**
+ * Fetch the scene's custom faces. A font that fails to load must not fail the
+ * card: Takumi falls back to a registered family, which still reads.
+ */
+async function loadSceneFonts(scene: OgScene) {
+	const families = googleFontRequests(scene);
+	if (!families.length) return undefined;
+	try {
+		return await googleFonts(families);
+	} catch (error) {
+		console.warn("[og] custom fonts unavailable, falling back to the brand faces:", error);
+		return undefined;
+	}
+}
 
 export function sceneToNode(
 	scene: OgScene,
@@ -115,13 +161,14 @@ export async function renderScene(options: RenderSceneOptions): Promise<Uint8Arr
 	const available = new Set(images.map((i) => i.id));
 
 	const node = sceneToNode(scene, context, colors, available);
-	const renderer = await getOgRenderer();
+	const [renderer, fonts] = await Promise.all([getOgRenderer(), loadSceneFonts(scene)]);
 
 	const bytes = await render(node as never, {
 		renderer: renderer as never,
 		width: scene.width ?? DEFAULT_WIDTH,
 		height: scene.height ?? DEFAULT_HEIGHT,
 		format: "png",
+		...(fonts ? { fonts } : {}),
 		images: images.map((image) => ({ src: imageSrc(image.id), data: image.data })),
 	} as never);
 

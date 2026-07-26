@@ -56,8 +56,14 @@ export interface TextLayer extends BaseLayer {
 	type: "text";
 	/** May contain `{{bindings}}`. */
 	text: string;
-	/** Registered family: the display serif or the accent sans. */
+	/** Brand face: the display serif or the accent sans. */
 	font?: "display" | "accent";
+	/**
+	 * Any Google Font family name, e.g. "Inter". Overrides `font`. Fetched and
+	 * registered by the renderer on demand, so the worker ships only the brand
+	 * faces and still supports the whole Google catalogue.
+	 */
+	fontFamily?: string;
 	size: number;
 	weight?: number;
 	italic?: boolean;
@@ -114,6 +120,17 @@ export function resolveColor(value: string | undefined, colors: SceneColors): st
 	return colors[value.slice(1)] ?? undefined;
 }
 
+/** Custom (non-brand) font families a scene uses, for on-demand loading. */
+export function collectFontFamilies(scene: OgScene): string[] {
+	const families = new Set<string>();
+	for (const layer of scene.layers) {
+		if (layer.hidden || layer.type !== "text") continue;
+		const family = layer.fontFamily?.trim();
+		if (family) families.add(family);
+	}
+	return [...families];
+}
+
 /** Media ids a scene needs, so the caller can fetch bytes before rendering. */
 export function collectMediaRefs(scene: OgScene, context: SceneContext): string[] {
 	const refs = new Set<string>();
@@ -165,11 +182,12 @@ export const FONT_FAMILY = {
 /** CSS for a text layer's typography. */
 export function textStyle(layer: TextLayer, colors: SceneColors): Record<string, unknown> {
 	const family =
-		layer.font === "accent"
+		layer.fontFamily?.trim() ||
+		(layer.font === "accent"
 			? FONT_FAMILY.accent
 			: layer.italic
 				? FONT_FAMILY.displayItalic
-				: FONT_FAMILY.display;
+				: FONT_FAMILY.display);
 	return {
 		fontFamily: family,
 		fontSize: layer.size,
@@ -179,6 +197,20 @@ export function textStyle(layer: TextLayer, colors: SceneColors): Record<string,
 		color: resolveColor(layer.color, colors) ?? colors.moon,
 		textAlign: layer.align ?? "center",
 	};
+}
+
+/**
+ * The same typography, adjusted for a browser.
+ *
+ * Takumi registers the italic display face under its own family name, which is
+ * how a single-style font file gets addressed. Browsers have no such family, so
+ * the DOM preview asks for the base family plus `font-style: italic` and lets
+ * the webfont's own italic (or the browser's synthesis) stand in.
+ */
+export function domTextStyle(layer: TextLayer, colors: SceneColors): Record<string, unknown> {
+	const style = textStyle(layer, colors);
+	if (style.fontFamily === FONT_FAMILY.displayItalic) style.fontFamily = FONT_FAMILY.display;
+	return { ...style, fontStyle: layer.italic ? "italic" : "normal" };
 }
 
 /** The visible text of a layer, bindings resolved and casing applied. */

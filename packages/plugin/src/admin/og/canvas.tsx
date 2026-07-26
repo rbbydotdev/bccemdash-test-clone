@@ -2,7 +2,7 @@
  * The editing canvas — renders a scene as DOM and handles direct manipulation.
  *
  * The layers here are styled with the SAME helpers the Takumi renderer uses
- * (`layerFrameStyle`, `textStyle` from @myemdash/og/scene, a dependency-free
+ * (`layerFrameStyle`, `domTextStyle` from @myemdash/og/scene, a dependency-free
  * module), so dragging something here moves it identically in the PNG.
  *
  * Interaction is hand-rolled on pointer events rather than pulled from a
@@ -14,10 +14,10 @@
 import * as React from "react";
 
 import {
+	domTextStyle,
 	layerFrameStyle,
 	layerText,
 	resolveColor,
-	textStyle,
 	type OgLayer,
 	type OgScene,
 	type SceneColors,
@@ -248,7 +248,7 @@ function LayerView({
 	const outline = selected ? { outline: "1px solid #22d3ee", outlineOffset: 0 } : undefined;
 
 	if (layer.type === "text") {
-		const ts = textStyle(layer, colors) as React.CSSProperties;
+		const ts = domTextStyle(layer, colors) as React.CSSProperties;
 		const value = layerText(layer, context);
 		return (
 			<div

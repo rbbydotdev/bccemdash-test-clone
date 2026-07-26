@@ -382,6 +382,9 @@ importers:
       '@emdash-cms/admin':
         specifier: workspace:*
         version: link:../../vendor/emdash/packages/admin
+      '@myemdash/og':
+        specifier: workspace:*
+        version: link:../og
       '@phosphor-icons/react':
         specifier: 'catalog:'
         version: 2.1.10(react-dom@19.2.7(react@19.2.4))(react@19.2.4)

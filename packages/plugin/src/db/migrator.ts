@@ -12,6 +12,7 @@
 import { sql, type ColumnType, type Kysely } from "kysely";
 
 import * as m001 from "./migrations/001_init.js";
+import * as m003 from "./migrations/003_og_templates.js";
 
 export interface BccMigration {
 	name: string;
@@ -26,7 +27,7 @@ export interface BccMigration {
  * Databases that ran it keep the recorded `002_passwords` history row and the
  * now-unused table; neither is read anymore.
  */
-const MIGRATIONS: BccMigration[] = [m001];
+const MIGRATIONS: BccMigration[] = [m001, m003];
 
 interface HistoryDb {
 	_bcc_migrations: {

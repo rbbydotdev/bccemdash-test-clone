@@ -28,6 +28,16 @@ export interface EnquiriesTable {
 	updated_at: Timestamp;
 }
 
+export interface OgTemplatesTable {
+	id: string;
+	name: string;
+	/** JSON-encoded OgScene. */
+	scene: string;
+	is_active: ColumnType<number, number | undefined, number>;
+	created_at: Timestamp;
+	updated_at: Timestamp;
+}
+
 export interface BccMigrationsTable {
 	name: string;
 	executed_at: Timestamp;
@@ -46,6 +56,7 @@ export interface RateLimitsTable {
 
 export interface BccDatabase {
 	enquiries: EnquiriesTable;
+	og_templates: OgTemplatesTable;
 	_bcc_migrations: BccMigrationsTable;
 	_emdash_rate_limits: RateLimitsTable;
 }

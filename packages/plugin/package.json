@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"@cloudflare/kumo": "catalog:",
+		"@myemdash/og": "workspace:*",
 		"@phosphor-icons/react": "catalog:",
 		"kysely": "catalog:",
 		"maplibre-gl": "catalog:",

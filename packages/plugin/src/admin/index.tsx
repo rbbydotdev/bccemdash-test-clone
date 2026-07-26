@@ -8,6 +8,7 @@
  */
 import type { PluginAdminExports } from "emdash";
 
+import { OgCardsPage } from "./OgCardsPage.js";
 import { EnquiriesPage } from "./EnquiriesPage.js";
 import { LocationField } from "./fields/LocationField.js";
 import { SettingsPage } from "./SettingsPage.js";
@@ -16,6 +17,7 @@ import { RecentEnquiriesWidget } from "./widgets.js";
 export const pages: PluginAdminExports["pages"] = {
 	"/settings": SettingsPage,
 	"/enquiries": EnquiriesPage,
+	"/social-cards": OgCardsPage,
 };
 
 export const widgets: PluginAdminExports["widgets"] = {

@@ -20,6 +20,12 @@ import {
 	updateEnquiryStatus,
 	type EnquiryStatus,
 } from "../db/repos/enquiries.repo.js";
+import {
+	deleteOgTemplate,
+	listOgTemplates,
+	saveOgTemplate,
+	setActiveOgTemplate,
+} from "../db/repos/og-templates.repo.js";
 import { fail } from "../errors.js";
 import { getBccSettings, setBccSettings, type BccSettings } from "../settings.js";
 import { asRecord, getBccDb, queryParams, readString, requireMethod } from "./helpers.js";
@@ -91,6 +97,44 @@ export async function adminEnquiryDeleteHandler(ctx: RouteContext): Promise<unkn
 	if (clean.length === 0) fail("validation_error", "ids must contain at least one id");
 
 	return { deleted: await deleteEnquiries(db, clean) };
+}
+
+/**
+ * GET/POST admin/og/templates — the social-card editor's documents.
+ *
+ * GET lists them. POST is a small command envelope rather than REST verbs,
+ * because the plugin dispatcher only parses JSON bodies for POST/PATCH:
+ *   { action: "save",   id?, name, scene }
+ *   { action: "active", id }
+ *   { action: "delete", id }
+ */
+export async function adminOgTemplatesHandler(ctx: RouteContext): Promise<unknown> {
+	const method = requireMethod(ctx, "GET", "POST");
+	const db = await getBccDb();
+
+	if (method === "GET") return { items: await listOgTemplates(db) };
+
+	const body = asRecord(ctx.input);
+	const action = readString(body, "action", { required: true })!;
+
+	if (action === "save") {
+		const name = readString(body, "name", { required: true, maxLength: 120 })!;
+		const id = readString(body, "id");
+		const scene = body.scene;
+		if (!scene || typeof scene !== "object") fail("validation_error", "scene must be an object");
+		return saveOgTemplate(db, { id, name, scene });
+	}
+
+	const id = readString(body, "id", { required: true })!;
+	if (action === "active") {
+		await setActiveOgTemplate(db, id);
+		return { ok: true };
+	}
+	if (action === "delete") {
+		await deleteOgTemplate(db, id);
+		return { ok: true };
+	}
+	return fail("validation_error", "action must be save, active or delete");
 }
 
 export async function adminStatsHandler(ctx: RouteContext): Promise<unknown> {

@@ -26,6 +26,7 @@ import {
 	adminEnquiryDeleteHandler,
 	adminEnquiryItemHandler,
 	adminGeocodeHandler,
+	adminOgTemplatesHandler,
 	adminSettingsHandler,
 	adminStatsHandler,
 } from "./routes/admin.js";
@@ -43,6 +44,7 @@ export type BccOptions = Record<string, unknown>;
 const ADMIN_PAGES = [
 	{ path: "/settings", label: "Site Content", icon: "gear", group: "Bat City" },
 	{ path: "/enquiries", label: "Enquiries", icon: "chat-circle-text", group: "Bat City" },
+	{ path: "/social-cards", label: "Social Cards", icon: "image", group: "Bat City" },
 ];
 
 const ADMIN_WIDGETS = [{ id: "recent-enquiries", title: "Recent enquiries", size: "half" as const }];
@@ -110,6 +112,7 @@ export function createPlugin(_options: BccOptions = {}) {
 			"admin/stats": { handler: wrap(adminStatsHandler) },
 			"admin/settings": { handler: wrap(adminSettingsHandler) },
 			"admin/geocode": { handler: wrap(adminGeocodeHandler) },
+			"admin/og/templates": { handler: wrap(adminOgTemplatesHandler) },
 		},
 	});
 }

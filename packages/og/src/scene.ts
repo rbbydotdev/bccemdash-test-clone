@@ -120,6 +120,22 @@ export function resolveColor(value: string | undefined, colors: SceneColors): st
 	return colors[value.slice(1)] ?? undefined;
 }
 
+/**
+ * Resolve `@token`s in any paint value — a bare token, or tokens embedded in a
+ * gradient.
+ *
+ * `resolveColor` only handles a value that *is* a token, which silently left
+ * `linear-gradient(160deg, @deep 0%, @night 100%)` as invalid CSS: the built-in
+ * wash templates painted nothing. Anything a layer can be filled with goes
+ * through here.
+ */
+export function resolvePaint(value: string | undefined, colors: SceneColors): string | undefined {
+	if (!value) return undefined;
+	if (!value.includes("@")) return value;
+	if (value.startsWith("@") && !value.includes("(")) return colors[value.slice(1)] ?? undefined;
+	return value.replace(/@([A-Za-z]\w*)/g, (whole, name: string) => colors[name] ?? whole);
+}
+
 /** Custom (non-brand) font families a scene uses, for on-demand loading. */
 export function collectFontFamilies(scene: OgScene): string[] {
 	const families = new Set<string>();

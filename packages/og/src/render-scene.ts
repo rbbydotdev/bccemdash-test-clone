@@ -18,7 +18,7 @@ import {
 	layerFrameStyle,
 	layerText,
 	resolveBindings,
-	resolveColor,
+	resolvePaint,
 	textStyle,
 	type OgScene,
 	type SceneColors,
@@ -147,8 +147,10 @@ export function sceneToNode(
 			height,
 			display: "flex",
 			position: "relative",
-			backgroundColor: resolveColor(scene.background, colors) ?? colors.night,
-			...(isGradient(scene.background) ? { backgroundImage: scene.background } : {}),
+			backgroundColor: resolvePaint(scene.background, colors) ?? colors.night,
+			...(isGradient(scene.background)
+				? { backgroundImage: resolvePaint(scene.background, colors) }
+				: {}),
 		},
 		children,
 	});
@@ -181,7 +183,7 @@ function isGradient(value: string | undefined): boolean {
 
 /** Shapes paint through background-image so gradients and solids share a path. */
 function shapeFill(fill: string, colors: SceneColors): string {
-	if (isGradient(fill)) return fill;
-	const solid = resolveColor(fill, colors) ?? fill;
+	if (isGradient(fill)) return resolvePaint(fill, colors) ?? fill;
+	const solid = resolvePaint(fill, colors) ?? fill;
 	return `linear-gradient(0deg, ${solid} 0%, ${solid} 100%)`;
 }

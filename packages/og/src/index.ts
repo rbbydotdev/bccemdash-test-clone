@@ -17,6 +17,7 @@ export {
 	layerText,
 	resolveBindings,
 	resolveColor,
+	resolvePaint,
 	textStyle,
 	withAlpha,
 	type BaseLayer,

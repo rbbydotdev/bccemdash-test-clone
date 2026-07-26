@@ -21,6 +21,7 @@ import {
 	ArrowCounterClockwiseIcon,
 	CopyIcon,
 	CursorIcon,
+	GradientIcon,
 	ImageSquareIcon,
 	SquareIcon,
 	TextTIcon,
@@ -43,6 +44,7 @@ import { Canvas } from "./og/canvas.js";
 import { ensureWebFonts } from "./og/fonts.js";
 import { CommandPalette, type Command } from "./og/palette.js";
 import { Inspector } from "./og/inspector.js";
+import { GRADIENT_PRESETS } from "./og/gradient.js";
 import { LayersPanel } from "./og/layers.js";
 import { Dock, Muted, Section, T, ToolButton } from "./og/ui.js";
 import {
@@ -232,6 +234,13 @@ export function OgCardsPage() {
 		[commit, scene],
 	);
 
+	/** A veil belongs behind the content, so it goes in at the bottom. */
+	const addGradient = React.useCallback(() => {
+		const layer = newGradient(colors);
+		commit({ ...scene, layers: [layer, ...scene.layers] });
+		setSelection([layer.id]);
+	}, [colors, commit, scene]);
+
 	const removeSelected = React.useCallback(() => {
 		if (selection.length === 0) return;
 		commit({ ...scene, layers: scene.layers.filter((l) => !selection.includes(l.id)) });
@@ -341,7 +350,8 @@ export function OgCardsPage() {
 		() => [
 			{ id: "text", label: "Add text", hint: "T", run: () => addLayer(newText()) },
 			{ id: "shape", label: "Add shape", hint: "R", run: () => addLayer(newShape()) },
-			{ id: "image", label: "Add image", run: () => addLayer(newImage(media[0]?.id ?? "")) },
+			{ id: "image", label: "Add image", hint: "I", run: () => addLayer(newImage(media[0]?.id ?? "")) },
+			{ id: "gradient", label: "Add gradient", hint: "G", run: () => addGradient() },
 			{ id: "dup", label: "Duplicate selection", hint: "⌘D", run: duplicateSelected },
 			{ id: "del", label: "Delete selection", hint: "⌫", run: removeSelected },
 			{ id: "front", label: "Bring to front", run: () => reorder("front") },
@@ -357,7 +367,7 @@ export function OgCardsPage() {
 			})),
 			{ id: "active", label: "Use as the site card", run: () => void makeActive() },
 		],
-		[addLayer, colors, duplicateSelected, makeActive, media, redo, removeSelected, reorder, save, showTruePreview, startFrom, starters, undo],
+		[addGradient, addLayer, colors, duplicateSelected, makeActive, media, newBlankCard, redo, removeSelected, reorder, save, showTruePreview, startFrom, starters, undo],
 	);
 
 	// Keyboard shortcuts. Ignored while typing so text editing keeps its keys.
@@ -366,6 +376,15 @@ export function OgCardsPage() {
 			const el = e.target as HTMLElement | null;
 			if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
 			const mod = e.metaKey || e.ctrlKey;
+			// Single-key tools, the way every drawing app binds them. The rail and
+			// the palette have been advertising these; now they work.
+			if (!mod && !e.altKey) {
+				const key = e.key.toLowerCase();
+				if (key === "t") return void (e.preventDefault(), addLayer(newText()));
+				if (key === "r") return void (e.preventDefault(), addLayer(newShape()));
+				if (key === "g") return void (e.preventDefault(), addGradient());
+				if (key === "i") return void (e.preventDefault(), addLayer(newImage(media[0]?.id ?? "")));
+			}
 			if (mod && e.key.toLowerCase() === "k") return void (e.preventDefault(), setPaletteOpen(true));
 			if (mod && e.key.toLowerCase() === "s") return void (e.preventDefault(), save());
 			if (mod && e.key.toLowerCase() === "d") return void (e.preventDefault(), duplicateSelected());
@@ -390,7 +409,7 @@ export function OgCardsPage() {
 		};
 		window.addEventListener("keydown", onKey);
 		return () => window.removeEventListener("keydown", onKey);
-	}, [duplicateSelected, patchLayers, redo, removeSelected, save, scene, selection, undo]);
+	}, [addGradient, addLayer, duplicateSelected, media, patchLayers, redo, removeSelected, save, scene, selection, undo]);
 
 	if (loading) {
 		return (
@@ -480,6 +499,9 @@ export function OgCardsPage() {
 					</ToolButton>
 					<ToolButton label="Add image" shortcut="I" onClick={() => addLayer(newImage(media[0]?.id ?? ""))}>
 						<ImageSquareIcon size={17} />
+					</ToolButton>
+					<ToolButton label="Add gradient" shortcut="G" onClick={() => addGradient()}>
+						<GradientIcon size={17} />
 					</ToolButton>
 					<ToolButton label="Deselect" shortcut="Esc" onClick={() => setSelection([])}>
 						<CursorIcon size={17} />
@@ -668,6 +690,24 @@ function newText(): OgLayer {
 
 function newShape(): OgLayer {
 	return { id: uid("shape"), name: "Shape", type: "shape", fill: "@amber", x: 480, y: 290, w: 240, h: 60 };
+}
+
+/**
+ * A full-bleed gradient, defaulting to the night veil the built-in cards use to
+ * keep text legible over a photo. Added behind the current layers rather than
+ * on top, which is where a veil belongs and saves an immediate "send to back".
+ */
+function newGradient(colors: SceneColors): OgLayer {
+	return {
+		id: uid("gradient"),
+		name: "Gradient",
+		type: "shape",
+		fill: GRADIENT_PRESETS[0]!.build(colors),
+		x: 0,
+		y: 0,
+		w: DEFAULT_WIDTH,
+		h: DEFAULT_HEIGHT,
+	};
 }
 
 function newImage(mediaId: string): OgLayer {

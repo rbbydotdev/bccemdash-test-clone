@@ -17,7 +17,7 @@ import {
 	domTextStyle,
 	layerFrameStyle,
 	layerText,
-	resolveColor,
+	resolvePaint,
 	type OgLayer,
 	type OgScene,
 	type SceneColors,
@@ -209,7 +209,7 @@ export function Canvas({
 				width: width * scale,
 				height: height * scale,
 				overflow: "hidden",
-				background: resolveColor(scene.background, colors) ?? colors.night,
+				background: resolvePaint(scene.background, colors) ?? colors.night,
 				backgroundImage: scene.background?.includes("gradient(") ? scene.background : undefined,
 				border: "1px solid var(--color-kumo-line)",
 				borderRadius: 8,
@@ -357,8 +357,8 @@ function LayerView({
 	}
 
 	const fill = layer.fill.includes("gradient(")
-		? { backgroundImage: layer.fill }
-		: { backgroundColor: resolveColor(layer.fill, colors) ?? layer.fill };
+		? { backgroundImage: resolvePaint(layer.fill, colors) }
+		: { backgroundColor: resolvePaint(layer.fill, colors) ?? layer.fill };
 	return (
 		<div
 			onPointerDown={onPointerDown}

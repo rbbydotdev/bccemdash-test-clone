@@ -18,6 +18,15 @@ import type { OgLayer, SceneColors } from "@myemdash/og/scene";
 
 import type { MediaItem } from "../lib.js";
 import { BRAND_FONTS, GOOGLE_FONTS, ensureWebFonts, preloadCatalogue } from "./fonts.js";
+import {
+	GRADIENT_PRESETS,
+	buildStopColor,
+	formatGradient,
+	isGradientValue,
+	parseGradient,
+	stopColor,
+	type LinearGradient,
+} from "./gradient.js";
 import { Muted, NumberField, Row, Section, Swatch, T, fieldStyle } from "./ui.js";
 
 const TOKENS = [
@@ -28,6 +37,40 @@ const TOKENS = [
 	{ label: "Amber light", value: "@amberLight" },
 	{ label: "Silver", value: "@silver" },
 ];
+
+/**
+ * The site's palette, always on hand.
+ *
+ * Kept as its own component so every colour control in the editor offers it —
+ * solid fills, text, and each gradient stop — rather than only the places that
+ * happened to be built first.
+ */
+function PaletteRow({
+	colors,
+	value,
+	onPick,
+}: {
+	colors: SceneColors;
+	value?: string;
+	onPick: (token: string) => void;
+}) {
+	return (
+		<div>
+			<div style={{ fontSize: 10, color: T.subtle, marginBottom: 4 }}>Site palette</div>
+			<div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+				{TOKENS.map((token) => (
+					<Swatch
+						key={token.value}
+						title={token.label}
+						color={colors[token.value.slice(1)] ?? "#000"}
+						active={value === token.value}
+						onClick={() => onPick(token.value)}
+					/>
+				))}
+			</div>
+		</div>
+	);
+}
 
 /** Brand swatches plus a free picker, sharing one value. */
 function ColorControl({
@@ -47,17 +90,7 @@ function ColorControl({
 
 	return (
 		<>
-			<div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-				{TOKENS.map((token) => (
-					<Swatch
-						key={token.value}
-						title={token.label}
-						color={colors[token.value.slice(1)] ?? "#000"}
-						active={value === token.value}
-						onClick={() => onChange(token.value)}
-					/>
-				))}
-			</div>
+			<PaletteRow colors={colors} value={value} onPick={onChange} />
 			<div style={{ display: "flex", alignItems: "center", gap: 6 }}>
 				<input
 					type="color"
@@ -90,6 +123,184 @@ function ColorControl({
 					: "A fixed colour. Pick a swatch to follow the site palette instead."}
 			</Muted>
 		</>
+	);
+}
+
+
+/**
+ * Structured editing for a gradient fill.
+ *
+ * Stops are listed as chips and edited one at a time, so the site palette and
+ * the free picker both stay available for whichever stop is selected rather
+ * than being crammed into every row.
+ */
+function GradientControl({
+	value,
+	colors,
+	onChange,
+}: {
+	value: string;
+	colors: SceneColors;
+	onChange: (value: string) => void;
+}) {
+	const gradient = parseGradient(value);
+	const [active, setActive] = React.useState(0);
+
+	if (!gradient) {
+		return (
+			<>
+				<Muted>
+					This gradient uses a form the editor cannot break apart. Choose a preset below to replace it.
+				</Muted>
+				<PresetPicker colors={colors} onChange={onChange} />
+			</>
+		);
+	}
+
+	const index = Math.min(active, gradient.stops.length - 1);
+	const stop = gradient.stops[index]!;
+	const { hex, alpha } = stopColor(stop.color, colors);
+
+	const write = (next: LinearGradient) => onChange(formatGradient(next));
+	const patchStop = (patch: Partial<typeof stop>) =>
+		write({ ...gradient, stops: gradient.stops.map((s, i) => (i === index ? { ...s, ...patch } : s)) });
+
+	return (
+		<>
+			<PresetPicker colors={colors} onChange={onChange} />
+
+			<Row label="Angle">
+				<NumberField
+					value={gradient.angle}
+					suffix="°"
+					onChange={(angle) => write({ ...gradient, angle: ((angle % 360) + 360) % 360 })}
+				/>
+			</Row>
+
+			<div>
+				<div style={{ fontSize: 10, color: T.subtle, marginBottom: 4 }}>Stops</div>
+				{/* A live strip of the gradient itself, so the stop chips read in context. */}
+				<div
+					style={{
+						height: 14,
+						borderRadius: 4,
+						marginBottom: 6,
+						border: `1px solid ${T.line}`,
+						backgroundImage: formatGradient({ ...gradient, angle: 90 }).replace(
+							/@([A-Za-z]\w*)/g,
+							(whole, name: string) => colors[name] ?? whole,
+						),
+					}}
+				/>
+				<div style={{ display: "flex", flexWrap: "wrap", gap: 5, alignItems: "center" }}>
+					{gradient.stops.map((s, i) => (
+						<Swatch
+							key={i}
+							title={`Stop ${i + 1} at ${Math.round(s.at)}%`}
+							color={stopColor(s.color, colors).hex}
+							active={i === index}
+							onClick={() => setActive(i)}
+						/>
+					))}
+					<button
+						type="button"
+						title="Add a stop"
+						aria-label="Add a stop"
+						onClick={() => {
+							const last = gradient.stops[gradient.stops.length - 1]!;
+							write({ ...gradient, stops: [...gradient.stops, { color: last.color, at: 100 }] });
+							setActive(gradient.stops.length);
+						}}
+						style={{
+							width: 22,
+							height: 22,
+							borderRadius: 5,
+							cursor: "pointer",
+							color: T.subtle,
+							background: "transparent",
+							border: `1px dashed ${T.line}`,
+							padding: 0,
+						}}
+					>
+						+
+					</button>
+				</div>
+			</div>
+
+			<Row label="Position">
+				<NumberField
+					value={stop.at}
+					suffix="%"
+					onChange={(at) => patchStop({ at: Math.min(100, Math.max(0, at)) })}
+				/>
+			</Row>
+			<Row label="Opacity">
+				<NumberField
+					step={0.05}
+					value={alpha}
+					onChange={(a) => patchStop({ color: buildStopColor(hex, Math.min(1, Math.max(0, a))) })}
+				/>
+			</Row>
+
+			<PaletteRow
+				colors={colors}
+				value={stop.color}
+				onPick={(token) => patchStop({ color: alpha >= 1 ? token : buildStopColor(colors[token.slice(1)] ?? hex, alpha) })}
+			/>
+			<div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+				<input
+					type="color"
+					aria-label="Stop colour"
+					value={hex}
+					onChange={(e) => patchStop({ color: buildStopColor(e.target.value, alpha) })}
+					style={{
+						width: 30,
+						height: 24,
+						padding: 2,
+						flexShrink: 0,
+						cursor: "pointer",
+						background: "transparent",
+						border: `1px solid ${T.line}`,
+						borderRadius: 6,
+					}}
+				/>
+				{gradient.stops.length > 2 && (
+					<button
+						type="button"
+						onClick={() => {
+							write({ ...gradient, stops: gradient.stops.filter((_, i) => i !== index) });
+							setActive(Math.max(0, index - 1));
+						}}
+						style={{ ...fieldStyle, cursor: "pointer", color: T.subtle }}
+					>
+						Remove stop
+					</button>
+				)}
+			</div>
+			<Muted>
+				{stop.color.trim().startsWith("@")
+					? "This stop follows the site palette."
+					: alpha < 1
+						? "A see-through stop is a fixed colour, since a palette colour carries no transparency."
+						: "A fixed colour. Pick a palette swatch to follow the site's brand instead."}
+			</Muted>
+		</>
+	);
+}
+
+function PresetPicker({ colors, onChange }: { colors: SceneColors; onChange: (value: string) => void }) {
+	return (
+		<Select
+			size="sm"
+			label="Preset"
+			placeholder="Choose a gradient"
+			value={""}
+			onValueChange={(id) => {
+				const preset = GRADIENT_PRESETS.find((p) => p.id === id);
+				if (preset) onChange(preset.build(colors));
+			}}
+			items={GRADIENT_PRESETS.map((p) => ({ label: p.name, value: p.id }))}
+		/>
 	);
 }
 
@@ -252,13 +463,36 @@ export function Inspector({
 
 			{layer.type === "shape" && (
 				<Section title="Fill">
-					<ColorControl
-						value={layer.fill}
-						colors={colors}
-						onChange={(fill) => set({ fill } as Partial<OgLayer>)}
+					<Select
+						size="sm"
+						label="Type"
+						value={isGradientValue(layer.fill) ? "gradient" : "solid"}
+						onValueChange={(kind) => {
+							if (kind === "gradient" && !isGradientValue(layer.fill)) {
+								set({ fill: GRADIENT_PRESETS[0]!.build(colors) } as Partial<OgLayer>);
+							} else if (kind === "solid" && isGradientValue(layer.fill)) {
+								// Keep the gradient's first stop, so switching back is not a reset.
+								const first = parseGradient(layer.fill)?.stops[0]?.color;
+								set({ fill: first ?? "@amber" } as Partial<OgLayer>);
+							}
+						}}
+						items={[
+							{ label: "Solid colour", value: "solid" },
+							{ label: "Gradient", value: "gradient" },
+						]}
 					/>
-					{layer.fill.includes("gradient(") && (
-						<Muted>This layer is a gradient. Choosing a colour replaces it with a solid fill.</Muted>
+					{isGradientValue(layer.fill) ? (
+						<GradientControl
+							value={layer.fill}
+							colors={colors}
+							onChange={(fill) => set({ fill } as Partial<OgLayer>)}
+						/>
+					) : (
+						<ColorControl
+							value={layer.fill}
+							colors={colors}
+							onChange={(fill) => set({ fill } as Partial<OgLayer>)}
+						/>
 					)}
 				</Section>
 			)}

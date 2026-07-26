@@ -139,7 +139,14 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
+  /*
+   * Deliberately no `overflow-x: hidden` here. It was masking the sideways
+   * reveal transform below, and masking it badly: on `body` it propagates to
+   * the viewport, so `body` itself stops clipping, and it takes `position:
+   * sticky` descendants down with it. Every page now measures no wider than
+   * the viewport on its own; if a horizontal scrollbar ever reappears, it is
+   * pointing at a real layout bug and should be fixed at the source.
+   */
 }
 ::selection {
   background: rgb(from var(--color-amber) r g b / 0.35);
@@ -187,9 +194,31 @@ a, a:hover, a:focus, a:visited { text-decoration: none; }
   will-change: opacity, transform;
 }
 [data-animate]                { transform: translateY(40px); }
-[data-animate="left"]         { transform: translateX(-60px); }
-[data-animate="right"]        { transform: translateX(60px); }
 [data-animate="scale"]        { transform: scale(0.9); }
+
+/*
+ * The sideways reveals belong to the two-column sections (Founder, Story), so
+ * they only apply once those columns are actually side by side. Below that
+ * breakpoint the sections stack full width, and an un-revealed element parked
+ * 60px to the right has nowhere to go: it widens the page past the viewport
+ * and raises a horizontal scrollbar on every page it appears on. Sliding
+ * sideways on a narrow screen reads badly anyway, so these fall back to the
+ * same upward reveal everything else uses.
+ */
+[data-animate="left"],
+[data-animate="right"]        { transform: translateY(40px); }
+
+@media (min-width: 1024px) {
+  /*
+   * Travel the width of the page gutter, not a fixed 60px. These elements sit
+   * flush against the content edge, so the only room to slide into is that
+   * gutter; anything larger hangs past the viewport and raises a horizontal
+   * scrollbar. The shell is centred, so the gutter is the narrowest the slack
+   * ever gets, which makes this safe at every width above the breakpoint.
+   */
+  [data-animate="left"]       { transform: translateX(calc(-1 * var(--spacing-gutter))); }
+  [data-animate="right"]      { transform: translateX(var(--spacing-gutter)); }
+}
 [data-animate].is-visible     { opacity: 1; transform: none; filter: none; }
 [data-animate-delay="100"].is-visible { transition-delay: 100ms; }
 [data-animate-delay="200"].is-visible { transition-delay: 200ms; }

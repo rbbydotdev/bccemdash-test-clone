@@ -27,6 +27,13 @@
 	font-size: var(--typeset-size);
 	line-height: var(--typeset-leading);
 	text-wrap: pretty;
+	/*
+	 * Break a word that cannot fit rather than let it run past the viewport.
+	 * This is client-written prose, so a bare URL or a long compound is a
+	 * question of when, not if, and an unbreakable word is the other common
+	 * cause of a stray horizontal scrollbar.
+	 */
+	overflow-wrap: break-word;
 }
 
 /* Block flow: space between consecutive blocks (heading rules below add more). */

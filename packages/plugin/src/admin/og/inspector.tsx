@@ -171,6 +171,8 @@ function GradientControl({
 
 			<Row label="Angle">
 				<NumberField
+					min={0}
+					max={360}
 					value={gradient.angle}
 					suffix="°"
 					onChange={(angle) => write({ ...gradient, angle: ((angle % 360) + 360) % 360 })}
@@ -228,17 +230,15 @@ function GradientControl({
 			</div>
 
 			<Row label="Position">
-				<NumberField
-					value={stop.at}
-					suffix="%"
-					onChange={(at) => patchStop({ at: Math.min(100, Math.max(0, at)) })}
-				/>
+				<NumberField min={0} max={100} value={stop.at} suffix="%" onChange={(at) => patchStop({ at })} />
 			</Row>
 			<Row label="Opacity">
 				<NumberField
+					min={0}
+					max={1}
 					step={0.05}
 					value={alpha}
-					onChange={(a) => patchStop({ color: buildStopColor(hex, Math.min(1, Math.max(0, a))) })}
+					onChange={(a) => patchStop({ color: buildStopColor(hex, a) })}
 				/>
 			</Row>
 
@@ -360,20 +360,28 @@ export function Inspector({
 					<NumberField value={layer.h} onChange={(h) => set({ h })} />
 				</Row>
 				<Row label="Rotate">
-					<NumberField value={layer.rotation ?? 0} onChange={(rotation) => set({ rotation })} suffix="°" />
+					<NumberField
+						min={-180}
+						max={180}
+						value={layer.rotation ?? 0}
+						onChange={(rotation) => set({ rotation })}
+						suffix="°"
+					/>
 				</Row>
 				<Row label="Opacity">
 					<NumberField
+						min={0}
+						max={1}
 						step={0.05}
 						value={layer.opacity ?? 1}
-						onChange={(o) => set({ opacity: Math.min(1, Math.max(0, o)) })}
+						onChange={(opacity) => set({ opacity })}
 					/>
 				</Row>
 				<Row label="Corner">
-					<NumberField value={layer.radius ?? 0} onChange={(radius) => set({ radius })} />
+					<NumberField min={0} max={200} value={layer.radius ?? 0} onChange={(radius) => set({ radius })} />
 				</Row>
 				<Row label="Blur">
-					<NumberField value={layer.blur ?? 0} onChange={(blur) => set({ blur })} />
+					<NumberField min={0} max={40} value={layer.blur ?? 0} onChange={(blur) => set({ blur })} />
 				</Row>
 			</Section>
 
@@ -395,25 +403,35 @@ export function Inspector({
 							items={[...BRAND_FONTS, ...GOOGLE_FONTS]}
 						/>
 						<Row label="Size">
-							<NumberField value={layer.size} onChange={(size) => set({ size } as Partial<OgLayer>)} />
+							<NumberField
+								min={8}
+								max={220}
+								value={layer.size}
+								onChange={(size) => set({ size } as Partial<OgLayer>)}
+							/>
 						</Row>
 						<Row label="Weight">
 							<NumberField
+								min={100}
+								max={900}
 								step={100}
 								value={layer.weight ?? (layer.font === "accent" ? 600 : 300)}
-								onChange={(w) =>
-									set({ weight: Math.min(900, Math.max(100, Math.round(w / 100) * 100)) } as Partial<OgLayer>)
-								}
+								onChange={(weight) => set({ weight } as Partial<OgLayer>)}
 							/>
 						</Row>
 						<Row label="Tracking">
 							<NumberField
+								min={-10}
+								max={40}
+								step={0.5}
 								value={layer.letterSpacing ?? 0}
 								onChange={(letterSpacing) => set({ letterSpacing } as Partial<OgLayer>)}
 							/>
 						</Row>
 						<Row label="Leading">
 							<NumberField
+								min={0.8}
+								max={2.5}
 								step={0.05}
 								value={layer.lineHeight ?? 1.1}
 								onChange={(lineHeight) => set({ lineHeight } as Partial<OgLayer>)}

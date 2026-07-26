@@ -110,8 +110,125 @@ const controlStyle: React.CSSProperties = {
 };
 
 /**
- * A numeric field that also scrubs: dragging left/right changes the value, the
- * way every design tool's number inputs behave. Typing still works.
+ * A vertical slider that floats beside its field.
+ *
+ * Perpendicular to the row and offset to the left, so it never covers the
+ * number it is driving — you can watch the value change as you drag. Fixed
+ * positioning is enough to escape the dock's `overflow: hidden`, since no
+ * ancestor sets a transform, so this needs no portal.
+ */
+function SliderPopover({
+	anchor,
+	value,
+	min,
+	max,
+	step,
+	onChange,
+	onClose,
+}: {
+	anchor: React.RefObject<HTMLDivElement | null>;
+	value: number;
+	min: number;
+	max: number;
+	step: number;
+	onChange: (n: number) => void;
+	onClose: () => void;
+}) {
+	const PANEL_W = 34;
+	const PANEL_H = 132;
+	const self = React.useRef<HTMLDivElement>(null);
+	const [box, setBox] = React.useState<{ left: number; top: number } | null>(null);
+
+	React.useLayoutEffect(() => {
+		const place = () => {
+			const rect = anchor.current?.getBoundingClientRect();
+			if (!rect) return;
+			setBox({
+				// To the left of the field, clamped so it stays on screen.
+				left: Math.max(8, rect.left - PANEL_W - 8),
+				top: Math.min(
+					window.innerHeight - PANEL_H - 8,
+					Math.max(8, rect.top + rect.height / 2 - PANEL_H / 2),
+				),
+			});
+		};
+		place();
+		window.addEventListener("resize", place);
+		// The dock scrolls, so the field moves out from under a placed panel.
+		window.addEventListener("scroll", place, true);
+		return () => {
+			window.removeEventListener("resize", place);
+			window.removeEventListener("scroll", place, true);
+		};
+	}, [anchor]);
+
+	React.useEffect(() => {
+		const onDown = (e: PointerEvent) => {
+			const target = e.target as Node;
+			if (!self.current?.contains(target) && !anchor.current?.contains(target)) onClose();
+		};
+		const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+		window.addEventListener("pointerdown", onDown);
+		window.addEventListener("keydown", onKey);
+		return () => {
+			window.removeEventListener("pointerdown", onDown);
+			window.removeEventListener("keydown", onKey);
+		};
+	}, [anchor, onClose]);
+
+	if (!box) return null;
+
+	return (
+		<div
+			ref={self}
+			style={{
+				position: "fixed",
+				left: box.left,
+				top: box.top,
+				width: PANEL_W,
+				height: PANEL_H,
+				zIndex: 70,
+				display: "grid",
+				placeItems: "center",
+				borderRadius: 8,
+				background: T.elevated,
+				border: `1px solid ${T.line}`,
+				boxShadow: "0 10px 30px rgb(0 0 0 / 0.35)",
+			}}
+		>
+			<input
+				type="range"
+				aria-label="Slider"
+				autoFocus
+				min={min}
+				max={max}
+				step={step}
+				value={value}
+				onChange={(e) => onChange(Number.parseFloat(e.target.value))}
+				style={{
+					// `vertical-lr` + `rtl` is the standard way to stand a range up;
+					// rtl puts the maximum at the top, so dragging up increases.
+					writingMode: "vertical-lr",
+					direction: "rtl",
+					width: 18,
+					height: PANEL_H - 20,
+					accentColor: T.brand,
+					cursor: "pointer",
+				}}
+			/>
+		</div>
+	);
+}
+
+/**
+ * A numeric field. Type a value, step it with the arrow keys, or open a slider
+ * beside it when the value has a natural range.
+ *
+ * The field used to change value when dragged sideways, the way some design
+ * tools scrub. That went: besides being unexpected, the drag listeners were
+ * attached from an effect that only re-ran on an unrelated state change, so
+ * they could bind a frame late and then follow the pointer with no button held.
+ * A slider you open deliberately shows its own limits and cannot surprise you.
  */
 export function NumberField({
 	value,
@@ -119,72 +236,90 @@ export function NumberField({
 	step = 1,
 	width = 62,
 	suffix,
+	min,
+	max,
 }: {
 	value: number;
 	onChange: (n: number) => void;
 	step?: number;
 	width?: number;
 	suffix?: string;
+	min?: number;
+	max?: number;
 }) {
 	const [draft, setDraft] = React.useState<string | null>(null);
-	const scrub = React.useRef<{ x: number; start: number } | null>(null);
+	const [sliderOpen, setSliderOpen] = React.useState(false);
+	const anchor = React.useRef<HTMLDivElement>(null);
+	const ranged = min !== undefined && max !== undefined;
 
-	React.useEffect(() => {
-		if (!scrub.current) return;
-		const move = (e: PointerEvent) => {
-			const s = scrub.current;
-			if (!s) return;
-			onChange(round(s.start + (e.clientX - s.x) * step));
-		};
-		const up = () => {
-			scrub.current = null;
-			window.removeEventListener("pointermove", move);
-			window.removeEventListener("pointerup", up);
-		};
-		window.addEventListener("pointermove", move);
-		window.addEventListener("pointerup", up);
-		return () => {
-			window.removeEventListener("pointermove", move);
-			window.removeEventListener("pointerup", up);
-		};
-	}, [onChange, step, draft]);
-
-	const round = (n: number) => (step < 1 ? Math.round(n * 100) / 100 : Math.round(n));
+	const clamp = (n: number) => {
+		const rounded = step < 1 ? Math.round(n / step) * step : Math.round(n);
+		const bounded = Math.min(max ?? Infinity, Math.max(min ?? -Infinity, rounded));
+		// Binary floating point leaves 0.1 steps looking like 0.30000000000000004.
+		return Math.round(bounded * 1000) / 1000;
+	};
 
 	return (
-		<div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+		<div ref={anchor} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+			{ranged && (
+				<button
+					type="button"
+					aria-label="Open slider"
+					aria-expanded={sliderOpen}
+					title="Drag on a slider"
+					onClick={() => setSliderOpen((open) => !open)}
+					style={{
+						width: 14,
+						height: 20,
+						padding: 0,
+						flexShrink: 0,
+						cursor: "pointer",
+						borderRadius: 4,
+						border: "none",
+						background: sliderOpen ? T.fill : "transparent",
+						color: sliderOpen ? T.brand : T.subtle,
+						fontSize: 11,
+						lineHeight: 1,
+					}}
+				>
+					⇕
+				</button>
+			)}
 			<input
 				type="text"
 				inputMode="decimal"
 				value={draft ?? String(value)}
 				onChange={(e) => setDraft(e.target.value)}
-				onBlur={() => {
-					if (draft !== null) {
-						const n = Number.parseFloat(draft);
-						if (Number.isFinite(n)) onChange(round(n));
+				onBlur={(e) => {
+					if (draft === null) return;
+					const n = Number.parseFloat(e.target.value);
+					if (Number.isFinite(n)) onChange(clamp(n));
+					setDraft(null);
+				}}
+				onKeyDown={(e) => {
+					if (e.key === "Enter") return void (e.target as HTMLInputElement).blur();
+					if (e.key === "Escape") return void setDraft(null);
+					if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+						e.preventDefault();
+						const direction = e.key === "ArrowUp" ? 1 : -1;
+						onChange(clamp(value + direction * (e.shiftKey ? 10 : 1) * step));
 						setDraft(null);
 					}
 				}}
-				onKeyDown={(e) => {
-					if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-					if (e.key === "Escape") setDraft(null);
-					// Arrow keys step, as they do in every inspector.
-					if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-						e.preventDefault();
-						const d = (e.key === "ArrowUp" ? 1 : -1) * (e.shiftKey ? 10 : 1) * step;
-						onChange(round(value + d));
-					}
-				}}
-				onPointerDown={(e) => {
-					// Scrub only from a drag that starts outside the caret, so a plain
-					// click still focuses the field for typing.
-					if (e.detail > 1) return;
-					scrub.current = { x: e.clientX, start: value };
-					setDraft(null);
-				}}
-				style={{ ...controlStyle, width, textAlign: "right", cursor: "ew-resize" }}
+				style={{ ...controlStyle, width, textAlign: "right" }}
 			/>
 			{suffix && <span style={{ fontSize: 10, color: T.subtle }}>{suffix}</span>}
+			{sliderOpen && ranged && (
+				<SliderPopover
+					anchor={anchor}
+					value={value}
+					min={min}
+					max={max}
+					step={step}
+					onChange={(n) => onChange(clamp(n))}
+					onClose={() => setSliderOpen(false)}
+				/>
+			)}
 		</div>
 	);
 }

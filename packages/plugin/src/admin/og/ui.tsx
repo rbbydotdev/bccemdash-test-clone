@@ -14,6 +14,7 @@
  * Colours come from Kumo's CSS custom properties, which are defined on the
  * document and use `light-dark()`, so this still tracks the admin theme.
  */
+import { CaretUpDownIcon } from "@phosphor-icons/react";
 import * as React from "react";
 
 export const T = {
@@ -134,8 +135,8 @@ function SliderPopover({
 	onChange: (n: number) => void;
 	onClose: () => void;
 }) {
-	const PANEL_W = 34;
-	const PANEL_H = 132;
+	const PANEL_W = 40;
+	const PANEL_H = 152;
 	const self = React.useRef<HTMLDivElement>(null);
 	const [box, setBox] = React.useState<{ left: number; top: number } | null>(null);
 
@@ -210,13 +211,44 @@ function SliderPopover({
 					// rtl puts the maximum at the top, so dragging up increases.
 					writingMode: "vertical-lr",
 					direction: "rtl",
-					width: 18,
-					height: PANEL_H - 20,
+					width: 22,
+					height: PANEL_H - 24,
 					accentColor: T.brand,
 					cursor: "pointer",
 				}}
 			/>
 		</div>
+	);
+}
+
+/** The handle that opens a field's slider. Sized to match the field beside it. */
+function SliderTrigger({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+	const [hover, setHover] = React.useState(false);
+	return (
+		<button
+			type="button"
+			aria-label="Open slider"
+			aria-expanded={open}
+			title="Open slider"
+			onClick={onToggle}
+			onPointerEnter={() => setHover(true)}
+			onPointerLeave={() => setHover(false)}
+			style={{
+				width: 24,
+				height: 24,
+				padding: 0,
+				flexShrink: 0,
+				display: "grid",
+				placeItems: "center",
+				cursor: "pointer",
+				borderRadius: 6,
+				border: `1px solid ${open || hover ? T.line : "transparent"}`,
+				background: open ? T.fill : hover ? T.interact : "transparent",
+				color: open ? T.brand : T.subtle,
+			}}
+		>
+			<CaretUpDownIcon size={15} weight="bold" />
+		</button>
 	);
 }
 
@@ -261,30 +293,7 @@ export function NumberField({
 
 	return (
 		<div ref={anchor} style={{ display: "flex", alignItems: "center", gap: 3 }}>
-			{ranged && (
-				<button
-					type="button"
-					aria-label="Open slider"
-					aria-expanded={sliderOpen}
-					title="Drag on a slider"
-					onClick={() => setSliderOpen((open) => !open)}
-					style={{
-						width: 14,
-						height: 20,
-						padding: 0,
-						flexShrink: 0,
-						cursor: "pointer",
-						borderRadius: 4,
-						border: "none",
-						background: sliderOpen ? T.fill : "transparent",
-						color: sliderOpen ? T.brand : T.subtle,
-						fontSize: 11,
-						lineHeight: 1,
-					}}
-				>
-					⇕
-				</button>
-			)}
+			{ranged && <SliderTrigger open={sliderOpen} onToggle={() => setSliderOpen((open) => !open)} />}
 			<input
 				type="text"
 				inputMode="decimal"

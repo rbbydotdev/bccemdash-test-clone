@@ -24,10 +24,19 @@ const FALLBACK_NAV_LINKS: NavLink[] = [
 const footerMenu = await getMenu("footer");
 const navLinks: NavLink[] = footerMenu?.items.length ? footerMenu.items : FALLBACK_NAV_LINKS;
 
+// Brand marks from Phosphor Icons (MIT), regular weight — hence the 256 viewBox.
+const SOCIAL_ICONS = {
+	instagram:
+		"M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM176,24H80A56.06,56.06,0,0,0,24,80v96a56.06,56.06,0,0,0,56,56h96a56.06,56.06,0,0,0,56-56V80A56.06,56.06,0,0,0,176,24Zm40,152a40,40,0,0,1-40,40H80a40,40,0,0,1-40-40V80A40,40,0,0,1,80,40h96a40,40,0,0,1,40,40ZM192,76a12,12,0,1,1-12-12A12,12,0,0,1,192,76Z",
+	x: "M214.75,211.71l-62.6-98.38,61.77-67.95a8,8,0,0,0-11.84-10.76L143.24,99.34,102.75,35.71A8,8,0,0,0,96,32H48a8,8,0,0,0-6.75,12.3l62.6,98.37-61.77,68a8,8,0,1,0,11.84,10.76l58.84-64.72,40.49,63.63A8,8,0,0,0,160,224h48a8,8,0,0,0,6.75-12.29ZM164.39,208,62.57,48h29L193.43,208Z",
+	facebook:
+		"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm8,191.63V152h24a8,8,0,0,0,0-16H136V112a16,16,0,0,1,16-16h16a8,8,0,0,0,0-16H152a32,32,0,0,0-32,32v24H96a8,8,0,0,0,0,16h24v63.63a88,88,0,1,1,16,0Z",
+};
+
 const socials = [
-	{ key: "instagram", label: "Instagram", url: s.social.instagram },
-	{ key: "twitter", label: "X", url: s.social.twitter },
-	{ key: "facebook", label: "Facebook", url: s.social.facebook },
+	{ key: "instagram", label: "Instagram", url: s.social.instagram, icon: SOCIAL_ICONS.instagram },
+	{ key: "twitter", label: "X", url: s.social.twitter, icon: SOCIAL_ICONS.x },
+	{ key: "facebook", label: "Facebook", url: s.social.facebook, icon: SOCIAL_ICONS.facebook },
 ].filter((x) => x.url);
 
 const BAT =
@@ -103,9 +112,11 @@ const BAT =
 							<a
 								href={soc.url}
 								aria-label={soc.label}
-								class="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 font-accent text-xs uppercase tracking-widest text-silver transition-colors hover:border-amber hover:text-amber"
+								class="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-silver transition-colors hover:border-amber hover:text-amber"
 							>
-								{soc.label.slice(0, 2)}
+								<svg viewBox="0 0 256 256" class="h-5 w-5" fill="currentColor" aria-hidden="true">
+									<path d={soc.icon} />
+								</svg>
 							</a>
 						))}
 					</div>

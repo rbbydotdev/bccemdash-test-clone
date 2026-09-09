@@ -28,10 +28,19 @@
   /* Monospace for code in prose (Typeset). System stack — no extra webfont. */
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
-  /* Body-font baseline bumped to 20px (cinematic read). Explicit Tailwind
-     sizes (text-sm, text-4xl, …) still win where used. */
+  /* Body-font baseline bumped to 20px (cinematic read). The steps around it
+     are rescaled to match: Tailwind's defaults are rooted at 16px, so an
+     un-adjusted text-sm lands at 70% of this base rather than the ~85% the
+     hierarchy expects. Display sizes (3xl and up) are left at their defaults. */
   --text-base: 1.25rem;
   --text-base--line-height: 1.55;
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 1.0625rem;
+  --text-sm--line-height: 1.55;
+  --text-lg: 1.25rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.625rem;
 
   /* Easings */
   --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);

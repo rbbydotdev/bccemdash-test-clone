@@ -720,6 +720,11 @@ export function SettingsPage() {
 						checked={s.header.transparentOnHome}
 						onCheckedChange={(checked) => patchSection("header", { transparentOnHome: checked })}
 					/>
+					<MediaField
+						label="Logo (shown beside the site name)"
+						value={s.header.logo}
+						onChange={(v) => patchSection("header", { logo: v })}
+					/>
 				</SectionCard>
 			)}
 

@@ -5,6 +5,8 @@
  * hamburger opens a full-screen night overlay.
  */
 import { getBccSettings } from "@myemdash/plugin/server";
+import { getMenu } from "emdash";
+import { mediaUrl } from "../lib/content";
 
 interface Props {
 	transparent?: boolean;
@@ -14,15 +16,20 @@ const { transparent = false } = Astro.props;
 const settings = await getBccSettings();
 const devoteUrl = settings.integrations.devoteUrl;
 const ctaLabel = settings.header.ctaLabel;
+const logoUrl = await mediaUrl(settings.header.logo);
 
-const links = [
-	{ label: "Story", href: "/#story" },
-	{ label: "Mission", href: "/#mission" },
-	{ label: "Devotions", href: "/#devotions" },
-	{ label: "Experiences", href: "/#experiences" },
-	{ label: "Founder", href: "/#founder" },
-	{ label: "Contact", href: "/#contact" },
+type NavLink = { label: string; url: string; target?: string };
+
+const FALLBACK_LINKS: NavLink[] = [
+	{ label: "Story", url: "/#story" },
+	{ label: "Mission", url: "/#mission" },
+	{ label: "Devotions", url: "/#devotions" },
+	{ label: "Experiences", url: "/#experiences" },
+	{ label: "Contact", url: "/#contact" },
 ];
+
+const menu = await getMenu("primary");
+const links: NavLink[] = menu?.items.length ? menu.items : FALLBACK_LINKS;
 
 const BAT =
 	"M50 30 C45 15, 20 5, 2 20 C15 18, 25 22, 35 28 C38 20, 44 16, 50 14 C56 16, 62 20, 65 28 C75 22, 85 18, 98 20 C80 5, 55 15, 50 30Z";
@@ -32,22 +39,32 @@ const BAT =
 	data-header
 	class:list={["fixed inset-x-0 top-0 z-50 transition-colors duration-500", !transparent && "is-solid"]}
 >
-	<div class="mx-auto flex h-20 max-w-[var(--width-shell)] items-center justify-between px-[var(--spacing-gutter)]">
+	<div class="mx-auto flex h-20 max-w-[var(--width-shell)] items-center justify-between gap-6 px-[var(--spacing-gutter)]">
 		<a href="/" class="group flex items-center gap-3" aria-label="Bat City Council home">
-			<svg viewBox="0 0 100 60" class="h-7 w-8 text-amber transition-transform group-hover:scale-110" aria-hidden="true">
-				<path d={BAT} fill="currentColor" />
-			</svg>
+			{logoUrl ? (
+				<img
+					src={logoUrl}
+					alt=""
+					class="h-9 w-auto max-w-[9rem] object-contain transition-transform group-hover:scale-110"
+				/>
+			) : (
+				<svg viewBox="0 0 100 60" class="h-7 w-8 text-amber transition-transform group-hover:scale-110" aria-hidden="true">
+					<path d={BAT} fill="currentColor" />
+				</svg>
+			)}
 			<span class="hidden font-accent text-xs uppercase tracking-[var(--tracking-label)] text-moon sm:inline">
 				Bat City Council
 			</span>
 		</a>
 
-		<nav class="hidden items-center gap-10 lg:flex" aria-label="Primary">
+		<nav class="hidden flex-1 items-center justify-center xl:flex" aria-label="Primary">
 			<ul class="flex items-center gap-10">
 				{links.map((l) => (
 					<li>
 						<a
-							href={l.href}
+							href={l.url}
+							target={l.target || undefined}
+							rel={l.target === "_blank" ? "noopener noreferrer" : undefined}
 							class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver transition-colors hover:text-amber"
 						>
 							{l.label}
@@ -55,20 +72,21 @@ const BAT =
 					</li>
 				))}
 			</ul>
-			<a
-				href={devoteUrl}
-				class="rounded-sm bg-amber px-6 py-3 font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:-translate-y-0.5 hover:bg-amber-light hover:shadow-[var(--shadow-amber-glow-strong)]"
-			>
-				{ctaLabel}
-			</a>
 		</nav>
+
+		<a
+			href={devoteUrl}
+			class="hidden rounded-sm bg-amber px-6 py-3 font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:-translate-y-0.5 hover:bg-amber-light hover:shadow-[var(--shadow-amber-glow-strong)] xl:inline-block"
+		>
+			{ctaLabel}
+		</a>
 
 		<button
 			data-menu-toggle
 			type="button"
 			aria-expanded="false"
 			aria-label="Menu"
-			class="mobile-toggle flex flex-col gap-[6px] p-2 lg:hidden"
+			class="mobile-toggle flex flex-col gap-[6px] p-2 xl:hidden"
 		>
 			<span></span><span></span><span></span>
 		</button>
@@ -77,10 +95,15 @@ const BAT =
 
 <div
 	data-mobile-menu
-	class="mobile-overlay fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-night/98 lg:hidden"
+	class="mobile-overlay fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-night/98 xl:hidden"
 >
 	{links.map((l) => (
-		<a href={l.href} class="font-display text-3xl text-moon transition-colors hover:text-amber">
+		<a
+			href={l.url}
+			target={l.target || undefined}
+			rel={l.target === "_blank" ? "noopener noreferrer" : undefined}
+			class="font-display text-3xl text-moon transition-colors hover:text-amber"
+		>
 			{l.label}
 		</a>
 	))}

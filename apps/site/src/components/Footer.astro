@@ -5,18 +5,24 @@
  * editable BccSettings.
  */
 import { getBccSettings } from "@myemdash/plugin/server";
+import { getMenu } from "emdash";
 import { mediaUrl } from "../lib/content";
 
 const s = await getBccSettings();
 const footerImg = await mediaUrl(s.footer.image);
 
-const navLinks = [
-	{ label: "Story", href: "/#story" },
-	{ label: "Devotions", href: "/#devotions" },
-	{ label: "Experiences", href: "/#experiences" },
-	{ label: "Programs", href: "/programs" },
-	{ label: "Contact", href: "/#contact" },
+type NavLink = { label: string; url: string; target?: string };
+
+const FALLBACK_NAV_LINKS: NavLink[] = [
+	{ label: "Story", url: "/#story" },
+	{ label: "Devotions", url: "/#devotions" },
+	{ label: "Experiences", url: "/#experiences" },
+	{ label: "Programs", url: "/programs" },
+	{ label: "Contact", url: "/#contact" },
 ];
+
+const footerMenu = await getMenu("footer");
+const navLinks: NavLink[] = footerMenu?.items.length ? footerMenu.items : FALLBACK_NAV_LINKS;
 
 const socials = [
 	{ key: "instagram", label: "Instagram", url: s.social.instagram },
@@ -65,7 +71,9 @@ const BAT =
 					{navLinks.map((l) => (
 						<li>
 							<a
-								href={l.href}
+								href={l.url}
+								target={l.target || undefined}
+								rel={l.target === "_blank" ? "noopener noreferrer" : undefined}
 								class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver transition-colors hover:text-amber"
 							>
 								{l.label}

@@ -1,8 +1,8 @@
 ---
 /**
  * Mission — the commerce/conservation/culture cycle on a deep-night ground.
- * Three nodes with pulsing arrows between, a repeating-cycle caption, and the
- * key-recipient callout. Copy from BccSettings.
+ * Three nodes, a repeating-cycle caption, and the key-recipient callout.
+ * Copy from BccSettings.
  */
 import { getBccSettings } from "@myemdash/plugin/server";
 
@@ -47,12 +47,6 @@ const ICONS = [
 						{node.title}
 					</h3>
 					<p class="mt-3 text-sm text-silver">{node.body}</p>
-					{i < s.mission.nodes.length - 1 && (
-						<span
-							class="absolute -right-3 top-1/2 hidden -translate-y-1/2 text-2xl text-amber md:block"
-							style="animation:var(--animate-arrow-pulse);"
-							aria-hidden="true">→</span>
-					)}
 				</div>
 			))}
 		</div>

@@ -65,6 +65,8 @@ export interface BccSettings {
 	header: {
 		ctaLabel: string;
 		transparentOnHome: boolean;
+		/** Logo shown beside the org name (emdash media id). Blank = the bat mark. */
+		logo: string;
 	};
 	hero: {
 		eyebrow: string;
@@ -222,6 +224,7 @@ export const BCC_DEFAULTS: BccSettings = {
 	header: {
 		ctaLabel: "Devote Now",
 		transparentOnHome: true,
+		logo: "",
 	},
 	hero: {
 		eyebrow: "Est. 2026 · Austin, Texas",

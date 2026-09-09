@@ -70,33 +70,33 @@ if (individual.length > 0) groups.push({ label: s.devotions.individualLabel, ite
 								data-animate-delay={String(i * 100)}
 								class:list={[
 									// Width comes from the grid track (18rem); the card fills its column.
-									"bcc-tier-card flex flex-col rounded-[var(--radius-card)] border border-amber/10 bg-deep/50 p-7 backdrop-blur-[var(--blur-veil)]",
+									// Subgrid: the card's three rows (head / statement / button) are the
+									// parent's tracks, so every card in a row agrees on where the
+									// statement starts and the button sits, whatever the copy length.
+									"bcc-tier-card grid [grid-row:span_3] [grid-template-rows:subgrid] rounded-[var(--radius-card)] border border-amber/10 bg-deep/50 p-7 backdrop-blur-[var(--blur-veil)]",
 									flagship && "is-flagship",
 								]}
 								style={`--tier-accent:${accent(t.data)};`}
 							>
-								<div class="flex items-start justify-between gap-2">
-									<p class="rounded-[var(--radius-pill)] border border-amber/20 px-3 py-1 font-accent text-[0.65rem] uppercase tracking-[var(--tracking-label)] text-amber">
-										{str(t.data, "title")}
-									</p>
-									{flagship && (
-										<span class="rounded-sm bg-amber/20 px-2 py-1 font-accent text-[0.6rem] font-semibold uppercase tracking-[var(--tracking-label)] text-amber-light">
-											{s.labels.flagshipBadge}
-										</span>
+								<div>
+									<div class="flex items-start justify-between gap-2">
+										<p class="rounded-[var(--radius-pill)] border border-amber/20 px-4 py-1.5 text-center font-accent text-xs uppercase tracking-[var(--tracking-label)] text-amber">
+											{str(t.data, "title")}
+										</p>
+									</div>
+									<p class="mt-6 font-display text-4xl text-moon">{price}</p>
+									{period && (
+										<p class="font-accent text-xs uppercase tracking-[var(--tracking-label)] text-silver">
+											{period === "/yr" ? s.labels.perYear : period}
+										</p>
 									)}
+									<hr class="divider-amber !mx-0 !mb-0" />
 								</div>
-								<p class="mt-6 font-display text-4xl text-moon">{price}</p>
-								{period && (
-									<p class="font-accent text-[0.65rem] uppercase tracking-[var(--tracking-label)] text-silver">
-										{period === "/yr" ? s.labels.perYear : period}
-									</p>
-								)}
-								<hr class="divider-amber !mx-0" />
-								{statement && <p class="text-sm leading-relaxed text-silver">{statement}</p>}
+								<p class="text-sm leading-relaxed text-silver">{statement}</p>
 								<a
 									href={href}
 									aria-label={`Devote at the ${str(t.data, "title")} level`}
-									class="mt-auto block rounded-sm bg-amber px-5 py-3 pt-3 text-center font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:bg-amber-light"
+									class="block self-end rounded-sm bg-amber px-5 py-3 pt-3 text-center font-accent text-xs font-semibold uppercase tracking-[var(--tracking-label)] text-night transition hover:bg-amber-light"
 								>
 									{s.header.ctaLabel}
 								</a>

@@ -118,6 +118,8 @@ export interface BccSettings {
 		outro: string;
 	};
 	founder: {
+		/** Unchecked hides the whole section on the homepage. */
+		enabled: boolean;
 		eyebrow: string;
 		name: string;
 		title: string;
@@ -294,6 +296,7 @@ export const BCC_DEFAULTS: BccSettings = {
 		outro: "Interested in a batty experience? Get in touch.",
 	},
 	founder: {
+		enabled: true,
 		eyebrow: "The Founder",
 		name: "Teresa Nichta",
 		title: "Founder, Bat City Council",

@@ -1,15 +1,17 @@
 ---
 /**
  * Founder — portrait + three-paragraph bio, magazine-profile styling. Copy and
- * image from BccSettings.
+ * image from BccSettings. Renders nothing when the section is switched off in
+ * Site Content → Founder.
  */
 import { getBccSettings } from "@myemdash/plugin/server";
 import { mediaUrl } from "../../lib/content";
 
 const s = await getBccSettings();
-const img = await mediaUrl(s.founder.image);
+const img = s.founder.enabled ? await mediaUrl(s.founder.image) : null;
 ---
 
+{s.founder.enabled && (
 <section id="founder" class="relative bcc-noise py-[var(--spacing-section-md)]">
 	<div class="mx-auto max-w-6xl px-[var(--spacing-gutter)]">
 		<p data-animate class="text-center font-accent text-xs uppercase tracking-[var(--tracking-eyebrow)] text-amber">
@@ -36,3 +38,4 @@ const img = await mediaUrl(s.founder.image);
 		</div>
 	</div>
 </section>
+)}

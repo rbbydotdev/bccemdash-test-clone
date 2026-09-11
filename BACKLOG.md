@@ -19,6 +19,19 @@ Deferred / polish items, roughly by priority:
   Google fonts (or a dynamic loader) to make font switching fully live. Colors already work live.
 - **Donor map controls**: v1 uses a fixed dark/hybrid style. The WP block exposed marker style / theme /
   density / visible layers. Expose a `bcc_site.map` group + wire it into `DonorMap` if wanted.
+- **Composable homepage sections (v2)**: only Founder has a show/hide checkbox (`founder.enabled`).
+  Extending that to the other scenes is a one-line-per-section repeat of the same pattern. Ordering
+  and true composition are the bigger job: the homepage is nine hardcoded components in
+  `apps/site/src/pages/index.astro`, and reordering means a `homepage.sections: {id, enabled}[]`
+  setting rendered through a component registry (note arrays replace rather than deep-merge, so a
+  stored list has to be reconciled against the known ids or a newly added scene never appears).
+  A scene used *twice* is blocked by data shape, not layout: every section reads a fixed singleton
+  key off `BccSettings` (`s.founder.*`), so a second instance has nowhere to put its copy. That means
+  moving section content into a collection with per-instance records, which drags in the admin, the
+  WP migration, and the OG templates.
+  Also note: hiding a section that a menu links to (`/#founder`) leaves a dead anchor. The live
+  primary menu does not link to Founder, so this is not an issue today, but filtering hidden
+  sections out of the header/footer menus belongs with the general version.
 - **Media picker**: Site Content imagery fields take a media id with a live thumbnail. A full
   media-library modal picker would be friendlier (emdash has a media browser to reuse).
 - Minor: a few React "key" warnings surface in the admin dev console (emdash internals / list maps).

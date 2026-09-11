@@ -10,7 +10,7 @@
  *
  * CLIENT RULE: no em dashes in any user-facing label or help text.
  */
-import { Button, Input, Loader, Select, Switch, Tabs, Textarea, type TabsItem } from "@cloudflare/kumo";
+import { Button, Checkbox, Input, Loader, Select, Switch, Tabs, Textarea, type TabsItem } from "@cloudflare/kumo";
 import { FloppyDisk, Plus, Trash } from "@phosphor-icons/react";
 import * as React from "react";
 
@@ -1002,6 +1002,11 @@ export function SettingsPage() {
 
 			{active === "founder" && (
 				<SectionCard title="Founder" description="The founder bio section.">
+					<Checkbox
+						label="Show this section on the homepage"
+						checked={s.founder.enabled}
+						onCheckedChange={(checked) => patchSection("founder", { enabled: checked === true })}
+					/>
 					<FieldGrid>
 						<Input
 							className="w-full"

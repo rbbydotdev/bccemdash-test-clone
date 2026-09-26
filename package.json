@@ -7,6 +7,7 @@
 		"node": ">=22.18.0"
 	},
 	"scripts": {
+		"prepare": "pnpm run build:vendor",
 		"build:vendor": "pnpm run --filter {./vendor/emdash/packages/**} build",
 		"dev": "pnpm --filter @myemdash/site dev",
 		"dev:cf": "DEPLOY_TARGET=cloudflare pnpm --filter @myemdash/site dev",

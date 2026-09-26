@@ -36,8 +36,8 @@ Content lives in `apps/site/data/site.db`; repopulate with `cd scripts/migrate-w
 
 ```sh
 corepack pnpm --filter @bcc/plugin test     # domain tests
-corepack pnpm --filter @bcc/site typecheck
-corepack pnpm --filter @bcc/site preview:cf # build + workerd smoke test (local D1/R2)
+corepack pnpm --filter @myemdash/site typecheck
+corepack pnpm --filter @myemdash/site preview:cf # build + workerd smoke test (local D1/R2)
 corepack pnpm deploy                        # build for Cloudflare + wrangler deploy (ONLY on go-ahead)
 ```
 

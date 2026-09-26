@@ -8,10 +8,10 @@
 	},
 	"scripts": {
 		"build:vendor": "pnpm run --filter {./vendor/emdash/packages/**} build",
-		"dev": "pnpm --filter @bcc/site dev",
-		"dev:cf": "DEPLOY_TARGET=cloudflare pnpm --filter @bcc/site dev",
-		"build": "pnpm run build:vendor && pnpm --filter @bcc/site build",
-		"deploy": "pnpm run build:vendor && pnpm --filter @bcc/site deploy",
+		"dev": "pnpm --filter @myemdash/site dev",
+		"dev:cf": "DEPLOY_TARGET=cloudflare pnpm --filter @myemdash/site dev",
+		"build": "pnpm run build:vendor && pnpm --filter @myemdash/site build",
+		"deploy": "pnpm run build:vendor && pnpm --filter @myemdash/site deploy",
 		"typecheck": "pnpm run --filter {./apps/**} --filter {./packages/**} typecheck",
 		"test": "pnpm run --filter {./packages/**} test"
 	}

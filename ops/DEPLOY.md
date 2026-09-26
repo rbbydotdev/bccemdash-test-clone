@@ -18,7 +18,7 @@ admin/API, the BCC plugin routes, static assets, and cron. Dual-target Astro con
 ```sh
 corepack pnpm install
 corepack pnpm build:vendor                       # build vendored emdash dist (once + after subtree pulls)
-corepack pnpm --filter @bcc/site preview:cf       # OPTIONAL: local workerd smoke test (D1/R2 emulated)
+corepack pnpm --filter @myemdash/site preview:cf       # OPTIONAL: local workerd smoke test (D1/R2 emulated)
 corepack pnpm deploy                              # = build:vendor + DEPLOY_TARGET=cloudflare astro build && wrangler deploy
 ```
 `astro build` emits `dist/server/` (the Worker) and `dist/client/` (assets), plus a merged

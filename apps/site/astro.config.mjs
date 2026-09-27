@@ -3,6 +3,7 @@
 //   DEPLOY_TARGET=cloudflare  -> Workers + D1 + R2 (wrangler dev / deploy)
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
+import { mkdirSync } from "node:fs";
 import { defineConfig, envField, fontProviders } from "astro/config";
 import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
@@ -24,6 +25,9 @@ const platform = isCloudflare
 		})()
 	: await (async () => {
 			const { default: node } = await import("@astrojs/node");
+			// The sqlite adapter opens ./data/site.db and creates the file, not the directory; data/ is
+			// gitignored, so a fresh clone rendered without CMS data (SQLITE_CANTOPEN) on every platform.
+			mkdirSync("./data", { recursive: true });
 			return {
 				adapter: node({ mode: "standalone" }),
 				database: sqlite({ url: "file:./data/site.db" }),

@@ -6,9 +6,7 @@ export default defineConfig([
 		entry: ["src/index.ts"],
 		format: ["esm"],
 		outExtensions: () => ({ js: ".mjs" }),
-		// dts on both builds: rolldown's wasm binding never finishes the second build of an array config that mixes dts and
-		// non-dts builds (node 24 with NAPI_RS_FORCE_WASI, tsdown 0.20.3, rolldown 1.0.0-rc.3). The native binding is unaffected.
-		dts: true,
+		dts: false,
 		clean: true,
 		platform: "node",
 		target: "node22",
